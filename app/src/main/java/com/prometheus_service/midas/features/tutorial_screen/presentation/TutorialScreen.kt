@@ -53,11 +53,11 @@ fun TutorialScreen(
     viewModel: TutorialScreenViewModel = hiltViewModel(),
     mainScreenViewModel: MainScreenViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     TutorialScreenContent(
         modifier = modifier,
-        uiState = uiState.value,
+        uiState = uiState,
         onTutorialFinished = {
             mainScreenViewModel.onEvent(MainScreenEvent.HideTutorialScreen)
             mainScreenViewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)

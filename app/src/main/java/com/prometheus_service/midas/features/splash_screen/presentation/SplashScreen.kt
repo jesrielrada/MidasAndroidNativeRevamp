@@ -22,6 +22,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,18 +57,19 @@ fun SplashScreen(
     viewModel: SplashScreenViewModel = hiltViewModel(),
     mainScreenViewModel: MainScreenViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    val mainUiState = mainScreenViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val mainUiState by mainScreenViewModel.uiState.collectAsStateWithLifecycle()
 
-    val isPWAReady = mainUiState.value.isPWAReady
-    val isScrollingFinished = uiState.value.isScrollFinished
+    val canNavigate by remember {
+        derivedStateOf { mainUiState.isPWAReady && uiState.isScrollFinished }
+    }
 
-    LaunchedEffect(isPWAReady, isScrollingFinished) {
-        if (isPWAReady) {
+    LaunchedEffect(canNavigate) {
+        if (mainUiState.isPWAReady) {
             viewModel.onEvent(SplashScreenEvent.DisplaySkipButton)
         }
 
-        if (isPWAReady && isScrollingFinished) {
+        if (mainUiState.isPWAReady && uiState.isScrollFinished) {
             Timber.d("Both conditions met: Hiding Splash Screen")
             viewModel.onEvent(SplashScreenEvent.StopSplashProgress)
             mainScreenViewModel.onEvent(MainScreenEvent.HideSplashScreen)
@@ -76,9 +79,9 @@ fun SplashScreen(
 
     SplashScreenContent(
         modifier = modifier,
-        uiState = uiState.value,
+        uiState = uiState,
         onClickSkipBtn = {
-            if (isPWAReady) {
+            if (mainUiState.isPWAReady) {
                 viewModel.onEvent(SplashScreenEvent.StopSplashProgress)
                 mainScreenViewModel.onEvent(MainScreenEvent.HideSplashScreen)
             }
@@ -98,13 +101,6 @@ fun SplashScreenContent(
     onScrollFinished: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
-
-    val version = uiState.appVersion
-    val images = uiState.images
-
-    val isSkipVisible = uiState.isSkipVisible
-    val isProgressVisible = uiState.isProgressVisible
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { innerPadding ->
@@ -118,7 +114,7 @@ fun SplashScreenContent(
             val versionVerticalGuideline = createGuidelineFromTop(.15f)
 
             SplashViewPager(
-                images = images,
+                images = uiState.images,
                 onScrollFinished = onScrollFinished,
                 scrollInterval = SCROLL_INTERVAL
             )
@@ -128,10 +124,10 @@ fun SplashScreenContent(
                     top.linkTo(versionVerticalGuideline)
                     centerHorizontallyTo(parent)
                 },
-                version = version
+                version = uiState.appVersion
             )
 
-            if (isSkipVisible) {
+            if (uiState.isSkipVisible) {
                 SplashSkipButton(
                     onClick = onClickSkipBtn,
                     modifier = Modifier.constrainAs(skipBtnRef) {
@@ -142,7 +138,7 @@ fun SplashScreenContent(
                 )
             }
 
-            if (isProgressVisible) {
+            if (uiState.isProgressVisible) {
                 SplashScreenProgressView(
                     modifier = Modifier.constrainAs(progressRef) {
                         centerTo(parent)
@@ -248,7 +244,7 @@ fun SplashViewPager(
     val pagerState = rememberPagerState { images.size }
     Timber.d("SplashViewPager: Images: $images")
 
-    LaunchedEffect(key1 = images.size) {
+    LaunchedEffect(key1 = images) {
         if (images.isEmpty()) return@LaunchedEffect
 
         while (pagerState.currentPage < images.size - 1) {
