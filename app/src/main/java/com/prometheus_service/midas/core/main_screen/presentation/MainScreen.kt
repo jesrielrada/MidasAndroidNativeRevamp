@@ -6,6 +6,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prometheus_service.midas.features.splash_screen.presentation.SplashScreen
+import com.prometheus_service.midas.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.features.webview_screen.presentation.WebviewScreen
 
 @Composable
@@ -14,6 +15,7 @@ fun MainScreen(
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val shouldDisplaySplash = uiState.value.shouldDisplaySplash
+    val shouldDisplayTutorial = uiState.value.shouldDisplayTutorial
 
     val shouldDisplayWebview = uiState.value.shouldDisplayWebview
     val webviewVisibility = if (shouldDisplayWebview) 1f else 0f
@@ -26,4 +28,7 @@ fun MainScreen(
         SplashScreen()
     }
 
+    if (shouldDisplayTutorial) {
+        TutorialScreen()
+    }
 }

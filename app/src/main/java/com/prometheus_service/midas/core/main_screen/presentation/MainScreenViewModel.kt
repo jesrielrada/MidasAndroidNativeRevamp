@@ -23,6 +23,14 @@ class MainScreenViewModel @Inject constructor() : ViewModel() {
                 }
             }
 
+            MainScreenEvent.HideTutorialScreen -> {
+                _uiState.update {
+                    it.copy(
+                        shouldDisplayTutorial = false
+                    )
+                }
+            }
+
             MainScreenEvent.DisplayWebviewScreen -> {
                 _uiState.update {
                     it.copy(
