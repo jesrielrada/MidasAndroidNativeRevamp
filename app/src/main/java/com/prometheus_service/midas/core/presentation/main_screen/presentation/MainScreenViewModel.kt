@@ -1,17 +1,42 @@
-package com.prometheus_service.midas.core.main_screen.presentation
+package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import androidx.lifecycle.ViewModel
-import com.prometheus_service.midas.core.main_screen.event.MainScreenEvent
+import androidx.lifecycle.viewModelScope
+import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashTutorialImages
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class MainScreenViewModel @Inject constructor() : ViewModel() {
+class MainScreenViewModel @Inject constructor(
+    private val getSplashTutorialImages: GetSplashTutorialImages
+) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            Timber.d("Fetching splash tutorial images...")
+
+            val operatorId = "vn88"
+            val userAgent = "VN88MobileA/1.0"
+            val acceptLanguage = "en"
+            val currency = "USDT"
+
+            getSplashTutorialImages(
+                operatorId = operatorId,
+                userAgent = userAgent,
+                acceptLanguage = acceptLanguage,
+                currency = currency
+            )
+        }
+    }
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {

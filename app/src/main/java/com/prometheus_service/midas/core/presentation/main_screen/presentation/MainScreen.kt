@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.core.main_screen.presentation
+package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

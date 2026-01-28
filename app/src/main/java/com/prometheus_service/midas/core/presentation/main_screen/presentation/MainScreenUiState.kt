@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.core.main_screen.presentation
+package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 data class MainScreenUiState(
     val shouldDisplaySplash: Boolean = true,

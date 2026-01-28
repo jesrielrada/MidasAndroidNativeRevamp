@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.core.main_screen.event
+package com.prometheus_service.midas.core.presentation.main_screen.event
 
 sealed class MainScreenEvent {
     object HideSplashScreen : MainScreenEvent()

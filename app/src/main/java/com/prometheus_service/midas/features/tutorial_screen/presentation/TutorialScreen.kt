@@ -38,8 +38,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.prometheus_service.midas.core.main_screen.event.MainScreenEvent
-import com.prometheus_service.midas.core.main_screen.presentation.MainScreenViewModel
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
 import com.prometheus_service.midas.features.tutorial_screen.theme.TutorialIndicatorSelectedColor
 import com.prometheus_service.midas.features.tutorial_screen.theme.TutorialIndicatorUnSelectedColor
 import com.prometheus_service.midas.features.tutorial_screen.theme.TutorialNextButtonDefaultColor
