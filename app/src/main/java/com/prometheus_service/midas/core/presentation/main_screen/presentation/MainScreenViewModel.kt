@@ -3,6 +3,7 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.core.domain.features.app_config.use_case.GetApplicationConfig
+import com.prometheus_service.midas.core.domain.features.remote_domains.use_case.GetRemoteDomains
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashTutorialImages
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,24 +18,26 @@ import javax.inject.Inject
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
     private val getSplashTutorialImages: GetSplashTutorialImages,
-    private val getApplicationConfig: GetApplicationConfig
+    private val getApplicationConfig: GetApplicationConfig,
+    private val getRemoteDomains: GetRemoteDomains
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            Timber.d("Fetching application config...")
+            Timber.d("Fetching remote domains...")
 
             val operatorId = "vn88"
             val userAgent = "VN88MobileA/1.0"
             val acceptLanguage = "en"
             val currency = "USDT"
 
-            getApplicationConfig.invoke(
+            getRemoteDomains.invoke(
                 operatorId = operatorId,
                 userAgent = userAgent,
                 acceptLanguage = acceptLanguage,
+                currency = currency
             )
         }
     }
