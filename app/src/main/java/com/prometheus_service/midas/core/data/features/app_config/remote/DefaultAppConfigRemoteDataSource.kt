@@ -1,25 +1,24 @@
-package com.prometheus_service.midas.core.data.features.splash_tutorial.remote
+package com.prometheus_service.midas.core.data.features.app_config.remote
 
-import com.prometheus_service.midas.core.data.features.splash_tutorial.remote.model.SplashTutorialDto
+import com.prometheus_service.midas.core.data.features.app_config.remote.model.AppConfigDto
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class DefaultSplashTutorialRemoteDataSource @Inject constructor(
-    private val apiService: SplashTutorialService,
+class DefaultAppConfigRemoteDataSource @Inject constructor(
+    private val apiService: AppConfigService,
     private val dispatcherProvider: DefaultDispatcherProvider
-) : SplashTutorialRemoteDataSource {
-    override suspend fun fetchSplashTutorialData(
+) : AppConfigRemoteDataSource {
+
+    override suspend fun fetchApplicationConfig(
         operatorId: String,
         userAgent: String,
-        acceptLanguage: String,
-        currency: String?
-    ): SplashTutorialDto = withContext(dispatcherProvider.io) {
-        val response = apiService.fetchSplashTutorialRemoteData(
+        acceptLanguage: String
+    ): AppConfigDto = withContext(dispatcherProvider.io){
+        val response = apiService.fetchApplicationConfigRemoteData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,
-            currency = currency
         )
         if (response.isSuccessful) {
             response.body() ?: throw Exception("Response body is null")

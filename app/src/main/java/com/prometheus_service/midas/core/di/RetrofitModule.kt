@@ -47,12 +47,6 @@ object RetrofitModule {
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun provideSplashTutorialService(
-        retrofit: Retrofit
-    ): SplashTutorialService {
-        return retrofit.create(SplashTutorialService::class.java)
-    }
+
 
 }

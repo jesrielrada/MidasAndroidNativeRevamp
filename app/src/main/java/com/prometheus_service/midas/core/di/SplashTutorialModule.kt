@@ -36,6 +36,7 @@ object SplashTutorialModule {
             }
         )
     }
+
     @Singleton
     @Provides
     fun provideGetSplashTutorialImages(

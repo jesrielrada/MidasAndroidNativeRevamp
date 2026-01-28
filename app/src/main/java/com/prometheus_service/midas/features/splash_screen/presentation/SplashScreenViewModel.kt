@@ -26,7 +26,6 @@ class SplashScreenViewModel @Inject constructor() : ViewModel() {
         INTERVAL
     ) {
         override fun onTick(millisUntilFinished: Long) {
-            Timber.d("onTick: millisUntilFinished: $millisUntilFinished")
             if (uiState.value.isTimerRunning) {
                 onEvent(SplashScreenEvent.UpdateProgress)
                 if (uiState.value.currentPauseIndex < pausePercentageList.size &&
