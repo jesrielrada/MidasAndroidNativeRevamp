@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.tutorial_screen.presentation
+package com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation
 
 import com.prometheus_service.midas.R
 

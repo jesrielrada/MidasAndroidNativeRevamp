@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.webview_screen.presentation
+package com.prometheus_service.midas.core.presentation.features.webview_screen.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

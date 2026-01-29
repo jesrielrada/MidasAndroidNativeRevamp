@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.splash_screen.presentation.event
+package com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.event
 
 sealed class SplashScreenEvent {
     object StartTimer : SplashScreenEvent()

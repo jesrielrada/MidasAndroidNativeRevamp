@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.tutorial_screen.theme
+package com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme
 
 import androidx.compose.ui.graphics.Color
 

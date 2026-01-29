@@ -5,9 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.prometheus_service.midas.features.splash_screen.presentation.SplashScreen
-import com.prometheus_service.midas.features.tutorial_screen.presentation.TutorialScreen
-import com.prometheus_service.midas.features.webview_screen.presentation.WebviewScreen
+import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
+import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
 
 @Composable
 fun MainScreen(

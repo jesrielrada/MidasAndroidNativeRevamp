@@ -1,14 +1,13 @@
-package com.prometheus_service.midas.features.splash_screen.presentation
+package com.prometheus_service.midas.core.presentation.features.splash_screen.presentation
 
 import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
-import com.prometheus_service.midas.features.splash_screen.presentation.event.SplashScreenEvent
+import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.event.SplashScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel

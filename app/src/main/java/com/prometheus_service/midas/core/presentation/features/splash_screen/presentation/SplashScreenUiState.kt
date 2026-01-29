@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.splash_screen.presentation
+package com.prometheus_service.midas.core.presentation.features.splash_screen.presentation
 
 import com.prometheus_service.midas.R
 

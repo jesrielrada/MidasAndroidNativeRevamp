@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.tutorial_screen.presentation
+package com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

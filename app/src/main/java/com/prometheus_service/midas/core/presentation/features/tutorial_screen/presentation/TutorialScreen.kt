@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.tutorial_screen.presentation
+package com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -40,10 +40,10 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
-import com.prometheus_service.midas.features.tutorial_screen.theme.TutorialIndicatorSelectedColor
-import com.prometheus_service.midas.features.tutorial_screen.theme.TutorialIndicatorUnSelectedColor
-import com.prometheus_service.midas.features.tutorial_screen.theme.TutorialNextButtonDefaultColor
-import com.prometheus_service.midas.features.tutorial_screen.theme.TutorialNextButtonFinishColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorSelectedColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorUnSelectedColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonDefaultColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonFinishColor
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.launch
 

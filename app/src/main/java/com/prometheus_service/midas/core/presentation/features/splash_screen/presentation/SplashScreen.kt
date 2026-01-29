@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.features.splash_screen.presentation
+package com.prometheus_service.midas.core.presentation.features.splash_screen.presentation
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -44,7 +44,7 @@ import com.github.ybq.android.spinkit.R
 import com.github.ybq.android.spinkit.SpinKitView
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
-import com.prometheus_service.midas.features.splash_screen.presentation.event.SplashScreenEvent
+import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.event.SplashScreenEvent
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.delay
 import timber.log.Timber
