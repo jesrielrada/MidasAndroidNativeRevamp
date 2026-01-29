@@ -38,7 +38,7 @@ class DefaultSplashTutorialRepository @Inject constructor(
                 localDataSource.cacheSplashTutorialModel(model)
                 Timber.d("Successfully fetched and cached splash tutorial data, model=$model")
             }.onFailure { exception ->
-                Timber.d(exception, "Failed to fetch splash tutorial data")
+                Timber.e(exception, "Failed to fetch splash tutorial data")
             }
         }
     }

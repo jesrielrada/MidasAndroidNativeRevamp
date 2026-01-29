@@ -3,7 +3,7 @@ package com.prometheus_service.midas.core.data.features.remote_config
 import com.prometheus_service.midas.core.data.features.remote_config.local.RemoteConfigLocalDataSource
 import com.prometheus_service.midas.core.data.features.remote_config.remote.RemoteConfigRemoteDataSource
 import com.prometheus_service.midas.core.data.features.remote_config.util.mapper.toDomain
-import com.prometheus_service.midas.core.domain.features.remote_config.RenameConfigRepository
+import com.prometheus_service.midas.core.domain.features.remote_config.RemoteConfigRepository
 import com.prometheus_service.midas.core.domain.features.remote_config.model.RemoteConfigModel
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +15,7 @@ class DefaultRemoteConfigRepository @Inject constructor(
     private val remoteDataSource: RemoteConfigRemoteDataSource,
     private val localDataSource: RemoteConfigLocalDataSource,
     private val dispatcherProvider: DispatcherProvider
-) : RenameConfigRepository {
+) : RemoteConfigRepository {
 
     override val remoteConfigModel: Flow<RemoteConfigModel>
         get() = localDataSource.getRemoteConfigModel()

@@ -3,7 +3,7 @@ package com.prometheus_service.midas.core.domain.features.remote_config
 import com.prometheus_service.midas.core.domain.features.remote_config.model.RemoteConfigModel
 import kotlinx.coroutines.flow.Flow
 
-interface RenameConfigRepository {
+interface RemoteConfigRepository {
 
     val remoteConfigModel: Flow<RemoteConfigModel>
 

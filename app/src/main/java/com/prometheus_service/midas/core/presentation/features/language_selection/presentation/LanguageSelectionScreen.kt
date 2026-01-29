@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prometheus_service.midas.core.presentation.features.language_selection.event.LanguageSelectionEvent
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 
 
@@ -38,7 +39,7 @@ fun LanguageSelectionScreen(
         modifier = modifier,
         uiState = uiState,
         onClick = {
-
+            viewModel.onEvent(LanguageSelectionEvent.OnLanguageSelected(it))
         }
     )
 }
