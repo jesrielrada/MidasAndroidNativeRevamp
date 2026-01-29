@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prometheus_service.midas.core.presentation.features.language_selection.presentation.LanguageSelectionScreen
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
@@ -16,6 +17,7 @@ fun MainScreen(
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val shouldDisplaySplash = uiState.value.shouldDisplaySplash
     val shouldDisplayTutorial = uiState.value.shouldDisplayTutorial
+    val shouldDisplayLanguageSelection = uiState.value.shouldDisplayLanguageSelection
 
     val shouldDisplayWebview = uiState.value.shouldDisplayWebview
     val webviewVisibility = if (shouldDisplayWebview) 1f else 0f
@@ -30,5 +32,9 @@ fun MainScreen(
 
     if (shouldDisplayTutorial) {
         TutorialScreen()
+    }
+
+    if (shouldDisplayLanguageSelection) {
+        LanguageSelectionScreen()
     }
 }
