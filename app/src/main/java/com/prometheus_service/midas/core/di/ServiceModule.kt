@@ -1,6 +1,7 @@
 package com.prometheus_service.midas.core.di
 
 import com.prometheus_service.midas.core.data.features.app_config.remote.AppConfigService
+import com.prometheus_service.midas.core.data.features.multi_language.remote.MultiLanguageService
 import com.prometheus_service.midas.core.data.features.remote_domains.remote.RemoteDomainsService
 import com.prometheus_service.midas.core.data.features.splash_tutorial.remote.SplashTutorialService
 import dagger.Module
@@ -37,4 +38,11 @@ object ServiceModule {
         return retrofit.create(RemoteDomainsService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideMultiLanguageService(
+        retrofit: Retrofit
+    ): MultiLanguageService {
+        return retrofit.create(MultiLanguageService::class.java)
+    }
 }

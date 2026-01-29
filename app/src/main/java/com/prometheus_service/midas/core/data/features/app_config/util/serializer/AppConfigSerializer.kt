@@ -48,7 +48,7 @@ object AppConfigSerializer : Serializer<AppConfigModel> {
             )
             Timber.d("Success in writing AppConfigModel")
         } catch (e: Exception) {
-            Timber.e(e, "Failed to write SplashTutorialModel")
+            Timber.e(e, "Failed to write AppConfigModel")
             throw e
         }
     }

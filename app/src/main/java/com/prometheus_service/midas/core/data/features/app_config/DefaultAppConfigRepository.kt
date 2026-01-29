@@ -37,7 +37,7 @@ class DefaultAppConfigRepository @Inject constructor(
                 localDataSource.cacheAppConfigModel(model)
                 Timber.d("Successfully fetched and cached app config data, model=$model")
             }.onFailure { exception ->
-                Timber.d(exception, "Failed to fetch app config data")
+                Timber.e(exception, "Failed to fetch app config data")
             }
         }
     }
