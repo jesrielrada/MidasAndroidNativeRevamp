@@ -4,15 +4,15 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
-import com.prometheus_service.midas.core.data.features.app_config.DefaultAppConfigRepository
-import com.prometheus_service.midas.core.data.features.app_config.local.AppConfigLocalDataSource
-import com.prometheus_service.midas.core.data.features.app_config.local.DefaultAppConfigLocalDataSource
-import com.prometheus_service.midas.core.data.features.app_config.remote.AppConfigRemoteDataSource
-import com.prometheus_service.midas.core.data.features.app_config.remote.DefaultAppConfigRemoteDataSource
-import com.prometheus_service.midas.core.data.features.app_config.util.serializer.AppConfigSerializer
-import com.prometheus_service.midas.core.domain.features.app_config.AppConfigRepository
-import com.prometheus_service.midas.core.domain.features.app_config.model.AppConfigModel
-import com.prometheus_service.midas.core.domain.features.app_config.use_case.GetApplicationConfig
+import com.prometheus_service.midas.core.data.features.remote_config.DefaultRemoteConfigRepository
+import com.prometheus_service.midas.core.data.features.remote_config.local.RemoteConfigLocalDataSource
+import com.prometheus_service.midas.core.data.features.remote_config.local.DefaultRemoteConfigLocalDataSource
+import com.prometheus_service.midas.core.data.features.remote_config.remote.RemoteConfigRemoteDataSource
+import com.prometheus_service.midas.core.data.features.remote_config.remote.DefaultRemoteConfigRemoteDataSource
+import com.prometheus_service.midas.core.data.features.remote_config.util.serializer.RemoteConfigSerializer
+import com.prometheus_service.midas.core.domain.features.remote_config.RenameConfigRepository
+import com.prometheus_service.midas.core.domain.features.remote_config.model.RemoteConfigModel
+import com.prometheus_service.midas.core.domain.features.remote_config.use_case.GetRemoteConfig
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -30,9 +30,9 @@ object AppConfigModule {
     @Provides
     fun provideAppConfigDataStore(
         @ApplicationContext context: Context
-    ): DataStore<AppConfigModel> {
+    ): DataStore<RemoteConfigModel> {
         return DataStoreFactory.create(
-            serializer = AppConfigSerializer,
+            serializer = RemoteConfigSerializer,
             produceFile = {
                 context.dataStoreFile("app_config_settings.json")
             }
@@ -42,9 +42,9 @@ object AppConfigModule {
     @Provides
     @Singleton
     fun provideGetApplicationConfig(
-        repository: AppConfigRepository
-    ): GetApplicationConfig {
-        return GetApplicationConfig(repository)
+        repository: RenameConfigRepository
+    ): GetRemoteConfig {
+        return GetRemoteConfig(repository)
     }
 }
 
@@ -55,19 +55,19 @@ abstract class AppConfigBindModule {
     @Binds
     @Singleton
     abstract fun bindAppConfigRepository(
-        defaultRepository: DefaultAppConfigRepository
-    ): AppConfigRepository
+        defaultRepository: DefaultRemoteConfigRepository
+    ): RenameConfigRepository
 
     @Binds
     @Singleton
     abstract fun bindAppConfigRemoteDataSource(
-        defaultRemoteDataSource: DefaultAppConfigRemoteDataSource
-    ): AppConfigRemoteDataSource
+        defaultRemoteDataSource: DefaultRemoteConfigRemoteDataSource
+    ): RemoteConfigRemoteDataSource
 
     @Binds
     @Singleton
     abstract fun bindAppConfigLocalDataSource(
-        defaultLocalDataSource: DefaultAppConfigLocalDataSource
-    ): AppConfigLocalDataSource
+        defaultLocalDataSource: DefaultRemoteConfigLocalDataSource
+    ): RemoteConfigLocalDataSource
 
 }

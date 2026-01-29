@@ -2,14 +2,13 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prometheus_service.midas.core.domain.features.app_config.use_case.GetApplicationConfig
+import com.prometheus_service.midas.core.domain.features.remote_config.use_case.GetRemoteConfig
 import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.multi_language.use_case.RefreshMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.remote_domains.use_case.GetRemoteDomains
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashTutorialImages
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -21,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
     private val getSplashTutorialImages: GetSplashTutorialImages,
-    private val getApplicationConfig: GetApplicationConfig,
+    private val getRemoteConfig: GetRemoteConfig,
     private val getRemoteDomains: GetRemoteDomains,
     private val refreshMultiLanguageData: RefreshMultiLanguageData,
     private val getMultiLanguageData: GetMultiLanguageData
@@ -36,31 +35,13 @@ class MainScreenViewModel @Inject constructor(
             var acceptLanguage = "en"
             val currency = "USDT"
 
-            Timber.d("Fetching multi language with locale: $acceptLanguage...")
+            Timber.d("Fetching remote config...")
 
-            refreshMultiLanguageData.invoke(
+            getRemoteConfig.invoke(
                 operatorId = operatorId,
                 userAgent = userAgent,
                 acceptLanguage = acceptLanguage,
-                currency = currency
             )
-
-            Timber.d("Fetching multi language with locale: vi...")
-
-            refreshMultiLanguageData.invoke(
-                operatorId = operatorId,
-                userAgent = userAgent,
-                acceptLanguage = "vi",
-                currency = currency
-            )
-
-            Timber.d("Fetching cached multi language with locale: vi...")
-            val cachedData2 = getMultiLanguageData.invoke("vi").first()
-            Timber.d("Fetched cached multi language with locale: vi, result is: $cachedData2")
-
-            Timber.d("Fetching cached multi language with locale: en...")
-            val cachedData = getMultiLanguageData.invoke("en").first()
-            Timber.d("Fetched cached multi language with locale: en, result is: $cachedData")
 
         }
     }

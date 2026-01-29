@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.core.data.features.app_config.remote.model
+package com.prometheus_service.midas.core.data.features.remote_config.remote.model
 
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
@@ -6,7 +6,7 @@ import javax.annotation.processing.Generated
 
 @Keep
 @Generated
-data class AppConfigDto(
+data class RemoteConfigDto(
     @SerializedName("data") val data : Data
 )
 @Keep

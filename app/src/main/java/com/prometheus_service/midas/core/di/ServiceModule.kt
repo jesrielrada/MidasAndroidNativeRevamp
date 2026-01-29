@@ -1,6 +1,6 @@
 package com.prometheus_service.midas.core.di
 
-import com.prometheus_service.midas.core.data.features.app_config.remote.AppConfigService
+import com.prometheus_service.midas.core.data.features.remote_config.remote.RemoteConfigService
 import com.prometheus_service.midas.core.data.features.multi_language.remote.MultiLanguageService
 import com.prometheus_service.midas.core.data.features.remote_domains.remote.RemoteDomainsService
 import com.prometheus_service.midas.core.data.features.splash_tutorial.remote.SplashTutorialService
@@ -26,8 +26,8 @@ object ServiceModule {
     @Singleton
     fun provideAppConfigService(
         retrofit: Retrofit
-    ): AppConfigService {
-        return retrofit.create(AppConfigService::class.java)
+    ): RemoteConfigService {
+        return retrofit.create(RemoteConfigService::class.java)
     }
 
     @Provides

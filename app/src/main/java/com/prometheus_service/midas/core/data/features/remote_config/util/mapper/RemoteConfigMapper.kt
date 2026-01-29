@@ -1,12 +1,12 @@
-package com.prometheus_service.midas.core.data.features.app_config.util.mapper
+package com.prometheus_service.midas.core.data.features.remote_config.util.mapper
 
-import com.prometheus_service.midas.core.data.features.app_config.remote.model.AppConfigDto
-import com.prometheus_service.midas.core.domain.features.app_config.model.AppConfigModel
+import com.prometheus_service.midas.core.data.features.remote_config.remote.model.RemoteConfigDto
+import com.prometheus_service.midas.core.domain.features.remote_config.model.RemoteConfigModel
 
 
-fun AppConfigDto.toDomain(): AppConfigModel {
+fun RemoteConfigDto.toDomain(): RemoteConfigModel {
     val data = this.data
-    return AppConfigModel(
+    return RemoteConfigModel(
         androidNativeVersion = data.androidNativeVersion,
         androidNativeVersionCode = data.androidNativeVersionCode,
         androidNativeUpdateFileSize = data.androidNativeUpdateFileSize,

@@ -1,21 +1,21 @@
-package com.prometheus_service.midas.core.data.features.app_config.remote
+package com.prometheus_service.midas.core.data.features.remote_config.remote
 
-import com.prometheus_service.midas.core.data.features.app_config.remote.model.AppConfigDto
+import com.prometheus_service.midas.core.data.features.remote_config.remote.model.RemoteConfigDto
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class DefaultAppConfigRemoteDataSource @Inject constructor(
-    private val apiService: AppConfigService,
+class DefaultRemoteConfigRemoteDataSource @Inject constructor(
+    private val apiService: RemoteConfigService,
     private val dispatcherProvider: DefaultDispatcherProvider
-) : AppConfigRemoteDataSource {
+) : RemoteConfigRemoteDataSource {
 
-    override suspend fun fetchApplicationConfig(
+    override suspend fun fetchRemoteConfig(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String
-    ): AppConfigDto = withContext(dispatcherProvider.io){
-        val response = apiService.fetchApplicationConfigRemoteData(
+    ): RemoteConfigDto = withContext(dispatcherProvider.io){
+        val response = apiService.fetchRemoteConfigRemoteData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,
