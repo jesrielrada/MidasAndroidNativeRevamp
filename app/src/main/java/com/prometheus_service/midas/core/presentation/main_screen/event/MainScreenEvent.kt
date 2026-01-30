@@ -5,4 +5,5 @@ sealed class MainScreenEvent {
     object HideTutorialScreen : MainScreenEvent()
     object DisplayWebviewScreen : MainScreenEvent()
     object UpdateWebviewReady : MainScreenEvent()
+    object SyncSplashTutorialImages: MainScreenEvent()
 }

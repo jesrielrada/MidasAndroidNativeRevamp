@@ -4,7 +4,7 @@ import com.prometheus_service.midas.core.domain.features.splash_tutorial.SplashT
 import timber.log.Timber
 import javax.inject.Inject
 
-class GetSplashTutorialImages @Inject constructor(
+class SyncSplashTutorialImages @Inject constructor(
     private val repository: SplashTutorialRepository
 ) {
     suspend operator fun invoke(

@@ -6,7 +6,7 @@ import com.prometheus_service.midas.core.domain.features.remote_config.use_case.
 import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.multi_language.use_case.RefreshMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.remote_domains.use_case.GetRemoteDomains
-import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashTutorialImages
+import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
-    private val getSplashTutorialImages: GetSplashTutorialImages,
+    private val syncSplashTutorialImages: SyncSplashTutorialImages,
     private val getRemoteConfig: GetRemoteConfig,
     private val getRemoteDomains: GetRemoteDomains,
     private val refreshMultiLanguageData: RefreshMultiLanguageData,
@@ -74,6 +74,22 @@ class MainScreenViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isWebviewReady = true
+                    )
+                }
+            }
+
+            MainScreenEvent.SyncSplashTutorialImages -> {
+                viewModelScope.launch {
+                    val operatorId = "vn88"
+                    val userAgent = "VN88MobileA/1.0"
+                    var acceptLanguage = "en"
+                    val currency = "USDT"
+
+                    syncSplashTutorialImages.invoke(
+                        operatorId = operatorId,
+                        userAgent = userAgent,
+                        acceptLanguage = acceptLanguage,
+                        currency = currency
                     )
                 }
             }
