@@ -21,8 +21,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -42,8 +42,6 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.github.ybq.android.spinkit.R
 import com.github.ybq.android.spinkit.SpinKitView
-import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.event.SplashScreenEvent
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.delay
@@ -55,40 +53,31 @@ private const val SCROLL_INTERVAL = 2000L // 2 seconds
 fun SplashScreen(
     modifier: Modifier = Modifier,
     viewModel: SplashScreenViewModel = hiltViewModel(),
-    mainScreenViewModel: MainScreenViewModel = hiltViewModel()
+    onScrollFinished: () -> Unit,
+    onClickSkipBtn: () -> Unit,
+    isReadyToHide: Boolean = false
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val mainUiState by mainScreenViewModel.uiState.collectAsStateWithLifecycle()
 
-    val canNavigate by remember {
-        derivedStateOf { mainUiState.isPWAReady && uiState.isScrollFinished }
-    }
-
-    LaunchedEffect(canNavigate) {
-        if (mainUiState.isPWAReady) {
+    LaunchedEffect(isReadyToHide) {
+        if (isReadyToHide) {
+            Timber.d("Condition met, displaying skip button")
             viewModel.onEvent(SplashScreenEvent.DisplaySkipButton)
         }
+    }
 
-        if (mainUiState.isPWAReady && uiState.isScrollFinished) {
-            Timber.d("Both conditions met: Hiding Splash Screen")
+    DisposableEffect(Unit) {
+        onDispose {
+            Timber.d("Disposing Splash Screen, stopping splash progress")
             viewModel.onEvent(SplashScreenEvent.StopSplashProgress)
-            mainScreenViewModel.onEvent(MainScreenEvent.HideSplashScreen)
-            mainScreenViewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
         }
     }
 
     SplashScreenContent(
         modifier = modifier,
         uiState = uiState,
-        onClickSkipBtn = {
-            if (mainUiState.isPWAReady) {
-                viewModel.onEvent(SplashScreenEvent.StopSplashProgress)
-                mainScreenViewModel.onEvent(MainScreenEvent.HideSplashScreen)
-            }
-        },
-        onScrollFinished = {
-            viewModel.onEvent(SplashScreenEvent.OnScrollFinished)
-        }
+        onClickSkipBtn = onClickSkipBtn,
+        onScrollFinished = onScrollFinished
     )
 }
 

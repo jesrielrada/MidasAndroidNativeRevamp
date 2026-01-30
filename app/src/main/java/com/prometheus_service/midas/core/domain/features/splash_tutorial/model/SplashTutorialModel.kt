@@ -8,8 +8,7 @@ import kotlinx.serialization.Serializable
 data class SplashTutorialModel(
     val splashImages: List<String> = emptyList(),
     val tutorialImages: List<String> = emptyList(),
-    val isTutorialScreenEnabled: Boolean = false,
-    val isTutorialScreenDisplayed: Boolean = false
+    val isTutorialScreenEnabled: Boolean = false
 )
 
 

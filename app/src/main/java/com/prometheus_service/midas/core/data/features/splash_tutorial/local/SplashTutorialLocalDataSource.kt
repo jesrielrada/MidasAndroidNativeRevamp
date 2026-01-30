@@ -6,5 +6,4 @@ import kotlinx.coroutines.flow.Flow
 interface SplashTutorialLocalDataSource {
     fun getSplashTutorialModel(): Flow<SplashTutorialModel>
     suspend fun cacheSplashTutorialModel(data: SplashTutorialModel)
-    suspend fun setTutorialScreenDisplayed()
 }

@@ -11,7 +11,6 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -42,7 +41,6 @@ class MainScreenViewModel @Inject constructor(
                 userAgent = userAgent,
                 acceptLanguage = acceptLanguage,
             )
-
         }
     }
 
@@ -72,10 +70,10 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-            MainScreenEvent.UpdatePWAReady -> {
+            MainScreenEvent.UpdateWebviewReady -> {
                 _uiState.update {
                     it.copy(
-                        isPWAReady = true
+                        isWebviewReady = true
                     )
                 }
             }

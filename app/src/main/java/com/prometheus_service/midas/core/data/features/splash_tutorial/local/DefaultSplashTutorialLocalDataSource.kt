@@ -32,12 +32,4 @@ class DefaultSplashTutorialLocalDataSource @Inject constructor(
             data
         }
     }
-
-    override suspend fun setTutorialScreenDisplayed() {
-        dataStore.updateData {
-            it.copy(
-                isTutorialScreenDisplayed = true
-            )
-        }
-    }
 }

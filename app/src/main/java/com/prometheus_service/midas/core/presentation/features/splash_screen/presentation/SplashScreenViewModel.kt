@@ -108,14 +108,6 @@ class SplashScreenViewModel @Inject constructor() : ViewModel() {
                 }
             }
 
-            SplashScreenEvent.OnScrollFinished -> {
-                _uiState.update {
-                    it.copy(
-                        isScrollFinished = true
-                    )
-                }
-            }
-
             SplashScreenEvent.DisplaySkipButton -> {
                 _uiState.update {
                     it.copy(

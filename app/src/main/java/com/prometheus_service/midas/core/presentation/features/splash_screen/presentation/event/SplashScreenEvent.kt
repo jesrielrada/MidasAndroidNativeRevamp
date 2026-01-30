@@ -7,7 +7,6 @@ sealed class SplashScreenEvent {
     object CancelTimer : SplashScreenEvent()
     object IncrementPauseIndex : SplashScreenEvent()
     object UpdateProgress : SplashScreenEvent()
-    object OnScrollFinished: SplashScreenEvent()
     object DisplaySkipButton : SplashScreenEvent()
 }
 
