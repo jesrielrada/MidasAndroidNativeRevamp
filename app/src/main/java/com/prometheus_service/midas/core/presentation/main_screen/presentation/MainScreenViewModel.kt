@@ -2,11 +2,12 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prometheus_service.midas.core.domain.features.remote_config.use_case.GetRemoteConfig
-import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
-import com.prometheus_service.midas.core.domain.features.multi_language.use_case.RefreshMultiLanguageData
-import com.prometheus_service.midas.core.domain.features.remote_domains.use_case.GetRemoteDomains
+import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
+import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,34 +19,37 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
+    private val cacheAppConfig: CacheAppConfigModel,
     private val syncSplashTutorialImages: SyncSplashTutorialImages,
-    private val getRemoteConfig: GetRemoteConfig,
-    private val getRemoteDomains: GetRemoteDomains,
-    private val refreshMultiLanguageData: RefreshMultiLanguageData,
-    private val getMultiLanguageData: GetMultiLanguageData
+    private val setHostInterceptorUrl: SetHostInterceptorUrl,
+    private val fetchAppBaseUrl: FetchAppBaseUrl
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            val operatorId = "vn88"
-            val userAgent = "VN88MobileA/1.0"
-            var acceptLanguage = "en"
-            val currency = "USDT"
-
-            Timber.d("Fetching remote config...")
-
-            getRemoteConfig.invoke(
-                operatorId = operatorId,
-                userAgent = userAgent,
-                acceptLanguage = acceptLanguage,
-            )
-        }
+        onEvent(MainScreenEvent.InitializeApplication)
     }
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.InitializeApplication -> {
+                viewModelScope.launch {
+                    //Set first the initial base url
+                    setHostInterceptorUrl.invoke(url = FlavorConfig.DOMAINS_UAT[0])
+
+                    val baseUrl = fetchAppBaseUrl.invoke().getOrNull()
+                    if (baseUrl != null) {
+                        Timber.d("Caching base url.. $baseUrl")
+                        setHostInterceptorUrl.invoke(baseUrl)
+                        cacheAppConfig.invoke(AppConfigModel(baseUrl = baseUrl))
+                    } else {
+                        Timber.d("Fetching base url failed, display retry")
+                        //TODO() Retry fetching
+                    }
+                }
+            }
+
             MainScreenEvent.HideSplashScreen -> {
                 _uiState.update {
                     it.copy(
@@ -71,10 +75,12 @@ class MainScreenViewModel @Inject constructor(
             }
 
             MainScreenEvent.UpdateWebviewReady -> {
-                _uiState.update {
-                    it.copy(
-                        isWebviewReady = true
-                    )
+                if (!uiState.value.isWebviewReady) {
+                    _uiState.update {
+                        it.copy(
+                            isWebviewReady = true
+                        )
+                    }
                 }
             }
 

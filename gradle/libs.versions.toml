@@ -22,7 +22,7 @@ timber = "5.0.1"
 datastore_preferences = "1.2.0"
 
 kotlin_serialization = "1.7.10"
-jetbrains_serialization_json = "1.9.0"
+jetbrains_serialization_json = "1.7.3"
 
 [libraries]
 android-spinkit = { module = "com.github.ybq:Android-SpinKit", version.ref = "androidSpinkit" }

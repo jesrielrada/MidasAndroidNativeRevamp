@@ -11,5 +11,5 @@ interface RemoteConfigRepository {
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,
-    ) : Result<Unit>
+    ) : Result<RemoteConfigModel>
 }

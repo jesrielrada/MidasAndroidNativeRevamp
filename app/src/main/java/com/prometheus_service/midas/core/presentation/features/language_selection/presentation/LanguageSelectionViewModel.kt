@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.core.domain.features.language_selection.model.Language
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
-import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetConfigModel
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.presentation.features.language_selection.event.LanguageSelectionEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LanguageSelectionViewModel @Inject constructor(
     private val cacheAppConfigModel: CacheAppConfigModel,
-    private val getAppConfigModel: GetConfigModel
+    private val getAppConfigModel: GetAppConfigModel
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LanguageSelectionUiState())
     val uiState = _uiState.asStateFlow()

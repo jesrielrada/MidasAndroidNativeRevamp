@@ -5,7 +5,7 @@ import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfi
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetConfigModel @Inject constructor(
+class GetAppConfigModel @Inject constructor(
     private val repository: AppConfigRepository
 ) {
 

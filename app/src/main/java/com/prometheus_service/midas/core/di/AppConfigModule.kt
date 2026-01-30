@@ -11,7 +11,7 @@ import com.prometheus_service.midas.core.data.shared.app_config.util.serializer.
 import com.prometheus_service.midas.core.domain.shared.app_config.AppConfigRepository
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
-import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetConfigModel
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -49,8 +49,8 @@ object AppConfigModule {
     @Provides
     fun provideGetConfigModel(
         repository: AppConfigRepository
-    ): GetConfigModel {
-        return GetConfigModel(repository)
+    ): GetAppConfigModel {
+        return GetAppConfigModel(repository)
     }
 }
 

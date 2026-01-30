@@ -1,6 +1,6 @@
 package com.prometheus_service.midas.core.di
 
-import com.prometheus_service.midas.core.data.features.splash_tutorial.remote.SplashTutorialService
+import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +15,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object RetrofitModule {
 
-    private const val BASE_URL = "https://epm.vn88uat.com"
+    private const val BASE_URL = "http://localhost/"
+
+    @Provides
+    @Singleton
+    fun provideHostInterceptor(): HostInterceptor {
+        return HostInterceptor()
+    }
 
     @Provides
     @Singleton
@@ -25,12 +31,15 @@ object RetrofitModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(
+        hostInterceptor: HostInterceptor
+    ): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(hostInterceptor)
             .build()
     }
 
@@ -46,7 +55,6 @@ object RetrofitModule {
             .client(client)
             .build()
     }
-
 
 
 }
