@@ -21,7 +21,7 @@ class DefaultMultiLanguageRepository @Inject constructor(
         return localDataSource.getLocalizedLanguageModel(locale)
     }
 
-    override suspend fun refreshMultiLanguageData(
+    override suspend fun syncMultiLanguageData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,

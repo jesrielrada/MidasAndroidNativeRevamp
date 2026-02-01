@@ -1,10 +1,13 @@
 package com.prometheus_service.midas.core.di
 
-import com.google.gson.annotations.Since
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
+import com.prometheus_service.midas.core.domain.features.multi_language.use_case.SyncMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.remote_config.use_case.GetRemoteConfig
+import com.prometheus_service.midas.core.domain.features.remote_domains.use_case.SyncRemoteDomains
+import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
 import dagger.Module
@@ -35,6 +38,24 @@ object CoreModule {
             getAppConfig = getAppConfig,
             getRemoteConfig = getRemoteConfig,
             dispatcherProvider = dispatcherProvider
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideRemoteData(
+        dispatcherProvider: DefaultDispatcherProvider,
+        getAppConfig: GetAppConfigModel,
+        syncRemoteDomains: SyncRemoteDomains,
+        syncSplashTutorialImages: SyncSplashTutorialImages,
+        syncMultiLanguageData: SyncMultiLanguageData
+    ): SyncRemoteData {
+        return SyncRemoteData(
+            dispatcherProvider = dispatcherProvider,
+            getAppConfig = getAppConfig,
+            syncRemoteDomains = syncRemoteDomains,
+            syncSplashTutorialImages = syncSplashTutorialImages,
+            syncMultiLanguageData = syncMultiLanguageData
         )
     }
 }

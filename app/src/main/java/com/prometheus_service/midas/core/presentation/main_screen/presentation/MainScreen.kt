@@ -23,7 +23,7 @@ fun MainScreen(
     WebviewScreen(
         modifier = Modifier.alpha(webviewVisibility),
         onPageFinished = {
-            viewModel.onEvent(MainScreenEvent.UpdateWebviewReady)
+            viewModel.onEvent(MainScreenEvent.OnWebviewReady)
         }
     )
 

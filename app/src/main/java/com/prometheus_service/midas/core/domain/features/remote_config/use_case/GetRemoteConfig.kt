@@ -12,7 +12,7 @@ class GetRemoteConfig @Inject constructor(
         userAgent: String,
         acceptLanguage: String,
     ): Result<RemoteConfigModel> {
-        return repository.refreshRemoteConfigData(
+        return repository.syncRemoteConfigData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,

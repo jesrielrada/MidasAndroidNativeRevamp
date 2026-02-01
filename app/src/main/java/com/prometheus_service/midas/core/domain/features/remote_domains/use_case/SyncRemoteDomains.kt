@@ -1,11 +1,11 @@
-package com.prometheus_service.midas.core.domain.features.multi_language.use_case
+package com.prometheus_service.midas.core.domain.features.remote_domains.use_case
 
-import com.prometheus_service.midas.core.domain.features.multi_language.MultiLanguageRepository
+import com.prometheus_service.midas.core.domain.features.remote_domains.RemoteDomainsRepository
 import timber.log.Timber
 import javax.inject.Inject
 
-class RefreshMultiLanguageData @Inject constructor(
-    private val repository: MultiLanguageRepository
+class SyncRemoteDomains @Inject constructor(
+    private val repository: RemoteDomainsRepository
 ) {
     suspend operator fun invoke(
         operatorId: String,
@@ -13,11 +13,12 @@ class RefreshMultiLanguageData @Inject constructor(
         acceptLanguage: String,
         currency: String?
     ) {
-        repository.refreshMultiLanguageData(
+        val result = repository.syncRemoteDomainsData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,
             currency = currency
         )
+        Timber.d("Remote domains: $result")
     }
 }

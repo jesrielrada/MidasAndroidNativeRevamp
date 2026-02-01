@@ -20,7 +20,7 @@ class DefaultSplashTutorialRepository @Inject constructor(
     override val splashTutorialModel: Flow<SplashTutorialModel>
         get() = localDataSource.getSplashTutorialModel()
 
-    override suspend fun refreshSplashTutorialData(
+    override suspend fun syncSplashTutorialData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,

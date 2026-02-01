@@ -7,7 +7,7 @@ interface RemoteDomainsRepository {
 
     val remoteDomainsModel: Flow<RemoteDomainsModel>
 
-    suspend fun refreshRemoteDomainsData(
+    suspend fun syncRemoteDomainsData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,

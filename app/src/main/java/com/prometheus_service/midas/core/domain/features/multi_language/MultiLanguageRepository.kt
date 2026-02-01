@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface MultiLanguageRepository {
     fun getLocalizedLanguageModel(locale: String): Flow<LocalizedModels?>
-    suspend fun refreshMultiLanguageData(
+    suspend fun syncMultiLanguageData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,

@@ -13,7 +13,7 @@ class SyncSplashTutorialImages @Inject constructor(
         acceptLanguage: String,
         currency: String?
     ) {
-        val result = repository.refreshSplashTutorialData(
+        val result = repository.syncSplashTutorialData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,

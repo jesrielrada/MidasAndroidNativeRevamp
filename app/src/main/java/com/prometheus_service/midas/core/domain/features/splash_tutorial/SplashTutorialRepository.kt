@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface SplashTutorialRepository {
     val splashTutorialModel: Flow<SplashTutorialModel>
-    suspend fun refreshSplashTutorialData(
+    suspend fun syncSplashTutorialData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,

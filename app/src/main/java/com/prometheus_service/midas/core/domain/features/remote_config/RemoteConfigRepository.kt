@@ -7,7 +7,7 @@ interface RemoteConfigRepository {
 
     val remoteConfigModel: Flow<RemoteConfigModel>
 
-    suspend fun refreshRemoteConfigData(
+    suspend fun syncRemoteConfigData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,

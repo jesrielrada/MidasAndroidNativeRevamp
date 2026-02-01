@@ -14,34 +14,34 @@ class FetchAppBaseUrl @Inject constructor(
     private val getRemoteConfig: GetRemoteConfig,
     private val dispatcherProvider: DefaultDispatcherProvider
 ) {
-    suspend operator fun invoke():String {
+    suspend operator fun invoke(): String? {
         return withContext(dispatcherProvider.io) {
-            runCatching {
-                Timber.d("Retrieving app config...")
 
-                val config = getAppConfig.invoke().first()
-                val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
-                val userAgent = FlavorConfig.INITIAL_USER_AGENT
-                val operatorId = FlavorConfig.OPERATOR_ID
+            Timber.d("Retrieving app config...")
 
-                Timber.d("Building initial user agent.. $userAgent")
+            val config = getAppConfig.invoke().first()
+            val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
+            val userAgent = FlavorConfig.INITIAL_USER_AGENT
+            val operatorId = FlavorConfig.OPERATOR_ID
 
-                val result = getRemoteConfig.invoke(
-                    operatorId = operatorId,
-                    userAgent = userAgent,
-                    acceptLanguage = locale,
-                )
+            Timber.d("Building initial user agent.. $userAgent")
 
-                result.fold(
-                    onSuccess = { config ->
-                         config.domainPwa?.firstOrNull()
-                    },
-                    onFailure = { error ->
-                        Timber.e(error, "Failed to fetch remote config")
-                        error.toString()
-                    }
-                )
-            }
+            val result = getRemoteConfig.invoke(
+                operatorId = operatorId,
+                userAgent = userAgent,
+                acceptLanguage = locale,
+            )
+
+            result.fold(
+                onSuccess = { config ->
+                    Timber.d("Success fetching app base url")
+                    config.domainPwa?.firstOrNull()
+                },
+                onFailure = { error ->
+                    Timber.e(error, "Failed to fetch app base url")
+                    error.toString()
+                }
+            )
         }
     }
 }

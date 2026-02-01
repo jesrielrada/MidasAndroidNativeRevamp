@@ -12,7 +12,7 @@ import com.prometheus_service.midas.core.data.features.remote_domains.remote.Rem
 import com.prometheus_service.midas.core.data.features.remote_domains.util.serializer.RemoteDomainsSerializer
 import com.prometheus_service.midas.core.domain.features.remote_domains.RemoteDomainsRepository
 import com.prometheus_service.midas.core.domain.features.remote_domains.model.RemoteDomainsModel
-import com.prometheus_service.midas.core.domain.features.remote_domains.use_case.GetRemoteDomains
+import com.prometheus_service.midas.core.domain.features.remote_domains.use_case.SyncRemoteDomains
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -41,8 +41,8 @@ object RemoteDomainsModule {
     @Singleton
     fun provideGetRemoteDomainsFromRemote(
         repository: RemoteDomainsRepository
-    ): GetRemoteDomains {
-        return GetRemoteDomains(repository)
+    ): SyncRemoteDomains {
+        return SyncRemoteDomains(repository)
     }
 }
 

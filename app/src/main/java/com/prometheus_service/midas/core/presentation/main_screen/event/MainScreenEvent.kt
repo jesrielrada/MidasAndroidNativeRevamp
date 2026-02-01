@@ -4,7 +4,7 @@ sealed class MainScreenEvent {
     object HideSplashScreen : MainScreenEvent()
     object HideTutorialScreen : MainScreenEvent()
     object DisplayWebviewScreen : MainScreenEvent()
-    object UpdateWebviewReady : MainScreenEvent()
-    object SyncSplashTutorialImages: MainScreenEvent()
-    object InitializeApplication: MainScreenEvent()
+    object OnWebviewReady : MainScreenEvent()
+    object InitializeApplication : MainScreenEvent()
+    object SyncRemoteData : MainScreenEvent()
 }

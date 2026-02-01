@@ -13,7 +13,7 @@ import com.prometheus_service.midas.core.data.features.multi_language.util.seria
 import com.prometheus_service.midas.core.domain.features.multi_language.MultiLanguageRepository
 import com.prometheus_service.midas.core.domain.features.multi_language.model.MultiLanguageModel
 import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
-import com.prometheus_service.midas.core.domain.features.multi_language.use_case.RefreshMultiLanguageData
+import com.prometheus_service.midas.core.domain.features.multi_language.use_case.SyncMultiLanguageData
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -41,8 +41,8 @@ object MultiLanguageModule {
     @Singleton
     fun provideGetMultiLanguageRemoteData(
         repository: MultiLanguageRepository
-    ): RefreshMultiLanguageData {
-        return RefreshMultiLanguageData(repository)
+    ): SyncMultiLanguageData {
+        return SyncMultiLanguageData(repository)
     }
     @Provides
     @Singleton

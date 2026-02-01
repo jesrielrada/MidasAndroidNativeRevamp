@@ -20,7 +20,7 @@ class DefaultRemoteConfigRepository @Inject constructor(
     override val remoteConfigModel: Flow<RemoteConfigModel>
         get() = localDataSource.getRemoteConfigModel()
 
-    override suspend fun refreshRemoteConfigData(
+    override suspend fun syncRemoteConfigData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String

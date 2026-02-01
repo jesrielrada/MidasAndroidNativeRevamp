@@ -20,7 +20,7 @@ class  DefaultRemoteDomainsRepository @Inject constructor(
     override val remoteDomainsModel: Flow<RemoteDomainsModel>
         get() = localDataSource.getRemoteDomainsModel()
 
-    override suspend fun refreshRemoteDomainsData(
+    override suspend fun syncRemoteDomainsData(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,
