@@ -11,5 +11,5 @@ data class SplashScreenUiState(
     val appVersion: String = "1.0.0",
     val skipLabel: String = "Skip",
     val brandLogo: Int = R.drawable.splash_logo,
-    val images: List<Any> = listOf(R.drawable.bg,)
+    val images: List<Any> = listOf(R.drawable.bg)
 )

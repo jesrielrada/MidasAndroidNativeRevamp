@@ -26,7 +26,7 @@ class SyncRemoteData @Inject constructor(
             val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
             val userAgent = FlavorConfig.INITIAL_USER_AGENT
             val operatorId = FlavorConfig.OPERATOR_ID
-            val currency = config.currency
+            val currency = config.currency ?: "VND"
 
             Timber.d("Syncing remote domains ... ")
 

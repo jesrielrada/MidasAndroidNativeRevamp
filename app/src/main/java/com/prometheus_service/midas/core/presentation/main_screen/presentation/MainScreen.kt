@@ -11,6 +11,7 @@ import com.prometheus_service.midas.core.presentation.features.splash_screen.pre
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
+import timber.log.Timber
 
 @Composable
 fun MainScreen(
@@ -36,6 +37,7 @@ fun MainScreen(
                 }
             },
             onScrollFinished = {
+                Timber.d("Scroll finished called")
                 if(uiState.isWebviewReady){
                     viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)

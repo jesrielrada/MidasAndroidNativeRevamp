@@ -9,9 +9,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class HostInterceptor @Inject constructor() : Interceptor{
+class HostInterceptor @Inject constructor() : Interceptor {
     private var mScheme: String? = null
     private var mHost: String? = null
+
+    fun getBaseUrl(): String? {
+        val formattedUrl =
+            if (mHost != null &&
+                !mHost?.startsWith("http://")!! &&
+                !mHost!!.startsWith("https://")) {
+                "https://$mHost"
+            } else {
+                mHost
+            }
+        return formattedUrl
+    }
 
     fun setUrl(url: String) {
         val httpUrl: HttpUrl = url.toHttpUrl()

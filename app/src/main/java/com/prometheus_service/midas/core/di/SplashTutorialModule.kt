@@ -10,8 +10,10 @@ import com.prometheus_service.midas.core.data.features.splash_tutorial.local.Spl
 import com.prometheus_service.midas.core.data.features.splash_tutorial.remote.DefaultSplashTutorialRemoteDataSource
 import com.prometheus_service.midas.core.data.features.splash_tutorial.remote.SplashTutorialRemoteDataSource
 import com.prometheus_service.midas.core.data.features.splash_tutorial.utils.serializer.SplashTutorialSerializer
+import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.SplashTutorialRepository
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.model.SplashTutorialModel
+import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashImages
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
 import dagger.Binds
 import dagger.Module
@@ -39,11 +41,24 @@ object SplashTutorialModule {
 
     @Singleton
     @Provides
-    fun provideGetSplashTutorialImages(
+    fun provideSyncSplashTutorialImages(
         repository: SplashTutorialRepository
     ): SyncSplashTutorialImages {
         return SyncSplashTutorialImages(repository)
     }
+
+    @Singleton
+    @Provides
+    fun provideGetSplashImages(
+        repository: SplashTutorialRepository,
+        dispatcherProvider: DefaultDispatcherProvider
+    ): GetSplashImages {
+        return GetSplashImages(
+            repository,
+            dispatcherProvider
+        )
+    }
+
 }
 
 @Module
