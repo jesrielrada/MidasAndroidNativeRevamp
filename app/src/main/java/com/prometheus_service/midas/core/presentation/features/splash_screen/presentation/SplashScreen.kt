@@ -3,6 +3,11 @@ package com.prometheus_service.midas.core.presentation.features.splash_screen.pr
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.ContextThemeWrapper
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -29,12 +34,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -99,8 +107,10 @@ fun SplashScreenContent(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            val (versionRef, progressRef, skipBtnRef) = createRefs()
-            val versionVerticalGuideline = createGuidelineFromTop(.15f)
+            val (versionRef, progressRef, skipBtnRef, brandLogoRef) = createRefs()
+            val versionVerticalGuideline = createGuidelineFromTop(.39f)
+            val progressVerticalGuideline = createGuidelineFromTop(.57f)
+
 
             SplashViewPager(
                 images = uiState.images,
@@ -116,6 +126,14 @@ fun SplashScreenContent(
                 version = uiState.appVersion
             )
 
+            SplashScreenBrandLogo(
+                modifier = Modifier.constrainAs(brandLogoRef) {
+                    centerTo(parent)
+                },
+                contentDescription = null,
+                brandLogo = uiState.brandLogo
+            )
+
             if (uiState.isSkipVisible) {
                 SplashSkipButton(
                     onClick = onClickSkipBtn,
@@ -128,17 +146,65 @@ fun SplashScreenContent(
             }
 
             if (uiState.isProgressVisible) {
-                SplashScreenProgressView(
+                SplashScreenCustomProgressView(
                     modifier = Modifier.constrainAs(progressRef) {
-                        centerTo(parent)
-                    },
-                    currentPercentage = "${uiState.currentPercentage}"
+                        top.linkTo(progressVerticalGuideline)
+                        centerHorizontallyTo(parent)
+                    }
                 )
             }
         }
     }
 }
 
+@Composable
+fun SplashScreenBrandLogo(
+    modifier: Modifier = Modifier,
+    contentDescription: String?,
+    brandLogo: Int
+) {
+    Image(
+        painter = painterResource(brandLogo),
+        contentDescription = contentDescription,
+        modifier = modifier
+            .width(250.dp)
+            .height(76.dp)
+    )
+}
+
+@Composable
+fun SplashScreenCustomProgressView(
+    modifier: Modifier = Modifier
+){
+    val infiniteTransition = rememberInfiniteTransition()
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0F,
+        targetValue = 540f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1300)
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .size(120.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color.Black.copy(.6f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = com.prometheus_service.midas.R.drawable.splash_hourglass),
+            contentDescription = null,
+            modifier = Modifier
+                .size(65.dp)
+                .align(Alignment.Center)
+                .zIndex(10f)
+                .graphicsLayer {
+                    rotationZ = angle
+                }
+        )
+    }
+}
 @Composable
 fun SplashScreenProgressView(
     modifier: Modifier = Modifier,
@@ -209,9 +275,9 @@ fun SplashAppVersion(
 ) {
     Box(
         modifier = modifier
-            .padding(0.dp, 30.dp, 0.dp, 0.dp)
-            .clip(RoundedCornerShape(5.dp))
-            .background(MaterialTheme.colorScheme.tertiaryContainer)
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.tertiaryContainer.copy(.6f))
+            .padding(horizontal = 9.dp, vertical = 3.dp)
     ) {
         Text(
             text = "v$version",
