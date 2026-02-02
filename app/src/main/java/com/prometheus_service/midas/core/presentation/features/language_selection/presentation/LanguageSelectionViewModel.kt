@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,12 +32,10 @@ class LanguageSelectionViewModel @Inject constructor(
         when (event) {
             is LanguageSelectionEvent.OnLanguageSelected -> {
                 viewModelScope.launch {
-                    Timber.d("Caching locale via CacheAppConfigModel use case")
-                    val language = Language.fromDisplayName(event.language)
-                    if (language != Language.UNKNOWN) {
+                    if (event.locale != Language.UNKNOWN.locale) {
                         cacheAppConfigModel(
                             AppConfigModel(
-                                locale = language.locale,
+                                locale = event.locale,
                                 isLanguageSelectionDisplayed = true
                             )
                         )
@@ -46,11 +45,17 @@ class LanguageSelectionViewModel @Inject constructor(
 
             LanguageSelectionEvent.InitializeLanguageSelectionScreen -> {
                 viewModelScope.launch {
+                    _uiState.update {
+                        it.copy(
+                            supportedLocales = listOf(
+                                Language.ENGLISH.displayName,
+                                Language.VIETNAMESE.displayName
+                            )
+                        )
+                    }
+
                     val isLanguageSelectionDisplayed =
                         getAppConfigModel.invoke().first().isLanguageSelectionDisplayed
-
-                    Timber.d("Initializing language selection screen.. " +
-                            "isLanguageSelectionDisplayed: $isLanguageSelectionDisplayed")
 
                     if (isLanguageSelectionDisplayed == true) {
                         _uiState.value = _uiState.value.copy(

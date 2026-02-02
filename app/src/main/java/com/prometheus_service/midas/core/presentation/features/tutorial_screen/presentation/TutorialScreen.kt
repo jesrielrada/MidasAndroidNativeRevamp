@@ -50,6 +50,7 @@ import com.prometheus_service.midas.core.presentation.features.tutorial_screen.t
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonFinishColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerDefaultColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerFinishColor
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.TutorialScreenTranslations
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -58,6 +59,7 @@ import timber.log.Timber
 fun TutorialScreen(
     modifier: Modifier = Modifier,
     viewModel: TutorialScreenViewModel = hiltViewModel(),
+    tutorialTranslations: TutorialScreenTranslations,
     onTutorialFinished: () -> Unit,
     onInitialized: (canDisplay: Boolean) -> Unit
 ) {
@@ -71,6 +73,7 @@ fun TutorialScreen(
     TutorialScreenContent(
         modifier = modifier,
         uiState = uiState,
+        tutorialTranslations = tutorialTranslations,
         onTutorialFinished = {
             viewModel.onEvent(TutorialScreenEvent.OnTutorialFinished)
             onTutorialFinished()
@@ -82,6 +85,7 @@ fun TutorialScreen(
 fun TutorialScreenContent(
     modifier: Modifier = Modifier,
     uiState: TutorialScreeUiState,
+    tutorialTranslations: TutorialScreenTranslations,
     onTutorialFinished: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -110,8 +114,8 @@ fun TutorialScreenContent(
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 20.dp)
                     .zIndex(5f),
-                buttonDefaultLabel = uiState.buttonDefaultLabel,
-                buttonEndLabel = uiState.buttonEndLabel,
+                buttonDefaultLabel = tutorialTranslations.buttonDefaultLabel,
+                buttonEndLabel = tutorialTranslations.buttonEndLabel,
                 isLastPage = isLastPage,
                 onButtonClicked = {
                     if (isLastPage) {
@@ -253,6 +257,7 @@ fun TutorialScreenContentPreview() {
         TutorialScreenContent(
             modifier = Modifier,
             uiState = TutorialScreeUiState(),
+            tutorialTranslations = TutorialScreenTranslations(),
             onTutorialFinished = {}
         )
     }

@@ -2,5 +2,5 @@ package com.prometheus_service.midas.core.presentation.features.language_selecti
 
 sealed class LanguageSelectionEvent {
     object InitializeLanguageSelectionScreen : LanguageSelectionEvent()
-    data class OnLanguageSelected(val language: String) : LanguageSelectionEvent()
+    data class OnLanguageSelected(val locale: String) : LanguageSelectionEvent()
 }

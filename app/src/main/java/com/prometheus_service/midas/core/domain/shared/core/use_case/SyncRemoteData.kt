@@ -18,17 +18,15 @@ class SyncRemoteData @Inject constructor(
     private val syncSplashTutorialImages: SyncSplashTutorialImages,
     private val syncMultiLanguageData: SyncMultiLanguageData
 ) {
-
     //TODO(Check currency, check should fetch remote data, check force fetch data)
-    suspend operator fun invoke() {
+    suspend operator fun invoke(locale: String) {
         withContext(dispatcherProvider.io) {
             val config = getAppConfig.invoke().first()
-            val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
             val userAgent = FlavorConfig.INITIAL_USER_AGENT
             val operatorId = FlavorConfig.OPERATOR_ID
             val currency = config.currency ?: "VND"
 
-            Timber.d("Syncing remote domains ... ")
+            Timber.d("Syncing remote domains ... locale is $locale ")
 
             syncRemoteDomains.invoke(
                 operatorId = operatorId,

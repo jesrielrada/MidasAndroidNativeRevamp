@@ -3,6 +3,8 @@ package com.prometheus_service.midas.core.presentation.features.tutorial_screen.
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prometheus_service.midas.FlavorConfig
+import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashTutorialData
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
@@ -19,9 +21,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TutorialScreenViewModel @Inject constructor(
-    val getSplashTutorialData: GetSplashTutorialData,
-    val getAppConfigModel: GetAppConfigModel,
-    val cacheAppConfigModel: CacheAppConfigModel
+    private val getSplashTutorialData: GetSplashTutorialData,
+    private val getAppConfigModel: GetAppConfigModel,
+    private val cacheAppConfigModel: CacheAppConfigModel,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TutorialScreeUiState())
     val uiState = _uiState.asStateFlow()
@@ -33,6 +35,7 @@ class TutorialScreenViewModel @Inject constructor(
     @SuppressLint("BinaryOperationInTimber")
     fun onEvent(event: TutorialScreenEvent) {
         when (event) {
+
             TutorialScreenEvent.InitializeTutorialScreen -> {
                 viewModelScope.launch {
                     val images = getSplashTutorialData.invoke().first().tutorialImages

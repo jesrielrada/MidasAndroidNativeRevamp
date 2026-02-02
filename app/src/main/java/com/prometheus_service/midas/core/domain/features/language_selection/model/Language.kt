@@ -1,8 +1,8 @@
 package com.prometheus_service.midas.core.domain.features.language_selection.model
 
 enum class Language(val displayName: String, val locale: String) {
-    VIETNAMESE("Vietnamese", "vi"),
-    ENGLISH("English", "en"),
+    VIETNAMESE("Tiếng Việt - Vietnamese", "vi"),
+    ENGLISH("English(US) - English(US)", "en"),
     UNKNOWN("Unknown", "");
 
     companion object {

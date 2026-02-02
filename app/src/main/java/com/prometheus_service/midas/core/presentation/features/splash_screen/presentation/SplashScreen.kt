@@ -51,6 +51,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.github.ybq.android.spinkit.R
 import com.github.ybq.android.spinkit.SpinKitView
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.event.SplashScreenEvent
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.SplashScreenTranslations
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.delay
 import timber.log.Timber
@@ -61,16 +62,23 @@ private const val SCROLL_INTERVAL = 2000L // 2 seconds
 fun SplashScreen(
     modifier: Modifier = Modifier,
     viewModel: SplashScreenViewModel = hiltViewModel(),
+    splashScreenTranslations: SplashScreenTranslations,
     onScrollFinished: () -> Unit,
     onClickSkipBtn: () -> Unit,
-    isReadyToHide: Boolean = false
+    isReadyToHide: Boolean = false,
+    shouldRestartSplash: Boolean = false
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(isReadyToHide) {
+    LaunchedEffect(isReadyToHide, shouldRestartSplash) {
         if (isReadyToHide) {
             Timber.d("Condition met, displaying skip button")
             viewModel.onEvent(SplashScreenEvent.DisplaySkipButton)
+        }
+
+        if (shouldRestartSplash) {
+            Timber.d("Restarting timer... ")
+            viewModel.onEvent(SplashScreenEvent.StartTimer)
         }
     }
 
@@ -84,6 +92,7 @@ fun SplashScreen(
     SplashScreenContent(
         modifier = modifier,
         uiState = uiState,
+        splashScreenTranslations = splashScreenTranslations,
         onClickSkipBtn = onClickSkipBtn,
         onScrollFinished = onScrollFinished
     )
@@ -94,6 +103,7 @@ fun SplashScreen(
 fun SplashScreenContent(
     modifier: Modifier = Modifier,
     uiState: SplashScreenUiState,
+    splashScreenTranslations: SplashScreenTranslations,
     onClickSkipBtn: () -> Unit,
     onScrollFinished: () -> Unit
 ) {
@@ -141,7 +151,7 @@ fun SplashScreenContent(
                         top.linkTo(parent.top)
                         end.linkTo(parent.end)
                     },
-                    skipButtonLabel = uiState.skipLabel
+                    skipButtonLabel = splashScreenTranslations.skipLabel
                 )
             }
 
@@ -175,7 +185,7 @@ fun SplashScreenBrandLogo(
 @Composable
 fun SplashScreenCustomProgressView(
     modifier: Modifier = Modifier
-){
+) {
     val infiniteTransition = rememberInfiniteTransition()
     val angle by infiniteTransition.animateFloat(
         initialValue = 0F,
@@ -205,6 +215,7 @@ fun SplashScreenCustomProgressView(
         )
     }
 }
+
 @Composable
 fun SplashScreenProgressView(
     modifier: Modifier = Modifier,
@@ -332,6 +343,7 @@ fun SplashScreenPreview() {
         SplashScreenContent(
             modifier = Modifier,
             uiState = SplashScreenUiState(),
+            splashScreenTranslations = SplashScreenTranslations(),
             onClickSkipBtn = { },
             onScrollFinished = { }
         )

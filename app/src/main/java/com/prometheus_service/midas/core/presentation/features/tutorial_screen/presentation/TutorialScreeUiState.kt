@@ -9,6 +9,5 @@ data class TutorialScreeUiState(
         R.drawable.tutorial_2,
         R.drawable.tutorial_3
     ),
-    val buttonDefaultLabel: String = "Next",
-    val buttonEndLabel: String = "I understand"
 )
+

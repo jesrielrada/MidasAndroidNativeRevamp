@@ -14,6 +14,8 @@ import com.prometheus_service.midas.core.domain.features.multi_language.MultiLan
 import com.prometheus_service.midas.core.domain.features.multi_language.model.MultiLanguageModel
 import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.multi_language.use_case.SyncMultiLanguageData
+import com.prometheus_service.midas.core.domain.shared.app_config.AppConfigRepository
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -47,9 +49,13 @@ object MultiLanguageModule {
     @Provides
     @Singleton
     fun provideGetMultiLanguageData(
-        repository: MultiLanguageRepository
+        repository: MultiLanguageRepository,
+        appConfigRepository: AppConfigRepository
     ): GetMultiLanguageData {
-        return GetMultiLanguageData(repository)
+        return GetMultiLanguageData(
+            repository,
+            appConfigRepository
+        )
     }
 }
 

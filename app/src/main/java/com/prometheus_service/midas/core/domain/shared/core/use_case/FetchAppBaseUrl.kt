@@ -16,32 +16,28 @@ class FetchAppBaseUrl @Inject constructor(
 ) {
     suspend operator fun invoke(): String? {
         return withContext(dispatcherProvider.io) {
+            try {
+                Timber.d("Retrieving app config...")
 
-            Timber.d("Retrieving app config...")
+                val config = getAppConfig.invoke().first()
+                val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
+                val userAgent = FlavorConfig.INITIAL_USER_AGENT
+                val operatorId = FlavorConfig.OPERATOR_ID
 
-            val config = getAppConfig.invoke().first()
-            val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
-            val userAgent = FlavorConfig.INITIAL_USER_AGENT
-            val operatorId = FlavorConfig.OPERATOR_ID
+                Timber.d("Building initial user agent.. $userAgent")
 
-            Timber.d("Building initial user agent.. $userAgent")
+                val result = getRemoteConfig.invoke(
+                    operatorId = operatorId,
+                    userAgent = userAgent,
+                    acceptLanguage = locale,
+                )
+                result.getOrNull()?.domainPwa?.firstOrNull()
+            } catch (e: Exception) {
+                Timber.e("Failed to fetch app base url.. exception=${e.localizedMessage}")
+                null
+            }
 
-            val result = getRemoteConfig.invoke(
-                operatorId = operatorId,
-                userAgent = userAgent,
-                acceptLanguage = locale,
-            )
 
-            result.fold(
-                onSuccess = { config ->
-                    Timber.d("Success fetching app base url")
-                    config.domainPwa?.firstOrNull()
-                },
-                onFailure = { error ->
-                    Timber.e(error, "Failed to fetch app base url")
-                    error.toString()
-                }
-            )
         }
     }
 }
