@@ -64,7 +64,7 @@ fun TutorialScreen(
     LaunchedEffect(viewModel) {
         snapshotFlow { uiState.canDisplayScreen }
             .collect { canDisplay ->
-                Timber.d("Calling initialized.. canDisplay: $canDisplay")
+                Timber.d("Calling initialized on tutorial screen.. canDisplay: $canDisplay")
                 onInitialized(canDisplay)
             }
     }

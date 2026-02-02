@@ -45,7 +45,7 @@ class TutorialScreenViewModel @Inject constructor(
                             "isTutorialDisplayed=$isTutorialDisplayed")
 
 
-                    if (images.isEmpty() || !isEnabled || isTutorialDisplayed) {
+                    if (images.isEmpty() || !isEnabled || isTutorialDisplayed == true) {
                         _uiState.update {
                             it.copy(
                                 canDisplayScreen = false

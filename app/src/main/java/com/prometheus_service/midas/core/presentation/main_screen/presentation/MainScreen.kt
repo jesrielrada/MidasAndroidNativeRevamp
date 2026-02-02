@@ -28,6 +28,22 @@ fun MainScreen(
         }
     )
 
+    if (uiState.shouldDisplayLanguageSelection) {
+        LanguageSelectionScreen(
+            onInitialized = { canDisplay ->
+                Timber.d("Language selection initialized.. canDisplay: $canDisplay")
+                if (!canDisplay) {
+                    viewModel.onEvent(MainScreenEvent.HideLanguageSelectionScreen)
+                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
+                }
+            },
+            onLanguageSelected = {
+                viewModel.onEvent(MainScreenEvent.HideLanguageSelectionScreen)
+                viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
+            }
+        )
+    }
+
     if (uiState.shouldDisplayTutorial) {
         TutorialScreen(
             onInitialized = { canDisplay ->
@@ -58,9 +74,5 @@ fun MainScreen(
             },
             isReadyToHide = uiState.isWebviewReady
         )
-    }
-
-    if (uiState.shouldDisplayLanguageSelection) {
-        LanguageSelectionScreen()
     }
 }

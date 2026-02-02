@@ -12,6 +12,6 @@ data class AppConfigModel(
     val locale: String? = null,
     val baseUrl: String? = null,
     val currency: String? = null,
-    val isTutorialDisplayed: Boolean = false,
-    val isLanguageSelectionDisplayed: Boolean = false
+    val isTutorialDisplayed: Boolean? = null,
+    val isLanguageSelectionDisplayed: Boolean? = null
 )

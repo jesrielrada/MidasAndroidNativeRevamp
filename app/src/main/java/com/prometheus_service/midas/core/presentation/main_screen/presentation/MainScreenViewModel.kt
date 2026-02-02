@@ -66,6 +66,14 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
+            MainScreenEvent.HideLanguageSelectionScreen -> {
+                _uiState.update {
+                    it.copy(
+                        shouldDisplayLanguageSelection = false
+                    )
+                }
+            }
+
             MainScreenEvent.DisplayWebviewScreen -> {
                 _uiState.update {
                     it.copy(
@@ -91,6 +99,8 @@ class MainScreenViewModel @Inject constructor(
                     syncRemoteData.invoke()
                 }
             }
+
+
         }
     }
 }

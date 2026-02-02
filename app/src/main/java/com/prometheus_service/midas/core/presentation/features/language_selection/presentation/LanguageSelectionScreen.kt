@@ -13,7 +13,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,20 +28,32 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prometheus_service.midas.core.presentation.features.language_selection.event.LanguageSelectionEvent
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
+import timber.log.Timber
 
 
 @Composable
 fun LanguageSelectionScreen(
     modifier: Modifier = Modifier,
-    viewModel: LanguageSelectionViewModel = hiltViewModel()
+    viewModel: LanguageSelectionViewModel = hiltViewModel(),
+    onInitialized: (canDisplay: Boolean) -> Unit,
+    onLanguageSelected: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel) {
+        snapshotFlow { uiState.canDisplayScreen }
+            .collect { canDisplay ->
+                Timber.d("Calling initialized on language selection.. canDisplay: $canDisplay")
+                onInitialized(canDisplay)
+            }
+    }
 
     LanguageSelectionScreenContent(
         modifier = modifier,
         uiState = uiState,
         onClick = {
             viewModel.onEvent(LanguageSelectionEvent.OnLanguageSelected(it))
+            onLanguageSelected()
         }
     )
 }
