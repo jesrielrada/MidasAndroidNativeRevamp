@@ -3,7 +3,9 @@ package com.prometheus_service.midas.core.presentation.features.tutorial_screen.
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -31,6 +33,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,14 +44,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.event.TutorialScreenEvent
-import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorSelectedColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorUnSelectedColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonDefaultColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonFinishColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerDefaultColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerFinishColor
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -61,12 +63,9 @@ fun TutorialScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(viewModel) {
-        snapshotFlow { uiState.canDisplayScreen }
-            .collect { canDisplay ->
-                Timber.d("Calling initialized on tutorial screen.. canDisplay: $canDisplay")
-                onInitialized(canDisplay)
-            }
+    LaunchedEffect(uiState.canDisplayScreen) {
+        Timber.d("Calling initialized on tutorial screen..")
+        onInitialized(uiState.canDisplayScreen)
     }
 
     TutorialScreenContent(
@@ -90,22 +89,26 @@ fun TutorialScreenContent(
     val isLastPage by remember { derivedStateOf { pagerState.currentPage == pagerState.pageCount - 1 } }
 
     Scaffold(modifier = modifier) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.tertiaryContainer),
         ) {
 
             TutorialViewPager(
-                modifier = Modifier.zIndex(0f),
+                modifier = Modifier
+                    .zIndex(0f)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 100.dp),
                 images = uiState.images,
                 pagerState = pagerState
             )
 
             TutorialButton(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 60.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 20.dp)
                     .zIndex(5f),
                 buttonDefaultLabel = uiState.buttonDefaultLabel,
                 buttonEndLabel = uiState.buttonEndLabel,
@@ -121,9 +124,11 @@ fun TutorialScreenContent(
                 }
             )
 
+            Spacer(modifier = Modifier.weight(1f))
+
             TutorialPageIndicator(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
+                    .align(Alignment.CenterHorizontally)
                     .padding(bottom = 30.dp)
                     .zIndex(5f),
                 imageCount = uiState.images.size,
@@ -142,11 +147,13 @@ fun TutorialViewPager(
 ) {
     HorizontalPager(
         state = pagerState,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .height(530.dp)
+            .width(310.dp)
     )
     { page ->
         GlideImage(
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
             model = images[page],
             contentDescription = null,
             modifier = Modifier.fillMaxSize()
@@ -166,6 +173,8 @@ fun TutorialButton(
 
     val buttonBgColor =
         if (isLastPage) TutorialNextButtonFinishColor else TutorialNextButtonDefaultColor
+    val buttonTextColor =
+        if (isLastPage) TutorialNextButtonOnContainerFinishColor else TutorialNextButtonOnContainerDefaultColor
     val buttonLabel = if (isLastPage) buttonEndLabel else buttonDefaultLabel
 
     val animatedButtonBgColor by animateColorAsState(
@@ -173,22 +182,28 @@ fun TutorialButton(
         label = "ButtonColorAnimation"
     )
 
+    val animatedButtonTextColor by animateColorAsState(
+        targetValue = buttonTextColor,
+        label = "ButtonTextColorAnimation"
+    )
+
+
     Box(
         modifier = modifier
             .padding(10.dp)
-            .clip(RoundedCornerShape(26.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(animatedButtonBgColor)
-            .width(250.dp)
-            .height(50.dp)
+            .width(200.dp)
+            .height(40.dp)
             .clickable {
                 onButtonClicked()
             }
     ) {
         Text(
             modifier = Modifier.align(Alignment.Center),
-            color = MaterialTheme.colorScheme.onTertiaryContainer,
+            color = animatedButtonTextColor,
             text = buttonLabel,
-            fontSize = 16.sp,
+            fontSize = 13.sp,
         )
     }
 }
@@ -202,20 +217,22 @@ fun TutorialPageIndicator(
     LazyRow(
         modifier = modifier
             .wrapContentWidth()
-            .wrapContentHeight()
+            .height(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
         items(imageCount) { index ->
             if (index == selectedIndex) {
                 Box(
                     modifier = Modifier
-                        .size(8.5.dp)
+                        .size(8.dp)
                         .clip(CircleShape)
                         .background(TutorialIndicatorSelectedColor)
                 )
             } else {
                 Box(
                     modifier = Modifier
-                        .size(8.5.dp)
+                        .size(6.dp)
                         .clip(CircleShape)
                         .background(TutorialIndicatorUnSelectedColor)
                 )

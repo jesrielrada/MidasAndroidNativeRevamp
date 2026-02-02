@@ -39,11 +39,6 @@ class TutorialScreenViewModel @Inject constructor(
                     val isEnabled = getSplashTutorialData.invoke().first().isTutorialScreenEnabled
                     val isTutorialDisplayed = getAppConfigModel.invoke().first().isTutorialDisplayed
 
-                    Timber.d("Initializing tutorial screen.. " +
-                            "images=$images, " +
-                            "isEnabled=$isEnabled, " +
-                            "isTutorialDisplayed=$isTutorialDisplayed")
-
 
                     if (images.isEmpty() || !isEnabled || isTutorialDisplayed == true) {
                         _uiState.update {

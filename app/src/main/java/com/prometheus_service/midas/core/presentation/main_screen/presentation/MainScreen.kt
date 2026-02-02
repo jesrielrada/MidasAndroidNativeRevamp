@@ -28,6 +28,21 @@ fun MainScreen(
         }
     )
 
+    if (uiState.shouldDisplayTutorial) {
+        TutorialScreen(
+            onInitialized = { canDisplay ->
+                if (!canDisplay) {
+                    viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
+                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
+                }
+            },
+            onTutorialFinished = {
+                viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
+                viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
+            }
+        )
+    }
+
     if (uiState.shouldDisplayLanguageSelection) {
         LanguageSelectionScreen(
             onInitialized = { canDisplay ->
@@ -39,21 +54,6 @@ fun MainScreen(
             },
             onLanguageSelected = {
                 viewModel.onEvent(MainScreenEvent.HideLanguageSelectionScreen)
-                viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
-            }
-        )
-    }
-
-    if (uiState.shouldDisplayTutorial) {
-        TutorialScreen(
-            onInitialized = { canDisplay ->
-                if (!canDisplay) {
-                    viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
-                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
-                }
-            },
-            onTutorialFinished = {
-                viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
                 viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
             }
         )
