@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flowOn
 import timber.log.Timber
 import javax.inject.Inject
 
-class GetSplashImages @Inject constructor(
+class GetSplashTutorialData @Inject constructor(
     private val repository: SplashTutorialRepository,
     private val dispatcherProvider: DefaultDispatcherProvider
 ) {

@@ -22,10 +22,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +40,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.event.TutorialScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorSelectedColor
@@ -45,22 +48,33 @@ import com.prometheus_service.midas.core.presentation.features.tutorial_screen.t
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonDefaultColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonFinishColor
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun TutorialScreen(
     modifier: Modifier = Modifier,
     viewModel: TutorialScreenViewModel = hiltViewModel(),
-    mainScreenViewModel: MainScreenViewModel = hiltViewModel()
+    onTutorialFinished: () -> Unit,
+    onInitialized: (canDisplay: Boolean) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel) {
+        snapshotFlow { uiState.canDisplayScreen }
+            .collect { canDisplay ->
+                Timber.d("Calling initialized.. canDisplay: $canDisplay")
+                onInitialized(canDisplay)
+            }
+    }
 
     TutorialScreenContent(
         modifier = modifier,
         uiState = uiState,
         onTutorialFinished = {
-            mainScreenViewModel.onEvent(MainScreenEvent.HideTutorialScreen)
-            mainScreenViewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
+            viewModel.onEvent(TutorialScreenEvent.OnTutorialFinished)
+            onTutorialFinished()
         }
     )
 }

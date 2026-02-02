@@ -28,27 +28,36 @@ fun MainScreen(
         }
     )
 
+    if (uiState.shouldDisplayTutorial) {
+        TutorialScreen(
+            onInitialized = { canDisplay ->
+                if (!canDisplay) {
+                    viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
+                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
+                }
+            },
+            onTutorialFinished = {
+                viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
+                viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
+            }
+        )
+    }
+
     if (uiState.shouldDisplaySplash) {
         SplashScreen(
             onClickSkipBtn = {
                 if (uiState.isWebviewReady) {
                     viewModel.onEvent(MainScreenEvent.HideSplashScreen)
-                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
                 }
             },
             onScrollFinished = {
                 Timber.d("Scroll finished called")
-                if(uiState.isWebviewReady){
+                if (uiState.isWebviewReady) {
                     viewModel.onEvent(MainScreenEvent.HideSplashScreen)
-                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
                 }
             },
             isReadyToHide = uiState.isWebviewReady
         )
-    }
-
-    if (uiState.shouldDisplayTutorial) {
-        TutorialScreen()
     }
 
     if (uiState.shouldDisplayLanguageSelection) {
