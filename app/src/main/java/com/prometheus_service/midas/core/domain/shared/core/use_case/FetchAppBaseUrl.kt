@@ -2,7 +2,7 @@ package com.prometheus_service.midas.core.domain.shared.core.use_case
 
 import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
-import com.prometheus_service.midas.core.domain.features.remote_config.use_case.GetRemoteConfig
+import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.GetRemoteConfig
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext

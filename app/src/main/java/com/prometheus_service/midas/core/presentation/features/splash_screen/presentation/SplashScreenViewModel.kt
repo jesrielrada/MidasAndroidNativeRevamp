@@ -3,10 +3,7 @@ package com.prometheus_service.midas.core.presentation.features.splash_screen.pr
 import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prometheus_service.midas.FlavorConfig
-import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashTutorialData
-import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.event.SplashScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

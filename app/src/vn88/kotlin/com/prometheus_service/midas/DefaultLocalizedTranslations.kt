@@ -1,14 +1,14 @@
 package com.prometheus_service.midas
 
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedBiometricsTranslations
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedErrorTranslations
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedFeatureSettings
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedGeneralTranslations
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedModels
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedOsVersionTranslations
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedPinLockTranslations
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedSplashTranslations
-import com.prometheus_service.midas.core.domain.features.multi_language.model.LocalizedTutorialTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedBiometricsTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedErrorTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedFeatureSettings
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedGeneralTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedModels
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedOsVersionTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedPinLockTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedSplashTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedTutorialTranslations
 import kotlinx.serialization.Serializable
 
 

@@ -3,7 +3,7 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.FlavorConfig
-import com.prometheus_service.midas.core.domain.features.multi_language.use_case.GetMultiLanguageData
+import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
