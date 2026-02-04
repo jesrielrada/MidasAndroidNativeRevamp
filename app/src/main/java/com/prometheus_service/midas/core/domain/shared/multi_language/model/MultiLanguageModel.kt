@@ -16,7 +16,7 @@ data class LocalizedModels(
     val splashTranslations: LocalizedSplashTranslations,
     val tutorialTranslations: LocalizedTutorialTranslations,
     val pinLockTranslations: LocalizedPinLockTranslations,
-    val biometricsTranslations: LocalizedBiometricsTranslations
+    val biometricsTranslations: LocalizedBiometricsTranslations,
 )
 
 @Serializable

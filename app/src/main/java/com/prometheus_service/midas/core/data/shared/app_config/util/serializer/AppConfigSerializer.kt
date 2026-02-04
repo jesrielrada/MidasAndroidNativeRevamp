@@ -20,7 +20,6 @@ object AppConfigSerializer : Serializer<AppConfigModel> {
 
     override suspend fun readFrom(input: InputStream): AppConfigModel {
         return try {
-            Timber.d("Reading AppConfigModel...")
             json.decodeFromString(
                 deserializer = AppConfigModel.serializer(),
                 string = input.readBytes().decodeToString()
@@ -45,7 +44,6 @@ object AppConfigSerializer : Serializer<AppConfigModel> {
                     value = t
                 ).encodeToByteArray()
             )
-            Timber.d("Success in writing AppConfigModel")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write AppConfigModel")
             throw e

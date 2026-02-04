@@ -36,7 +36,6 @@ class  DefaultRemoteDomainsRepository @Inject constructor(
                 )
                 val model = response.toDomain()
                 localDataSource.cacheRemoteDomainsModel(model)
-                Timber.d("Successfully fetched and cached remote domains data, model=$model")
             }.onFailure { exception ->
                 Timber.d(exception, "Failed to fetch remote domains data")
             }

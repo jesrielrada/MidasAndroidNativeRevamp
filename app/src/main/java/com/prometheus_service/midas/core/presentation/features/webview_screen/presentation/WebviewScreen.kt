@@ -25,29 +25,31 @@ import timber.log.Timber
 @Composable
 fun WebviewScreen(
     modifier: Modifier = Modifier,
+    url: String,
     viewModel: WebViewScreenViewModel = hiltViewModel(),
-    onPageFinished: () -> Unit
+    onWebviewInitialized: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     WebviewScreenContent(
         modifier = modifier,
         uiState = uiState,
-        onPageFinished = onPageFinished
+        url = url,
+        onInitialized = {
+            onWebviewInitialized(it)
+        }
     )
 }
 
 
 @Composable
 fun WebviewClientSetup(
-    webView: WebView,
-    onPageFinished: () -> Unit
+    webView: WebView
 ) {
     LaunchedEffect(webView) {
         webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                onPageFinished()
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
             }
         }
     }
@@ -58,7 +60,8 @@ fun WebviewClientSetup(
 fun WebviewScreenContent(
     modifier: Modifier = Modifier,
     uiState: WebViewScreenUiState,
-    onPageFinished: () -> Unit
+    url: String,
+    onInitialized: (userAgent: String) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -77,12 +80,13 @@ fun WebviewScreenContent(
 
             CookieManager.getInstance().setAcceptCookie(true)
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+
+            onInitialized(this.settings.userAgentString)
         }
     }
 
     WebviewClientSetup(
-        webView = webView,
-        onPageFinished = onPageFinished
+        webView = webView
     )
 
     DisposableEffect(webView) {
@@ -98,9 +102,9 @@ fun WebviewScreenContent(
                 webView
             },
             update = { view ->
-                val targetUrl = uiState.url ?: "https://epm.vn88uat.com"
-                if (view.url != targetUrl) {
-                    Timber.d("Loading url... $targetUrl")
+                val targetUrl = url
+                if (targetUrl != view.url) {
+                    Timber.d("Loading webview url ... $targetUrl")
                     view.loadUrl(targetUrl)
                 }
             },

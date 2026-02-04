@@ -13,8 +13,10 @@ import com.prometheus_service.midas.core.data.features.splash_tutorial.utils.ser
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.SplashTutorialRepository
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.model.SplashTutorialModel
+import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.GetSplashTutorialData
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -56,6 +58,18 @@ object SplashTutorialModule {
         return GetSplashTutorialData(
             repository,
             dispatcherProvider
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideCanDisplayTutorial(
+        getSplashTutorialData: GetSplashTutorialData,
+        getAppConfigModel: GetAppConfigModel
+    ): CanDisplayTutorial {
+        return CanDisplayTutorial(
+            getSplashTutorialData,
+            getAppConfigModel
         )
     }
 

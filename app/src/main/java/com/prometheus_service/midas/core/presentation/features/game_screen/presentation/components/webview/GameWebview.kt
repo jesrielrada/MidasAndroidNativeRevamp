@@ -35,9 +35,6 @@ fun GameWebview(
 
             CookieManager.getInstance().setAcceptCookie(true)
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-
-            val url = "https://epm.vn88uat.com"
-            loadUrl(url)
         }
     }
 

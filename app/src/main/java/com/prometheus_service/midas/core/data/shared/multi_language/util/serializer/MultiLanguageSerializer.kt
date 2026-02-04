@@ -19,7 +19,6 @@ object MultiLanguageSerializer : Serializer<MultiLanguageModel> {
 
     override suspend fun readFrom(input: InputStream): MultiLanguageModel {
         return try {
-            Timber.d("Reading MultiLanguageModel...")
             json.decodeFromString(
                 deserializer = MultiLanguageModel.serializer(),
                 string = input.readBytes().decodeToString()
@@ -44,7 +43,6 @@ object MultiLanguageSerializer : Serializer<MultiLanguageModel> {
                     value = t
                 ).encodeToByteArray()
             )
-            Timber.d("Success in writing MultiLanguageModel")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write MultiLanguageModel")
             throw e

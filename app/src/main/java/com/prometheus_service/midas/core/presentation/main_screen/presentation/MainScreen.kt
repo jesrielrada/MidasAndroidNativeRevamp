@@ -61,8 +61,9 @@ fun MainScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         WebviewScreen(
             modifier = Modifier.alpha(webviewVisibility),
-            onPageFinished = {
-                viewModel.onEvent(MainScreenEvent.OnWebviewReady)
+            url = uiState.webviewUrl,
+            onWebviewInitialized = {
+                viewModel.onEvent(MainScreenEvent.SetUserAgentReady(it))
             }
         )
 
@@ -79,32 +80,8 @@ fun MainScreen(
         if (uiState.shouldDisplayTutorial) {
             TutorialScreen(
                 tutorialTranslations = uiState.viewTranslations.tutorialScreenTranslations,
-                onInitialized = { canDisplay ->
-                    if (!canDisplay) {
-                        viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
-                        viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
-                    }
-                },
                 onTutorialFinished = {
                     viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
-                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
-                }
-            )
-        }
-
-        if (uiState.shouldDisplayLanguageSelection) {
-            LanguageSelectionScreen(
-                onInitialized = { canDisplay ->
-                    Timber.d("Language selection initialized.. canDisplay: $canDisplay")
-                    if (!canDisplay) {
-                        viewModel.onEvent(MainScreenEvent.HideLanguageSelectionScreen)
-                        viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
-                    }
-                },
-                onLanguageSelected = { locale ->
-                    viewModel.onEvent(MainScreenEvent.HideLanguageSelectionScreen)
-                    viewModel.onEvent(MainScreenEvent.DisplayWebviewScreen)
-                    viewModel.onEvent(MainScreenEvent.SyncRemoteData(locale))
                 }
             )
         }
@@ -116,15 +93,30 @@ fun MainScreen(
                     if (uiState.isWebviewReady && uiState.isAppInitialized) {
                         viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     }
+                    if (uiState.canDisplayTutorialScreen) {
+                        viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
+                    }
                 },
                 onScrollFinished = {
                     Timber.d("Scroll finished called")
                     if (uiState.isWebviewReady && uiState.isAppInitialized) {
                         viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     }
+                    if (uiState.canDisplayTutorialScreen) {
+                        viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
+                    }
                 },
                 isReadyToHide = uiState.isWebviewReady && uiState.isAppInitialized,
                 shouldRestartSplash = shouldRestartSplash
+            )
+        }
+
+        if (uiState.shouldDisplayLanguageSelection) {
+            LanguageSelectionScreen(
+                onLanguageSelected = { locale ->
+                    viewModel.onEvent(MainScreenEvent.HideLanguageSelectionScreen)
+                    viewModel.onEvent(MainScreenEvent.SetLocaleSelected(locale))
+                }
             )
         }
 

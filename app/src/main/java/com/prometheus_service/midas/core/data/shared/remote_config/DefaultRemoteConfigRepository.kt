@@ -34,7 +34,6 @@ class DefaultRemoteConfigRepository @Inject constructor(
                 )
                 val model = response.toDomain()
                 localDataSource.cacheRemoteConfigModel(model)
-                Timber.d("Successfully fetched and cached remote config data, model=$model")
                 model
             }.onFailure { exception ->
                 Timber.e(exception, "Failed to fetch remote config data")

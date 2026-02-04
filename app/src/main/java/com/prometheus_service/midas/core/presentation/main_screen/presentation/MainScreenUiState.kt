@@ -1,13 +1,25 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
+/**
+ * Initialize setup is splash, tutorial, language selection, and webview should be set to true
+ * It will hide on its own when the condition is met
+ */
 data class MainScreenUiState(
-    val shouldDisplaySplash: Boolean = false,
+    val shouldDisplaySplash: Boolean = true,
     val shouldDisplayTutorial: Boolean = false,
     val shouldDisplayLanguageSelection: Boolean = false,
-    val shouldDisplayWebview: Boolean = false,
-    val shouldDisplayGameView: Boolean = true,
+    val shouldDisplayWebview: Boolean = true,
+    val shouldDisplayGameView: Boolean = false,
+    val canDisplayTutorialScreen: Boolean = false,
     val isWebviewReady: Boolean = false,
     val isAppInitialized: Boolean = false,
+    val isUserAgentReady: Boolean = false,
+    val isNetworkReady: Boolean = false,
+    val networkType: String = "",
+    val webViewUserAgent: String = "",
+    val customUserAgent: String = "",
+    val webviewUrl: String = "",
+    val currentLocale: String = "",
     val isErrorDialogVisible: Boolean = false,
     val viewTranslations: ViewTranslations = ViewTranslations(
         mainScreenTranslations = MainScreenTranslations(),

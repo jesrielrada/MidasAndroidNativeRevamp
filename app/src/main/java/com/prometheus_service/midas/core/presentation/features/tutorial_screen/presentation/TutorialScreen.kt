@@ -60,15 +60,9 @@ fun TutorialScreen(
     modifier: Modifier = Modifier,
     viewModel: TutorialScreenViewModel = hiltViewModel(),
     tutorialTranslations: TutorialScreenTranslations,
-    onTutorialFinished: () -> Unit,
-    onInitialized: (canDisplay: Boolean) -> Unit
+    onTutorialFinished: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.canDisplayScreen) {
-        Timber.d("Calling initialized on tutorial screen..")
-        onInitialized(uiState.canDisplayScreen)
-    }
 
     TutorialScreenContent(
         modifier = modifier,

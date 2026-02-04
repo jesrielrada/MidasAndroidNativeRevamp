@@ -18,7 +18,6 @@ object RemoteDomainsSerializer : Serializer<RemoteDomainsModel> {
 
     override suspend fun readFrom(input: InputStream): RemoteDomainsModel {
         return try {
-            Timber.d("Reading RemoteDomainsModel...")
             json.decodeFromString(
                 deserializer = RemoteDomainsModel.serializer(),
                 string = input.readBytes().decodeToString()
@@ -43,7 +42,6 @@ object RemoteDomainsSerializer : Serializer<RemoteDomainsModel> {
                     value = t
                 ).encodeToByteArray()
             )
-            Timber.d("Success in writing RemoteDomainsModel")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write RemoteDomainsModel")
             throw e

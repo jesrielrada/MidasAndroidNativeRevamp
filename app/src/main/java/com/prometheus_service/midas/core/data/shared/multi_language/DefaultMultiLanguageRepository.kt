@@ -47,10 +47,8 @@ class DefaultMultiLanguageRepository @Inject constructor(
                     acceptLanguage = acceptLanguage,
                     currency = currency
                 )
-                Timber.d("Caching multi-language data from remote... locale is $acceptLanguage")
                 val model = response.toDomain(acceptLanguage)
                 localDataSource.cacheMultiLanguageModel(model)
-                Timber.d("MultiLanguage data successfully synced and cached.")
             }.onFailure { exception ->
                 Timber.e(exception, "Failed to refresh multi-language data from remote")
             }

@@ -3,7 +3,6 @@ package com.prometheus_service.midas.core.presentation.features.language_selecti
 import com.prometheus_service.midas.FlavorConfig
 
 data class LanguageSelectionUiState(
-    val canDisplayScreen: Boolean = true,
     val supportedLocales: List<String> = listOf("Vietnamese", "English"),
     val header: String = FlavorConfig.LANGUAGE_SELECTION_HEADER
 )

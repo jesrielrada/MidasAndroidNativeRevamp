@@ -21,7 +21,6 @@ object RemoteConfigSerializer : Serializer<RemoteConfigModel> {
 
     override suspend fun readFrom(input: InputStream): RemoteConfigModel {
         return try {
-            Timber.d("Reading RemoteConfigModel...")
             json.decodeFromString(
                 deserializer = RemoteConfigModel.serializer(),
                 string = input.readBytes().decodeToString()
@@ -46,7 +45,6 @@ object RemoteConfigSerializer : Serializer<RemoteConfigModel> {
                     value = t
                 ).encodeToByteArray()
             )
-            Timber.d("Success in writing RemoteConfigModel")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write RemoteConfigModel")
             throw e

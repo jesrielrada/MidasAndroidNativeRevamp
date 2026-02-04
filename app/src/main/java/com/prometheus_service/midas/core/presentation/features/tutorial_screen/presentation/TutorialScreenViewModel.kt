@@ -19,40 +19,24 @@ import javax.inject.Inject
 @HiltViewModel
 class TutorialScreenViewModel @Inject constructor(
     private val getSplashTutorialData: GetSplashTutorialData,
-    private val getAppConfigModel: GetAppConfigModel,
-    private val cacheAppConfigModel: CacheAppConfigModel,
+    private val cacheAppConfigModel: CacheAppConfigModel
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TutorialScreeUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        onEvent(TutorialScreenEvent.InitializeTutorialScreen)
+        onEvent(TutorialScreenEvent.InitializeTutorialImages)
     }
 
-    @SuppressLint("BinaryOperationInTimber")
     fun onEvent(event: TutorialScreenEvent) {
         when (event) {
-
-            TutorialScreenEvent.InitializeTutorialScreen -> {
+            TutorialScreenEvent.InitializeTutorialImages -> {
                 viewModelScope.launch {
                     val images = getSplashTutorialData.invoke().first().tutorialImages
-                    val isEnabled = getSplashTutorialData.invoke().first().isTutorialScreenEnabled
-                    val isTutorialDisplayed = getAppConfigModel.invoke().first().isTutorialDisplayed
-
-
-                    if (images.isEmpty() || !isEnabled || isTutorialDisplayed == true) {
-                        _uiState.update {
-                            it.copy(
-                                canDisplayScreen = false
-                            )
-                        }
-                    } else {
-                        _uiState.update {
-                            it.copy(
-                                canDisplayScreen = true,
-                                images = images
-                            )
-                        }
+                    _uiState.update {
+                        it.copy(
+                            images = images
+                        )
                     }
                 }
             }

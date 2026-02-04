@@ -21,7 +21,6 @@ class DefaultAppConfigRepository @Inject constructor(
         return withContext(dispatcherProvider.io) {
             runCatching {
                 localDataSource.cacheAppConfigModel(model)
-                Timber.d("Successfully cached app config model")
             }.onFailure { exception ->
                 Timber.e(exception, "Failed to cache app config model")
             }
