@@ -8,6 +8,7 @@ import com.prometheus_service.midas.core.domain.shared.multi_language.model.Loca
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedModels
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedOsVersionTranslations
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedPinLockTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedPopupTranslations
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedSplashTranslations
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedTutorialTranslations
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.MultiLanguageModel
@@ -38,6 +39,11 @@ fun MultiLanguageDto.toDomain(locale: String): MultiLanguageModel {
                     network = data.errorMessages.networkError,
                     fetchDomain = data.errorMessages.fetchDomainError,
                     homepage = data.errorMessages.homepageError
+                ),
+                popupMessages = LocalizedPopupTranslations(
+                    popupExitMessage = data.popupMessages.popupExitMessage,
+                    popupYes = data.popupMessages.popupYes,
+                    popupNo = data.popupMessages.popupNo
                 ),
                 osVersionSettings = LocalizedOsVersionTranslations(
                     minOsVersionTitle = data.osVersion.minOsVersionTitle,

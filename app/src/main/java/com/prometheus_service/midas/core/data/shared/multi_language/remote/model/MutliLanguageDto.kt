@@ -4,7 +4,6 @@ import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 import javax.annotation.processing.Generated
 
-
 @Keep
 @Generated
 data class 	MultiLanguageDto (

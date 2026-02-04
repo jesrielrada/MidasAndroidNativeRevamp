@@ -11,18 +11,27 @@ data class LocalizedModels(
     val featureSettings: LocalizedFeatureSettings,
     val generalMessages: LocalizedGeneralTranslations,
     val errorMessages: LocalizedErrorTranslations,
+    val popupMessages: LocalizedPopupTranslations,
     val osVersionSettings: LocalizedOsVersionTranslations,
     val splashTranslations: LocalizedSplashTranslations,
     val tutorialTranslations: LocalizedTutorialTranslations,
     val pinLockTranslations: LocalizedPinLockTranslations,
     val biometricsTranslations: LocalizedBiometricsTranslations
 )
+
 @Serializable
 data class LocalizedFeatureSettings(
     val minOsVersionIsEnabled: Boolean,
     val minOsVersionAndroid: Double,
     val pinlockEnabled: Boolean,
     val biometricsEnabled: Boolean
+)
+
+@Serializable
+data class LocalizedPopupTranslations(
+    val popupExitMessage: String,
+    val popupYes: String,
+    val popupNo: String
 )
 @Serializable
 data class LocalizedGeneralTranslations(

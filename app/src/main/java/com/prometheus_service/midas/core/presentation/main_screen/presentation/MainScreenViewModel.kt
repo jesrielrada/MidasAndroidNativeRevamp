@@ -56,6 +56,11 @@ class MainScreenViewModel @Inject constructor(
                                 ),
                                 splashScreenTranslations = SplashScreenTranslations(
                                     skipLabel = data.splashTranslations.splashSkipButton
+                                ),
+                                gameScreenTranslations = GameScreenTranslations(
+                                    returnDialogMessage = data.popupMessages.popupExitMessage,
+                                    returnDialogConfirm = data.popupMessages.popupYes,
+                                    returnDialogCancel = data.popupMessages.popupNo
                                 )
                             )
                         )
@@ -82,6 +87,14 @@ class MainScreenViewModel @Inject constructor(
                             )
                         }
                     }
+                }
+            }
+
+            MainScreenEvent.HideGameViewScreen -> {
+                _uiState.update {
+                    it.copy(
+                        shouldDisplayGameView = false
+                    )
                 }
             }
 

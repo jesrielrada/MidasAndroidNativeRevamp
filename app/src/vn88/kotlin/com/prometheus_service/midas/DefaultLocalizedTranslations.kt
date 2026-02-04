@@ -7,6 +7,7 @@ import com.prometheus_service.midas.core.domain.shared.multi_language.model.Loca
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedModels
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedOsVersionTranslations
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedPinLockTranslations
+import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedPopupTranslations
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedSplashTranslations
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedTutorialTranslations
 import kotlinx.serialization.Serializable
@@ -92,6 +93,12 @@ fun DefaultLocalizedModels.toDomain(): LocalizedModels {
         pinAttemptsText = this.pinLockTranslations.pinAttemptsText
     )
 
+    val popupTranslations = LocalizedPopupTranslations(
+        popupExitMessage = this.popupTranslations.popupExitMessage,
+        popupYes = this.popupTranslations.popupYes,
+        popupNo = this.popupTranslations.popupNo
+    )
+
     return LocalizedModels(
         featureSettings = featureSettings,
         generalMessages = generalMessages,
@@ -101,6 +108,7 @@ fun DefaultLocalizedModels.toDomain(): LocalizedModels {
         tutorialTranslations = tutorialTranslations,
         pinLockTranslations = pinLockTranslations,
         biometricsTranslations = biometricsTranslations,
+        popupMessages = popupTranslations
     )
 }
 
@@ -114,7 +122,8 @@ data class DefaultLocalizedModels(
     val splashTranslations: DefaultLocalizedSplashTranslations = DefaultLocalizedSplashTranslations(),
     val tutorialTranslations: DefaultLocalizedTutorialTranslations = DefaultLocalizedTutorialTranslations(),
     val pinLockTranslations: DefaultLocalizedPinLockTranslations = DefaultLocalizedPinLockTranslations(),
-    val biometricsTranslations: DefaultLocalizedBiometricsTranslations = DefaultLocalizedBiometricsTranslations()
+    val biometricsTranslations: DefaultLocalizedBiometricsTranslations = DefaultLocalizedBiometricsTranslations(),
+    val popupTranslations: DefaultLocalizedPopupTranslations = DefaultLocalizedPopupTranslations()
 )
 
 @Serializable
@@ -131,6 +140,13 @@ data class DefaultLocalizedFeatureSettings(
     val minOsVersionAndroid: Double = 7.1,
     val pinlockEnabled: Boolean = false,
     val biometricsEnabled: Boolean = false
+)
+
+@Serializable
+data class DefaultLocalizedPopupTranslations(
+    val popupExitMessage: String = "Thoát Trang?",
+    val popupYes: String = "Có",
+    val popupNo: String = "Không"
 )
 
 @Serializable

@@ -5,9 +5,11 @@ sealed class MainScreenEvent {
     object HideTutorialScreen : MainScreenEvent()
     object HideLanguageSelectionScreen : MainScreenEvent()
     object DisplayWebviewScreen : MainScreenEvent()
+    object HideGameViewScreen: MainScreenEvent()
     object OnWebviewReady : MainScreenEvent()
     object InitializeApplication : MainScreenEvent()
     object InitializeTranslations : MainScreenEvent()
     data class SyncRemoteData(val locale: String) : MainScreenEvent()
     object DismissErrorDialog : MainScreenEvent()
+
 }
