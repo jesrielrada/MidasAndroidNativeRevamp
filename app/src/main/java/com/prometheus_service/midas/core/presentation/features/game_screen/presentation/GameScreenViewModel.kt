@@ -22,6 +22,12 @@ class GameScreenViewModel @Inject constructor(
 
     fun onEvent(event: GameScreenEvent) {
         when (event) {
+            GameScreenEvent.ResetUiState -> {
+                _uiState.update {
+                    GameScreenUiState()
+                }
+            }
+
             is GameScreenEvent.OnOrientationChanged -> {
                 viewModelScope.launch(dispatcherProvider.main) {
                     uiState.value.sideFabOffsetY.snapTo(0f)
@@ -31,7 +37,6 @@ class GameScreenViewModel @Inject constructor(
             is GameScreenEvent.OnGloballyPositioned -> {
                 val newHeight = event.coordinates.size.height
                 if (uiState.value.parentHeight != newHeight) {
-                    Timber.d("OnGloballyPositioned called")
                     _uiState.update {
                         it.copy(
                             parentHeight = event.coordinates.size.height
@@ -43,7 +48,6 @@ class GameScreenViewModel @Inject constructor(
             is GameScreenEvent.OnSideFabGloballyPositioned -> {
                 val newHeight = event.coordinates.size.height
                 if (uiState.value.sideFabHeight != newHeight) {
-                    Timber.d("OnSideFabGloballyPositioned called..")
                     _uiState.update {
                         it.copy(
                             sideFabHeight = event.coordinates.size.height
@@ -86,6 +90,16 @@ class GameScreenViewModel @Inject constructor(
                         sideFabState = GameSideFabState.CLOSED,
                         displayBackdrop = false,
                     )
+                }
+            }
+
+            GameScreenEvent.HideProgressView -> {
+                if (uiState.value.isLoading) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
                 }
             }
         }

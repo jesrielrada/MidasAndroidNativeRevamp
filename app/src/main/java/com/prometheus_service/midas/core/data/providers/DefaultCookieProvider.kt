@@ -2,9 +2,14 @@ package com.prometheus_service.midas.core.data.providers
 
 import android.webkit.CookieManager
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
+import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 
-class DefaultCookieProvider @Inject constructor() : CookieProvider {
+class DefaultCookieProvider @Inject constructor(
+    private val dispatcherProvider: DispatcherProvider
+) : CookieProvider {
 
     companion object {
         private const val PATH = "Path=/;"
@@ -14,18 +19,30 @@ class DefaultCookieProvider @Inject constructor() : CookieProvider {
         private const val DOMAIN = "Domain="
     }
 
-    override fun initializeNativeCookies(
+    override suspend fun initializeNativeCookies(
         domain: String,
         version: String,
         language: String
     ) {
-        val languageCookie = "lang=$language; $PATH}"
-        val versionCookie = "appVersion=$version; $PATH $MAX_AGE $PRIORITY"
-        val nativeCookie = "is-native=2; $PATH $MAX_AGE $PRIORITY"
-        CookieManager.getInstance().setCookie(domain, versionCookie)
-        CookieManager.getInstance().setCookie(domain, nativeCookie)
-        CookieManager.getInstance().setCookie(domain, languageCookie)
-        CookieManager.getInstance().flush()
+        withContext(dispatcherProvider.io) {
+            val languageCookie = "lang=$language; $PATH"
+            val versionCookie = "appVersion=$version; $PATH $MAX_AGE $PRIORITY"
+            val nativeCookie = "is-native=2; $PATH $MAX_AGE $PRIORITY"
+            CookieManager.getInstance().setCookie(domain, versionCookie)
+            CookieManager.getInstance().setCookie(domain, nativeCookie)
+            CookieManager.getInstance().setCookie(domain, languageCookie)
+            CookieManager.getInstance().flush()
+        }
     }
 
+    override suspend fun isLoggedIn(baseUrl: String): Boolean {
+        return withContext(dispatcherProvider.io) {
+            try {
+                CookieManager.getInstance().getCookie(baseUrl).contains("pt_token")
+            } catch (e: Exception) {
+                Timber.d("Error getting isLoggedIn cookie: ${e.message}")
+                false
+            }
+        }
+    }
 }

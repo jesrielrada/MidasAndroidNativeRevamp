@@ -10,7 +10,7 @@ enum class GameSideFabState {
 
 data class GameScreenUiState(
     val shouldDisplayReturnDialog: Boolean = false,
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val isSideFabVisible: Boolean = true,
     val displayBackdrop: Boolean = false,
     val parentHeight: Int = 0,

@@ -11,6 +11,7 @@ import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAp
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
@@ -40,7 +41,8 @@ class MainScreenViewModel @Inject constructor(
     private val canDisplayTutorial: CanDisplayTutorial,
     private val getDomainFromUrl: GetDomainFromUrl,
     private val initializeNativeCookies: InitializeNativeCookies,
-    private val formatGameUrl: FormatGameUrl
+    private val formatGameUrl: FormatGameUrl,
+    private val getAccountLoggedInState: GetAccountLoggedInState
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
     val uiState = _uiState.asStateFlow()
@@ -110,20 +112,65 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.LoadDepositRoute -> {
+                viewModelScope.launch {
+                    val isLoggedIn = getAccountLoggedInState.invoke()
+                    val routeName = if (isLoggedIn) "deposit-route" else "login-route"
+                    val route = "javascript: window.pwa.navigate({ name: '$routeName'})"
+
+                    onEvent(MainScreenEvent.LoadCustomRoute(route))
+                }
+            }
+
+            MainScreenEvent.SetWebviewUrlLoaded -> {
+                Timber.d("Setting webview url loaded ...")
+                _uiState.update {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            isWebViewUrlLoaded = true
+                        )
+                    )
+                }
+            }
+
+            MainScreenEvent.ResetCustomRoute -> {
+                Timber.d("Resetting custom route ...")
+                _uiState.update {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            customRoute = null
+                        )
+                    )
+                }
+            }
+
+            is MainScreenEvent.LoadCustomRoute -> {
+                _uiState.update {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            customRoute = event.route
+                        )
+                    )
+                }
+            }
+
             is MainScreenEvent.LaunchGamePage -> {
                 viewModelScope.launch {
-                    val gameUrl = formatGameUrl.invoke(
-                        gamePath = event.gamePath,
-                        baseUrl = uiState.value.webViewScreenUiState.webviewUrl
-                    )
-
-                    Timber.d("Launching game page.. game url is: $gameUrl")
-
-                    _uiState.update {
-                        it.copy(
-                            shouldDisplayGameView = true,
-                            gameUrl = gameUrl
+                    val webViewUrl = uiState.value.webViewScreenUiState.webviewUrl
+                    webViewUrl?.let { url ->
+                        val gameUrl = formatGameUrl.invoke(
+                            gamePath = event.gamePath,
+                            baseUrl = url
                         )
+
+                        Timber.d("Launching game page.. game url is: $gameUrl")
+
+                        _uiState.update {
+                            it.copy(
+                                shouldDisplayGameView = true,
+                                gameUrl = gameUrl
+                            )
+                        }
                     }
                 }
             }
@@ -229,19 +276,9 @@ class MainScreenViewModel @Inject constructor(
                     //Fetch and cache base url
                     val baseUrl = fetchAppBaseUrl.invoke()
                     if (baseUrl != null) {
-                        Timber.d("Caching base url.. $baseUrl")
-
                         val domain = getDomainFromUrl.invoke(baseUrl)
-
-                        Timber.d("Caching domain.. $domain")
-
                         setHostInterceptorUrl.invoke(baseUrl)
-                        cacheAppConfig.invoke(
-                            AppConfigModel(
-                                baseUrl = baseUrl,
-                                domain = domain
-                            )
-                        )
+                        cacheAppConfig.invoke(AppConfigModel(baseUrl = baseUrl, domain = domain))
                         _uiState.update {
                             it.copy(
                                 isAppInitialized = true

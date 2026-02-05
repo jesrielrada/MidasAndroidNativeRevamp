@@ -35,7 +35,6 @@ fun LockScreenOrientation(orientation: Int) {
         val originalOrientation = activity.requestedOrientation
         activity.requestedOrientation = orientation
         onDispose {
-            // Restore original orientation when the composable leaves the composition
             activity.requestedOrientation = originalOrientation
         }
     }
@@ -71,6 +70,13 @@ fun MainScreen(
             },
             onNewGameLauncher = { path ->
                 viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
+            },
+            onRouteLoaded = {
+                viewModel.onEvent(MainScreenEvent.ResetCustomRoute)
+                viewModel.onEvent(MainScreenEvent.HideGameViewScreen)
+            },
+            onUrlLoaded = {
+                viewModel.onEvent(MainScreenEvent.SetWebviewUrlLoaded)
             }
         )
 
@@ -81,6 +87,13 @@ fun MainScreen(
                 gameScreenTranslations = uiState.viewTranslations.gameScreenTranslations,
                 onReturnDialogConfirm = {
                     viewModel.onEvent(MainScreenEvent.HideGameViewScreen)
+                },
+                onHomeButtonClicked = {
+                    val route = "javascript: window.pwa.navigate({ name: 'dashboard-route'})"
+                    viewModel.onEvent(MainScreenEvent.LoadCustomRoute(route))
+                },
+                onDepositButtonClicked = {
+                    viewModel.onEvent(MainScreenEvent.LoadDepositRoute)
                 }
             )
         }

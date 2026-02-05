@@ -19,6 +19,9 @@ sealed class MainScreenEvent {
     data class SetLocaleSelected(val locale: String) : MainScreenEvent()
     object DisplayTutorialScreen : MainScreenEvent()
     object LoadBaseUrl : MainScreenEvent()
-
     data class LaunchGamePage(val gamePath: String) : MainScreenEvent()
+    data class LoadCustomRoute(val route: String) : MainScreenEvent()
+    object ResetCustomRoute : MainScreenEvent()
+    object SetWebviewUrlLoaded: MainScreenEvent()
+    object LoadDepositRoute: MainScreenEvent()
 }

@@ -3,7 +3,9 @@ package com.prometheus_service.midas.core.presentation.features.webview_screen.p
 data class WebViewScreenUiState(
     val isWebviewReady: Boolean = false,
     val isUserAgentReady: Boolean = false,
-    val webviewUrl: String = "",
+    val isWebViewUrlLoaded: Boolean = false,
+    val webviewUrl: String? = null,
+    val customRoute: String? = null,
     val webviewUserAgent: String = "",
     val customUserAgent: String = ""
 )

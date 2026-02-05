@@ -1,7 +1,6 @@
 package com.prometheus_service.midas.core.presentation.features.webview_screen.presentation
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -27,14 +26,18 @@ fun WebviewScreen(
     uiState: WebViewScreenUiState,
     onWebviewInitialized: (String) -> Unit,
     onPwaReady: (String) -> Unit,
-    onNewGameLauncher: (String) -> Unit
+    onNewGameLauncher: (String) -> Unit,
+    onRouteLoaded: () -> Unit,
+    onUrlLoaded: () -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
         uiState = uiState,
         onInitialized = { onWebviewInitialized(it) },
         onPwaReady = { onPwaReady(it) },
-        onNewGameLauncher = { onNewGameLauncher(it) }
+        onNewGameLauncher = { onNewGameLauncher(it) },
+        onRouteLoaded = { onRouteLoaded() },
+        onUrlLoaded = onUrlLoaded
     )
 }
 
@@ -78,7 +81,9 @@ fun WebviewScreenContent(
     uiState: WebViewScreenUiState,
     onInitialized: (userAgent: String) -> Unit,
     onPwaReady: (String) -> Unit,
-    onNewGameLauncher: (String) -> Unit
+    onNewGameLauncher: (String) -> Unit,
+    onUrlLoaded: () -> Unit,
+    onRouteLoaded: () -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -126,9 +131,17 @@ fun WebviewScreenContent(
             },
             update = { view ->
                 val targetUrl = uiState.webviewUrl
-                if (targetUrl != view.url) {
+                if (targetUrl != null && !uiState.isWebViewUrlLoaded) {
                     Timber.d("Loading webview url ... $targetUrl")
                     view.loadUrl(targetUrl)
+                    onUrlLoaded()
+                }
+
+                val targetRoute = uiState.customRoute
+                if (targetRoute != null) {
+                    Timber.d("Loading custom route ... $targetRoute")
+                    view.loadUrl(targetRoute)
+                    onRouteLoaded()
                 }
             },
             modifier = modifier

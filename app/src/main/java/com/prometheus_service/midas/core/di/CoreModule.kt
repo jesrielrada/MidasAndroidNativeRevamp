@@ -9,6 +9,7 @@ import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
@@ -56,6 +57,21 @@ object CoreModule {
     fun provideFormatGameUrl(): FormatGameUrl {
         return FormatGameUrl()
     }
+
+    @Provides
+    @Singleton
+    fun provideGetAccountLoggedInState(
+        cookieProvider: CookieProvider,
+        getAppConfigModel: GetAppConfigModel,
+        dispatcherProvider: DefaultDispatcherProvider
+    ): GetAccountLoggedInState {
+        return GetAccountLoggedInState(
+            provider = cookieProvider,
+            getAppConfigModel = getAppConfigModel,
+            dispatcherProvider = dispatcherProvider
+        )
+    }
+
 
     @Provides
     @Singleton

@@ -66,12 +66,6 @@ fun GameSideFab(
                             uiState.parentHeight.toFloat() - uiState.sideFabHeight.toFloat() - bottomMargin
                         )
 
-                    Timber.d(
-                        "Dragging ... Parent height: $parentHeight",
-                        "Height: $height, offsetY: $offsetY"
-                    )
-                    Timber.d("Vertical drag...: $verticalDrag")
-
                     scope.launch {
                         offsetY.snapTo(verticalDrag)
                     }

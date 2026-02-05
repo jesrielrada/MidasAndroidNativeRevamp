@@ -18,7 +18,7 @@ import com.prometheus_service.midas.R
 @Composable
 fun GameProgress(
     modifier: Modifier = Modifier,
-    isLoading: Boolean = true
+    isLoading: Boolean = false
 ) {
     if (isLoading) {
         ConstraintLayout(

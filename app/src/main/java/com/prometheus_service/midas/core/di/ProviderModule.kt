@@ -23,7 +23,11 @@ object ProviderModule {
 
     @Provides
     @Singleton
-    fun provideCookieProvider(): CookieProvider {
-        return DefaultCookieProvider()
+    fun provideCookieProvider(
+        dispatcherProvider: DispatcherProvider
+    ): CookieProvider {
+        return DefaultCookieProvider(
+            dispatcherProvider
+        )
     }
 }

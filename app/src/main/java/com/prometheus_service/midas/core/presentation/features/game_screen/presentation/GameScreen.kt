@@ -9,6 +9,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,10 +35,13 @@ fun GameScreen(
     viewModel: GameScreenViewModel = hiltViewModel(),
     gameUrl: String? = null,
     gameScreenTranslations: GameScreenTranslations,
-    onReturnDialogConfirm: () -> Unit
+    onReturnDialogConfirm: () -> Unit,
+    onHomeButtonClicked: () -> Unit,
+    onDepositButtonClicked: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val configuration = LocalConfiguration.current
+
 
     LaunchedEffect(configuration.orientation) {
         if (configuration.orientation == ORIENTATION_LANDSCAPE) {
@@ -49,13 +53,22 @@ fun GameScreen(
         }
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            Timber.d("Game screen disposing ... ")
+            viewModel.onEvent(GameScreenEvent.ResetUiState)
+        }
+    }
+
     GameScreenContent(
         modifier = modifier,
         uiState = uiState,
         gameUrl = gameUrl,
         gameScreenTranslations = gameScreenTranslations,
         onEvent = viewModel::onEvent,
-        onReturnDialogConfirm = onReturnDialogConfirm
+        onReturnDialogConfirm = onReturnDialogConfirm,
+        onHomeButtonClicked = onHomeButtonClicked,
+        onDepositButtonClicked = onDepositButtonClicked
     )
 }
 
@@ -68,6 +81,8 @@ fun GameScreenContent(
     gameScreenTranslations: GameScreenTranslations,
     onEvent: (GameScreenEvent) -> Unit,
     onReturnDialogConfirm: () -> Unit,
+    onHomeButtonClicked: () -> Unit,
+    onDepositButtonClicked: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -77,7 +92,10 @@ fun GameScreenContent(
             }
     ) {
         GameWebview(
-            gameUrl = gameUrl
+            gameUrl = gameUrl,
+            onGameLoaded = {
+                onEvent(GameScreenEvent.HideProgressView)
+            }
         )
         GameBackdrop(
             shouldDisplayBackdrop = uiState.displayBackdrop,
@@ -102,15 +120,9 @@ fun GameScreenContent(
                     onEvent(GameScreenEvent.SetSideFabOpen)
                 }
             },
-            onClickHomeButton = {
-
-            },
-            onClickReturnButton = {
-                onEvent(GameScreenEvent.OnClickReturnButton)
-            },
-            onClickDepositButton = {
-
-            }
+            onClickReturnButton = { onEvent(GameScreenEvent.OnClickReturnButton) },
+            onClickHomeButton = onHomeButtonClicked,
+            onClickDepositButton = onDepositButtonClicked
         )
         GameProgress(
             isLoading = uiState.isLoading
