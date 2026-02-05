@@ -1,6 +1,8 @@
 package com.prometheus_service.midas.core.di
 
+import com.prometheus_service.midas.core.data.providers.DefaultCookieProvider
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
+import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import dagger.Module
 import dagger.Provides
@@ -17,5 +19,11 @@ object ProviderModule {
     @Singleton
     fun provideDispatcherProvider(): DispatcherProvider {
         return DefaultDispatcherProvider()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCookieProvider(): CookieProvider {
+        return DefaultCookieProvider()
     }
 }

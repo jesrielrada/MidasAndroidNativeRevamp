@@ -5,8 +5,12 @@ import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.S
 import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.GetRemoteConfig
 import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.SyncRemoteDomains
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
+import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
@@ -39,6 +43,26 @@ object CoreModule {
             getRemoteConfig = getRemoteConfig,
             dispatcherProvider = dispatcherProvider
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetDomain(): GetDomainFromUrl {
+        return GetDomainFromUrl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFormatGameUrl(): FormatGameUrl {
+        return FormatGameUrl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideInitializeNativeCookies(
+        cookieProvider: CookieProvider
+    ): InitializeNativeCookies {
+        return InitializeNativeCookies(cookieProvider)
     }
 
     @Provides

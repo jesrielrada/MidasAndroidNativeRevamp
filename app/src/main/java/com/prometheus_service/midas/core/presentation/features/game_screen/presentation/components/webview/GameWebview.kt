@@ -12,11 +12,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun GameWebview(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    gameUrl: String? = null
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -48,6 +50,13 @@ fun GameWebview(
     AndroidView(
         factory = {
             webView
+        },
+        update = { view ->
+            val targetUrl = gameUrl
+            if (gameUrl != null && targetUrl != view.url) {
+                Timber.d("Loading game url... $targetUrl")
+                view.loadUrl(targetUrl)
+            }
         },
         modifier = modifier.fillMaxSize()
     )

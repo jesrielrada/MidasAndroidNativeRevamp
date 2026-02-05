@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 data class AppConfigModel(
     val locale: String? = null,
     val baseUrl: String? = null,
+    val domain: String? = null,
     val currency: String? = null,
     val isTutorialDisplayed: Boolean? = null,
     val isLanguageSelectionDisplayed: Boolean? = null

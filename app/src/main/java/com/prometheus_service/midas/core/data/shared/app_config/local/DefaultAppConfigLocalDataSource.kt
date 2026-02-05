@@ -36,7 +36,8 @@ class DefaultAppConfigLocalDataSource @Inject constructor(
                     isTutorialDisplayed = data.isTutorialDisplayed
                         ?: currentData.isTutorialDisplayed,
                     isLanguageSelectionDisplayed = data.isLanguageSelectionDisplayed
-                        ?: currentData.isLanguageSelectionDisplayed
+                        ?: currentData.isLanguageSelectionDisplayed,
+                    domain = data.domain ?: currentData.domain
                 )
             }
             Timber.d("Successfully cached app config model")

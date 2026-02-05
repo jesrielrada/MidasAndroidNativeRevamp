@@ -32,6 +32,7 @@ import kotlin.math.roundToInt
 fun GameScreen(
     modifier: Modifier = Modifier,
     viewModel: GameScreenViewModel = hiltViewModel(),
+    gameUrl: String? = null,
     gameScreenTranslations: GameScreenTranslations,
     onReturnDialogConfirm: () -> Unit
 ) {
@@ -51,6 +52,7 @@ fun GameScreen(
     GameScreenContent(
         modifier = modifier,
         uiState = uiState,
+        gameUrl = gameUrl,
         gameScreenTranslations = gameScreenTranslations,
         onEvent = viewModel::onEvent,
         onReturnDialogConfirm = onReturnDialogConfirm
@@ -62,9 +64,10 @@ fun GameScreen(
 fun GameScreenContent(
     modifier: Modifier = Modifier,
     uiState: GameScreenUiState,
+    gameUrl: String? = null,
     gameScreenTranslations: GameScreenTranslations,
     onEvent: (GameScreenEvent) -> Unit,
-    onReturnDialogConfirm: () -> Unit
+    onReturnDialogConfirm: () -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -73,7 +76,9 @@ fun GameScreenContent(
                 onEvent(GameScreenEvent.OnGloballyPositioned(it))
             }
     ) {
-        GameWebview()
+        GameWebview(
+            gameUrl = gameUrl
+        )
         GameBackdrop(
             shouldDisplayBackdrop = uiState.displayBackdrop,
             onClickBackdrop = {

@@ -13,31 +13,28 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.DefaultJavascriptListener
+import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.JavascriptListener
 import timber.log.Timber
 
 @Composable
 fun WebviewScreen(
     modifier: Modifier = Modifier,
-    url: String,
-    viewModel: WebViewScreenViewModel = hiltViewModel(),
-    onWebviewInitialized: (String) -> Unit
+    uiState: WebViewScreenUiState,
+    onWebviewInitialized: (String) -> Unit,
+    onPwaReady: (String) -> Unit,
+    onNewGameLauncher: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     WebviewScreenContent(
         modifier = modifier,
         uiState = uiState,
-        url = url,
-        onInitialized = {
-            onWebviewInitialized(it)
-        }
+        onInitialized = { onWebviewInitialized(it) },
+        onPwaReady = { onPwaReady(it) },
+        onNewGameLauncher = { onNewGameLauncher(it) }
     )
 }
 
@@ -47,21 +44,41 @@ fun WebviewClientSetup(
     webView: WebView
 ) {
     LaunchedEffect(webView) {
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                super.onPageStarted(view, url, favicon)
-            }
-        }
+        webView.webViewClient = object : WebViewClient() {}
     }
 }
 
-@SuppressLint("SetJavaScriptEnabled")
+
+fun webviewJavascriptSetup(
+    webView: WebView,
+    onPwaReady: (data: String) -> Unit,
+    onNewGameLauncher: (url: String) -> Unit
+) {
+    webView.addJavascriptInterface(
+        DefaultJavascriptListener(
+            object : JavascriptListener {
+                override fun onPwaReady(data: String) {
+                    onPwaReady(data)
+                }
+
+                override fun onNewGameLauncher(url: String) {
+                    onNewGameLauncher(url)
+                }
+            }
+        ),
+        "Android"
+    )
+}
+
+
+@SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
 @Composable
 fun WebviewScreenContent(
     modifier: Modifier = Modifier,
     uiState: WebViewScreenUiState,
-    url: String,
-    onInitialized: (userAgent: String) -> Unit
+    onInitialized: (userAgent: String) -> Unit,
+    onPwaReady: (String) -> Unit,
+    onNewGameLauncher: (String) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -77,6 +94,12 @@ fun WebviewScreenContent(
             this.settings.allowContentAccess = true
             this.settings.javaScriptCanOpenWindowsAutomatically = true
             this.settings.setSupportMultipleWindows(true)
+
+            webviewJavascriptSetup(
+                webView = this,
+                onPwaReady = { onPwaReady(it) },
+                onNewGameLauncher = { onNewGameLauncher(it) }
+            )
 
             CookieManager.getInstance().setAcceptCookie(true)
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
@@ -102,7 +125,7 @@ fun WebviewScreenContent(
                 webView
             },
             update = { view ->
-                val targetUrl = url
+                val targetUrl = uiState.webviewUrl
                 if (targetUrl != view.url) {
                     Timber.d("Loading webview url ... $targetUrl")
                     view.loadUrl(targetUrl)

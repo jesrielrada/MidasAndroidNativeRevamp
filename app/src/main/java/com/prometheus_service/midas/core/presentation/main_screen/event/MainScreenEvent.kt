@@ -8,7 +8,7 @@ sealed class MainScreenEvent {
     object OnWebviewReady : MainScreenEvent()
     object InitializeApplication : MainScreenEvent()
     object InitializeTranslations : MainScreenEvent()
-    object InitializeTutorialSettings: MainScreenEvent()
+    object InitializeTutorialSettings : MainScreenEvent()
     data class SyncRemoteData(val locale: String) : MainScreenEvent()
     object DismissErrorDialog : MainScreenEvent()
     object InitializeNetworkType : MainScreenEvent()
@@ -18,4 +18,7 @@ sealed class MainScreenEvent {
     object DisplayLanguageSelectionScreen : MainScreenEvent()
     data class SetLocaleSelected(val locale: String) : MainScreenEvent()
     object DisplayTutorialScreen : MainScreenEvent()
+    object LoadBaseUrl : MainScreenEvent()
+
+    data class LaunchGamePage(val gamePath: String) : MainScreenEvent()
 }

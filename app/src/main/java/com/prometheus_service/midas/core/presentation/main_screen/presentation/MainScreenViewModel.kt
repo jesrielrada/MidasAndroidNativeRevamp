@@ -2,6 +2,7 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prometheus_service.midas.BuildConfig
 import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
@@ -9,6 +10,9 @@ import com.prometheus_service.midas.core.domain.shared.app_config.use_case.Cache
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
@@ -33,10 +37,14 @@ class MainScreenViewModel @Inject constructor(
     private val getMultiLanguageData: GetMultiLanguageData,
     private val getNetworkType: GetNetworkType,
     private val getAppConfigModel: GetAppConfigModel,
-    private val canDisplayTutorial: CanDisplayTutorial
+    private val canDisplayTutorial: CanDisplayTutorial,
+    private val getDomainFromUrl: GetDomainFromUrl,
+    private val initializeNativeCookies: InitializeNativeCookies,
+    private val formatGameUrl: FormatGameUrl
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
     val uiState = _uiState.asStateFlow()
+
 
     init {
         onEvent(MainScreenEvent.InitializeNetworkType)
@@ -46,7 +54,7 @@ class MainScreenViewModel @Inject constructor(
     private fun observeRequiredInitializationStates() {
         viewModelScope.launch {// TRIGGER 1: Translations (When Network + UserAgent are ready)
             uiState
-                .map { it.isNetworkReady && it.isUserAgentReady }
+                .map { it.isNetworkReady && it.webViewScreenUiState.isUserAgentReady }
                 .distinctUntilChanged() // Crucial: Only trigger when the boolean flips
                 .collect { ready ->
                     if (ready) {
@@ -61,7 +69,7 @@ class MainScreenViewModel @Inject constructor(
         viewModelScope.launch {
             // TRIGGER 2: Initializing App (When Custom User Agent is built)
             uiState
-                .map { it.customUserAgent }
+                .map { it.webViewScreenUiState.customUserAgent }
                 .distinctUntilChanged()
                 .collect { agent ->
                     if (agent.isNotEmpty()) {
@@ -93,13 +101,57 @@ class MainScreenViewModel @Inject constructor(
                     if (initialized) {
                         Timber.d("App initialized, syncing remote data ... ")
                         onEvent(MainScreenEvent.SyncRemoteData(locale))
+                        onEvent(MainScreenEvent.LoadBaseUrl)
                     }
                 }
         }
+
     }
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.LaunchGamePage -> {
+                viewModelScope.launch {
+                    val gameUrl = formatGameUrl.invoke(
+                        gamePath = event.gamePath,
+                        baseUrl = uiState.value.webViewScreenUiState.webviewUrl
+                    )
+
+                    Timber.d("Launching game page.. game url is: $gameUrl")
+
+                    _uiState.update {
+                        it.copy(
+                            shouldDisplayGameView = true,
+                            gameUrl = gameUrl
+                        )
+                    }
+                }
+            }
+
+            MainScreenEvent.LoadBaseUrl -> {
+                viewModelScope.launch {
+                    Timber.d("Loading base url ...")
+                    val config = getAppConfigModel.invoke().first()
+                    val domain = config.domain
+                    val version = BuildConfig.VERSION_NAME
+                    val baseUrl = config.baseUrl!!
+
+                    initializeNativeCookies.invoke(
+                        domain = domain!!,
+                        version = version,
+                        language = uiState.value.currentLocale
+                    )
+
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                webviewUrl = baseUrl
+                            )
+                        )
+                    }
+                }
+            }
+
             MainScreenEvent.InitializeTutorialSettings -> {
                 viewModelScope.launch {
                     if (canDisplayTutorial.invoke()) {
@@ -179,13 +231,20 @@ class MainScreenViewModel @Inject constructor(
                     if (baseUrl != null) {
                         Timber.d("Caching base url.. $baseUrl")
 
-                        setHostInterceptorUrl.invoke(baseUrl)
-                        cacheAppConfig.invoke(AppConfigModel(baseUrl = baseUrl))
+                        val domain = getDomainFromUrl.invoke(baseUrl)
 
+                        Timber.d("Caching domain.. $domain")
+
+                        setHostInterceptorUrl.invoke(baseUrl)
+                        cacheAppConfig.invoke(
+                            AppConfigModel(
+                                baseUrl = baseUrl,
+                                domain = domain
+                            )
+                        )
                         _uiState.update {
                             it.copy(
-                                isAppInitialized = true,
-                                webviewUrl = baseUrl,
+                                isAppInitialized = true
                             )
                         }
                     } else {
@@ -202,20 +261,24 @@ class MainScreenViewModel @Inject constructor(
             is MainScreenEvent.SetUserAgentReady -> {
                 _uiState.update {
                     it.copy(
-                        webViewUserAgent = event.userAgent,
-                        isUserAgentReady = true
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            webviewUserAgent = event.userAgent,
+                            isUserAgentReady = true
+                        )
                     )
                 }
             }
 
             is MainScreenEvent.BuildUserAgent -> {
                 Timber.d("Building user agent ... ")
-                val customUserAgent = ("${uiState.value.webViewUserAgent} " +
+                val customUserAgent = ("${uiState.value.webViewScreenUiState.webviewUserAgent} " +
                         "${FlavorConfig.INITIAL_USER_AGENT} " +
                         uiState.value.networkType).trimEnd()
                 _uiState.update {
                     it.copy(
-                        customUserAgent = customUserAgent
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            customUserAgent = customUserAgent
+                        ),
                     )
                 }
             }
@@ -286,10 +349,13 @@ class MainScreenViewModel @Inject constructor(
             }
 
             MainScreenEvent.OnWebviewReady -> {
-                if (!uiState.value.isWebviewReady) {
+                if (!uiState.value.webViewScreenUiState.isWebviewReady) {
+                    Timber.d("Webview ready, updating state...")
                     _uiState.update {
                         it.copy(
-                            isWebviewReady = true
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                isWebviewReady = true
+                            )
                         )
                     }
                 }

@@ -65,13 +65,13 @@ fun SplashScreen(
     splashScreenTranslations: SplashScreenTranslations,
     onScrollFinished: () -> Unit,
     onClickSkipBtn: () -> Unit,
-    isReadyToHide: Boolean = false,
+    shouldDisplaySkipButton: Boolean = false,
     shouldRestartSplash: Boolean = false
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(isReadyToHide, shouldRestartSplash) {
-        if (isReadyToHide) {
+    LaunchedEffect(shouldDisplaySkipButton, shouldRestartSplash) {
+        if (shouldDisplaySkipButton) {
             Timber.d("Condition met, displaying skip button")
             viewModel.onEvent(SplashScreenEvent.DisplaySkipButton)
         }

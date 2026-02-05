@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -61,15 +62,22 @@ fun MainScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         WebviewScreen(
             modifier = Modifier.alpha(webviewVisibility),
-            url = uiState.webviewUrl,
+            uiState = uiState.webViewScreenUiState,
             onWebviewInitialized = {
                 viewModel.onEvent(MainScreenEvent.SetUserAgentReady(it))
+            },
+            onPwaReady = {
+                viewModel.onEvent(MainScreenEvent.OnWebviewReady)
+            },
+            onNewGameLauncher = { path ->
+                viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
             }
         )
 
         if (shouldDisplayGameView) {
             LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
             GameScreen(
+                gameUrl = uiState.gameUrl,
                 gameScreenTranslations = uiState.viewTranslations.gameScreenTranslations,
                 onReturnDialogConfirm = {
                     viewModel.onEvent(MainScreenEvent.HideGameViewScreen)
@@ -87,10 +95,21 @@ fun MainScreen(
         }
 
         if (uiState.shouldDisplaySplash) {
+            LaunchedEffect(uiState.webViewScreenUiState.isWebviewReady) {
+                if (uiState.webViewScreenUiState.isWebviewReady && uiState.isAppInitialized) {
+                    if (uiState.webViewScreenUiState.isWebviewReady) {
+                        viewModel.onEvent(MainScreenEvent.HideSplashScreen)
+                    }
+                    if (uiState.canDisplayTutorialScreen) {
+                        viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
+                    }
+                }
+            }
+
             SplashScreen(
                 splashScreenTranslations = uiState.viewTranslations.splashScreenTranslations,
                 onClickSkipBtn = {
-                    if (uiState.isWebviewReady && uiState.isAppInitialized) {
+                    if (uiState.webViewScreenUiState.isWebviewReady && uiState.isAppInitialized) {
                         viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
@@ -99,14 +118,14 @@ fun MainScreen(
                 },
                 onScrollFinished = {
                     Timber.d("Scroll finished called")
-                    if (uiState.isWebviewReady && uiState.isAppInitialized) {
+                    if (uiState.webViewScreenUiState.isWebviewReady && uiState.isAppInitialized) {
                         viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
                         viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
                     }
                 },
-                isReadyToHide = uiState.isWebviewReady && uiState.isAppInitialized,
+                shouldDisplaySkipButton = uiState.webViewScreenUiState.isWebviewReady,
                 shouldRestartSplash = shouldRestartSplash
             )
         }
