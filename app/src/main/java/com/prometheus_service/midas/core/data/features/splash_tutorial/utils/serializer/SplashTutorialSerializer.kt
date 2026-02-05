@@ -20,7 +20,6 @@ object SplashTutorialSerializer : Serializer<SplashTutorialModel> {
 
     override suspend fun readFrom(input: InputStream): SplashTutorialModel {
         return try {
-            Timber.d("Reading SplashTutorialModel...")
             json.decodeFromString(
                 deserializer = SplashTutorialModel.serializer(),
                 string = input.readBytes().decodeToString()

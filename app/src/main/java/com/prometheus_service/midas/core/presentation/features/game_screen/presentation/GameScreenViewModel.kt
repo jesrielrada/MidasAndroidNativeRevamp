@@ -3,6 +3,7 @@ package com.prometheus_service.midas.core.presentation.features.game_screen.pres
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.event.GameScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,13 +16,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameScreenViewModel @Inject constructor(
-    private val dispatcherProvider: DispatcherProvider
+    private val dispatcherProvider: DispatcherProvider,
+    private val getAccountLoggedInState: GetAccountLoggedInState
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(GameScreenUiState())
     val uiState = _uiState.asStateFlow()
 
     fun onEvent(event: GameScreenEvent) {
         when (event) {
+            GameScreenEvent.CheckLoginState -> {
+                viewModelScope.launch {
+                    val isLoggedIn = getAccountLoggedInState.invoke()
+                    _uiState.update { it.copy(isAccountLoggedIn = isLoggedIn) }
+                }
+            }
+
             GameScreenEvent.ResetUiState -> {
                 _uiState.update {
                     GameScreenUiState()

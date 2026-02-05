@@ -93,7 +93,7 @@ fun MainScreen(
                     viewModel.onEvent(MainScreenEvent.LoadCustomRoute(route))
                 },
                 onDepositButtonClicked = {
-                    viewModel.onEvent(MainScreenEvent.LoadDepositRoute)
+                    viewModel.onEvent(MainScreenEvent.LoadCustomRoute(it))
                 }
             )
         }

@@ -11,9 +11,9 @@ sealed class GameScreenEvent {
     object OnClickReturnButton: GameScreenEvent()
     object HideReturnDialog: GameScreenEvent()
     object HideProgressView: GameScreenEvent()
-
     object ResetUiState: GameScreenEvent()
 
+    object CheckLoginState: GameScreenEvent()
 }
 
 

@@ -23,5 +23,4 @@ sealed class MainScreenEvent {
     data class LoadCustomRoute(val route: String) : MainScreenEvent()
     object ResetCustomRoute : MainScreenEvent()
     object SetWebviewUrlLoaded: MainScreenEvent()
-    object LoadDepositRoute: MainScreenEvent()
 }

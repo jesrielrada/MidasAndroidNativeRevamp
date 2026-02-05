@@ -19,15 +19,26 @@ import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteD
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+
+
+private data class InitializationValues(
+    val isAppReady: Boolean,
+    val customUserAgent: String,
+    val currentLocale: String,
+    val initializationResponse: Pair<Boolean, String>
+)
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
@@ -48,80 +59,57 @@ class MainScreenViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
 
+    private var networkJob: Job? = null
+
     init {
         onEvent(MainScreenEvent.InitializeNetworkType)
         observeRequiredInitializationStates()
     }
 
     private fun observeRequiredInitializationStates() {
-        viewModelScope.launch {// TRIGGER 1: Translations (When Network + UserAgent are ready)
-            uiState
-                .map { it.isNetworkReady && it.webViewScreenUiState.isUserAgentReady }
-                .distinctUntilChanged() // Crucial: Only trigger when the boolean flips
-                .collect { ready ->
-                    if (ready) {
-                        Timber.d("Network and user agent ready, building user agent ... ")
-                        onEvent(MainScreenEvent.InitializeTutorialSettings)
-                        onEvent(MainScreenEvent.InitializeTranslations)
-                        onEvent(MainScreenEvent.BuildUserAgent)
-                    }
-                }
-        }
-
         viewModelScope.launch {
-            // TRIGGER 2: Initializing App (When Custom User Agent is built)
-            uiState
-                .map { it.webViewScreenUiState.customUserAgent }
-                .distinctUntilChanged()
-                .collect { agent ->
-                    if (agent.isNotEmpty()) {
-                        Timber.d("Custom user agent ready.. $agent, initializing locale ... ")
-                        onEvent(MainScreenEvent.InitializeLocale)
-                    }
+            combine(
+                uiState.map { it.isNetworkReady && it.webViewScreenUiState.isUserAgentReady }
+                    .distinctUntilChanged(),
+                uiState.map { it.webViewScreenUiState.customUserAgent }.distinctUntilChanged(),
+                uiState.map { it.currentLocale }.distinctUntilChanged(),
+                uiState.map { it.isAppInitialized to it.currentLocale }.distinctUntilChanged()
+            ) { isAppReady, customUserAgent, currentLocale, initializationResponse ->
+                InitializationValues(
+                    isAppReady = isAppReady,
+                    customUserAgent = customUserAgent,
+                    currentLocale = currentLocale,
+                    initializationResponse = initializationResponse
+                )
+            }.collect { (isAppReady, customUserAgent, currentLocale, initializationResponse) ->
+                if (isAppReady) {
+                    Timber.d("Network and user agent ready, building user agent ... ")
+                    onEvent(MainScreenEvent.InitializeTutorialSettings)
+                    onEvent(MainScreenEvent.InitializeTranslations)
+                    onEvent(MainScreenEvent.BuildUserAgent)
                 }
-        }
 
-        viewModelScope.launch {
-            // TRIGGER 3: Initializing Locale
-            uiState
-                .map { it.currentLocale }
-                .distinctUntilChanged()
-                .collect { locale ->
-                    Timber.d("Locale initialized: $locale, proceeding to initialize app ... ")
-                    if (locale.isNotEmpty()) {
-                        onEvent(MainScreenEvent.InitializeApplication)
-                    }
+                if (customUserAgent.isNotEmpty()) {
+                    Timber.d("Custom user agent ready.. $customUserAgent, initializing locale ... ")
+                    onEvent(MainScreenEvent.InitializeLocale)
                 }
-        }
 
-        viewModelScope.launch {
-            // TRIGGER 4: Syncing (When App is initialized)
-            uiState
-                .map { it.isAppInitialized to it.currentLocale }
-                .distinctUntilChanged()
-                .collect { (initialized, locale) ->
-                    if (initialized) {
-                        Timber.d("App initialized, syncing remote data ... ")
-                        onEvent(MainScreenEvent.SyncRemoteData(locale))
-                        onEvent(MainScreenEvent.LoadBaseUrl)
-                    }
+                if (currentLocale.isNotEmpty()) {
+                    Timber.d("Locale initialized: $currentLocale, proceeding to initialize app ... ")
+                    onEvent(MainScreenEvent.InitializeApplication)
                 }
-        }
 
+                if (initializationResponse.first) {
+                    Timber.d("App initialized, syncing remote data ... ")
+                    onEvent(MainScreenEvent.SyncRemoteData(initializationResponse.second))
+                    onEvent(MainScreenEvent.LoadBaseUrl)
+                }
+            }
+        }
     }
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
-            MainScreenEvent.LoadDepositRoute -> {
-                viewModelScope.launch {
-                    val isLoggedIn = getAccountLoggedInState.invoke()
-                    val routeName = if (isLoggedIn) "deposit-route" else "login-route"
-                    val route = "javascript: window.pwa.navigate({ name: '$routeName'})"
-
-                    onEvent(MainScreenEvent.LoadCustomRoute(route))
-                }
-            }
-
             MainScreenEvent.SetWebviewUrlLoaded -> {
                 Timber.d("Setting webview url loaded ...")
                 _uiState.update {
@@ -163,8 +151,6 @@ class MainScreenViewModel @Inject constructor(
                             baseUrl = url
                         )
 
-                        Timber.d("Launching game page.. game url is: $gameUrl")
-
                         _uiState.update {
                             it.copy(
                                 shouldDisplayGameView = true,
@@ -177,11 +163,10 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.LoadBaseUrl -> {
                 viewModelScope.launch {
-                    Timber.d("Loading base url ...")
-                    val config = getAppConfigModel.invoke().first()
-                    val domain = config.domain
+                    val config = getAppConfigModel.invoke().firstOrNull()
+                    val domain = config?.domain
                     val version = BuildConfig.VERSION_NAME
-                    val baseUrl = config.baseUrl!!
+                    val baseUrl = config?.baseUrl
 
                     initializeNativeCookies.invoke(
                         domain = domain!!,
@@ -237,12 +222,9 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.InitializeLocale -> {
                 viewModelScope.launch {
-                    val config = getAppConfigModel.invoke().first()
-                    val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
-                    val isLanguageSelectionDisplayed = config.isLanguageSelectionDisplayed
-
-                    Timber.d("Initializing locale ... $locale")
-                    Timber.d("Initializing isLanguageSelectionDisplayed ... $isLanguageSelectionDisplayed")
+                    val config = getAppConfigModel.invoke().firstOrNull()
+                    val locale = config?.locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val isLanguageSelectionDisplayed = config?.isLanguageSelectionDisplayed
 
                     if (isLanguageSelectionDisplayed == null) {
                         onEvent(MainScreenEvent.DisplayLanguageSelectionScreen)
@@ -254,7 +236,8 @@ class MainScreenViewModel @Inject constructor(
 
 
             MainScreenEvent.InitializeNetworkType -> {
-                viewModelScope.launch {
+                networkJob?.cancel()
+                networkJob = viewModelScope.launch {
                     getNetworkType.invoke().collect { networkType ->
                         Timber.d("Initializing network ... $networkType")
                         if (networkType.isNotEmpty()) {
@@ -387,7 +370,6 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.OnWebviewReady -> {
                 if (!uiState.value.webViewScreenUiState.isWebviewReady) {
-                    Timber.d("Webview ready, updating state...")
                     _uiState.update {
                         it.copy(
                             webViewScreenUiState = it.webViewScreenUiState.copy(

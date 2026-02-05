@@ -6,7 +6,7 @@ import javax.inject.Inject
 class InitializeNativeCookies @Inject constructor(
     private val cookieProvider: CookieProvider
 ) {
-    operator fun invoke(
+    suspend operator fun invoke(
         domain: String,
         version: String,
         language: String

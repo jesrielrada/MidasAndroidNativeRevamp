@@ -37,11 +37,15 @@ fun GameScreen(
     gameScreenTranslations: GameScreenTranslations,
     onReturnDialogConfirm: () -> Unit,
     onHomeButtonClicked: () -> Unit,
-    onDepositButtonClicked: () -> Unit
+    onDepositButtonClicked: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val configuration = LocalConfiguration.current
 
+    LaunchedEffect(Unit) {
+        Timber.d("Checking login state ...")
+        viewModel.onEvent(GameScreenEvent.CheckLoginState)
+    }
 
     LaunchedEffect(configuration.orientation) {
         if (configuration.orientation == ORIENTATION_LANDSCAPE) {
@@ -68,7 +72,9 @@ fun GameScreen(
         onEvent = viewModel::onEvent,
         onReturnDialogConfirm = onReturnDialogConfirm,
         onHomeButtonClicked = onHomeButtonClicked,
-        onDepositButtonClicked = onDepositButtonClicked
+        onClickDepositButton = {
+            onDepositButtonClicked(it)
+        }
     )
 }
 
@@ -82,7 +88,7 @@ fun GameScreenContent(
     onEvent: (GameScreenEvent) -> Unit,
     onReturnDialogConfirm: () -> Unit,
     onHomeButtonClicked: () -> Unit,
-    onDepositButtonClicked: () -> Unit
+    onClickDepositButton: (String) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -122,7 +128,16 @@ fun GameScreenContent(
             },
             onClickReturnButton = { onEvent(GameScreenEvent.OnClickReturnButton) },
             onClickHomeButton = onHomeButtonClicked,
-            onClickDepositButton = onDepositButtonClicked
+            onClickDepositButton = {
+                if (uiState.isAccountLoggedIn) {
+                    val route = "javascript: window.pwa.navigate({ name: 'deposit-route'})"
+                    onClickDepositButton(route)
+                } else {
+                    val route = "javascript: window.pwa.navigate({ name: 'login-route'})"
+                    onClickDepositButton(route)
+                }
+            }
+
         )
         GameProgress(
             isLoading = uiState.isLoading
