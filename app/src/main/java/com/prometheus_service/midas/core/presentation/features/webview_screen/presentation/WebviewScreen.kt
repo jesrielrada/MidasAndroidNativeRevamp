@@ -11,11 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.prometheus_service.midas.core.presentation.features.webview_screen.clients.chrome.DefaultWebChromeClient
+import com.prometheus_service.midas.core.presentation.features.webview_screen.clients.webview.DefaultWebviewClient
 import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.DefaultJavascriptListener
 import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.JavascriptListener
 import timber.log.Timber
@@ -38,38 +39,6 @@ fun WebviewScreen(
         onNewGameLauncher = { onNewGameLauncher(it) },
         onRouteLoaded = { onRouteLoaded() },
         onUrlLoaded = onUrlLoaded
-    )
-}
-
-
-@Composable
-fun WebviewClientSetup(
-    webView: WebView
-) {
-    LaunchedEffect(webView) {
-        webView.webViewClient = object : WebViewClient() {}
-    }
-}
-
-
-fun webviewJavascriptSetup(
-    webView: WebView,
-    onPwaReady: (data: String) -> Unit,
-    onNewGameLauncher: (url: String) -> Unit
-) {
-    webView.addJavascriptInterface(
-        DefaultJavascriptListener(
-            object : JavascriptListener {
-                override fun onPwaReady(data: String) {
-                    onPwaReady(data)
-                }
-
-                override fun onNewGameLauncher(url: String) {
-                    onNewGameLauncher(url)
-                }
-            }
-        ),
-        "Android"
     )
 }
 
@@ -106,16 +75,15 @@ fun WebviewScreenContent(
                 onNewGameLauncher = { onNewGameLauncher(it) }
             )
 
+            this.webViewClient = DefaultWebviewClient()
+            this.webChromeClient = DefaultWebChromeClient(context)
+
             CookieManager.getInstance().setAcceptCookie(true)
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
 
             onInitialized(this.settings.userAgentString)
         }
     }
-
-    WebviewClientSetup(
-        webView = webView
-    )
 
     DisposableEffect(webView) {
         onDispose {
@@ -149,4 +117,25 @@ fun WebviewScreenContent(
                 .padding(innerPadding)
         )
     }
+}
+
+fun webviewJavascriptSetup(
+    webView: WebView,
+    onPwaReady: (data: String) -> Unit,
+    onNewGameLauncher: (url: String) -> Unit
+) {
+    webView.addJavascriptInterface(
+        DefaultJavascriptListener(
+            object : JavascriptListener {
+                override fun onPwaReady(data: String) {
+                    onPwaReady(data)
+                }
+
+                override fun onNewGameLauncher(url: String) {
+                    onNewGameLauncher(url)
+                }
+            }
+        ),
+        "Android"
+    )
 }
