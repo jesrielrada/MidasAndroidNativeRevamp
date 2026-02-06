@@ -1,5 +1,7 @@
 package com.prometheus_service.midas.core.presentation.main_screen.event
 
+import androidx.credentials.GetCredentialResponse
+
 sealed class MainScreenEvent {
     object HideSplashScreen : MainScreenEvent()
     object HideTutorialScreen : MainScreenEvent()
@@ -22,5 +24,15 @@ sealed class MainScreenEvent {
     data class LaunchGamePage(val gamePath: String) : MainScreenEvent()
     data class LoadCustomRoute(val route: String) : MainScreenEvent()
     object ResetCustomRoute : MainScreenEvent()
-    object SetWebviewUrlLoaded: MainScreenEvent()
+    object SetWebviewUrlLoaded : MainScreenEvent()
+    object ClearGoogleCredentials : MainScreenEvent()
+    data class LaunchGoogleLogin(val url: String): MainScreenEvent()
+    data class ProcessGoogleLogin(
+        val clientId: String,
+        val url: String,
+        val response: GetCredentialResponse
+    ) : MainScreenEvent()
+
+    data class LoadCustomUrl(val customUrl: String) : MainScreenEvent()
+    object ResetCustomUrl: MainScreenEvent()
 }

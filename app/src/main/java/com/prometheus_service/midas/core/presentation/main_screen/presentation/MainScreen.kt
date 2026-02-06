@@ -1,6 +1,7 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import android.app.Activity
+import android.content.Context
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,11 +26,12 @@ import com.prometheus_service.midas.core.presentation.features.splash_screen.pre
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
+import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber
 
 @Composable
-fun LockScreenOrientation(orientation: Int) {
-    val context = LocalContext.current
+fun LockScreenOrientation(orientation: Int, context: Context) {
     DisposableEffect(orientation) {
         val activity = context as? Activity ?: return@DisposableEffect onDispose {}
         val originalOrientation = activity.requestedOrientation
@@ -45,6 +47,8 @@ fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val googleAuthManager = remember { GoogleAuthManager(context) }
 
     val shouldDisplayWebview = uiState.shouldDisplayWebview
     val shouldDisplayGameView = uiState.shouldDisplayGameView
@@ -56,7 +60,34 @@ fun MainScreen(
         }
     }
 
-    LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                MainScreenSideEffect.ClearGoogleCredential -> {
+                    googleAuthManager.clearSession()
+                }
+
+                is MainScreenSideEffect.RequestGoogleLogin -> {
+                    try {
+                        val clientId = viewModel.googleClientId
+                        val result = googleAuthManager.getGoogleCredential(clientId)
+
+                        viewModel.onEvent(
+                            MainScreenEvent.ProcessGoogleLogin(
+                                clientId = clientId,
+                                response = result,
+                                url = effect.url,
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e("Creating credential manager failed... $e")
+                    }
+                }
+            }
+        }
+    }
+
+    LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, context)
 
     Box(modifier = Modifier.fillMaxSize()) {
         WebviewScreen(
@@ -65,23 +96,32 @@ fun MainScreen(
             onWebviewInitialized = {
                 viewModel.onEvent(MainScreenEvent.SetUserAgentReady(it))
             },
-            onPwaReady = {
-                viewModel.onEvent(MainScreenEvent.OnWebviewReady)
-            },
-            onNewGameLauncher = { path ->
-                viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
-            },
             onRouteLoaded = {
                 viewModel.onEvent(MainScreenEvent.ResetCustomRoute)
                 viewModel.onEvent(MainScreenEvent.HideGameViewScreen)
             },
             onUrlLoaded = {
                 viewModel.onEvent(MainScreenEvent.SetWebviewUrlLoaded)
+            },
+            onCustomUrlLoaded = {
+                viewModel.onEvent(MainScreenEvent.ResetCustomUrl)
+            },
+            onPwaReady = {
+                viewModel.onEvent(MainScreenEvent.OnWebviewReady)
+            },
+            onNewGameLauncher = { path ->
+                viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
+            },
+            onNativeAuthenticateGoogle = {
+                viewModel.onEvent(MainScreenEvent.ClearGoogleCredentials)
+            },
+            onNativeLaunchGoogle = {
+                viewModel.onEvent(MainScreenEvent.LaunchGoogleLogin(it))
             }
         )
 
         if (shouldDisplayGameView) {
-            LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+            LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, context)
             GameScreen(
                 gameUrl = uiState.gameUrl,
                 gameScreenTranslations = uiState.viewTranslations.gameScreenTranslations,

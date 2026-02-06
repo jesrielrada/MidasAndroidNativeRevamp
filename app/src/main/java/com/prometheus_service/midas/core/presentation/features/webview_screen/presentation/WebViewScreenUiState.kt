@@ -5,6 +5,7 @@ data class WebViewScreenUiState(
     val isUserAgentReady: Boolean = false,
     val isWebViewUrlLoaded: Boolean = false,
     val webviewUrl: String? = null,
+    val customUrl: String? = null,
     val customRoute: String? = null,
     val webviewUserAgent: String = "",
     val customUserAgent: String = ""

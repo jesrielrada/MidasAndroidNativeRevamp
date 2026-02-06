@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -26,10 +25,13 @@ fun WebviewScreen(
     modifier: Modifier = Modifier,
     uiState: WebViewScreenUiState,
     onWebviewInitialized: (String) -> Unit,
+    onRouteLoaded: () -> Unit,
+    onUrlLoaded: () -> Unit,
+    onCustomUrlLoaded: () -> Unit,
     onPwaReady: (String) -> Unit,
     onNewGameLauncher: (String) -> Unit,
-    onRouteLoaded: () -> Unit,
-    onUrlLoaded: () -> Unit
+    onNativeAuthenticateGoogle: (String) -> Unit,
+    onNativeLaunchGoogle: (String) -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
@@ -38,7 +40,10 @@ fun WebviewScreen(
         onPwaReady = { onPwaReady(it) },
         onNewGameLauncher = { onNewGameLauncher(it) },
         onRouteLoaded = { onRouteLoaded() },
-        onUrlLoaded = onUrlLoaded
+        onUrlLoaded = onUrlLoaded,
+        onNativeAuthenticateGoogle = { onNativeAuthenticateGoogle(it) },
+        onNativeLaunchGoogle = { onNativeLaunchGoogle(it) },
+        onCustomUrlLoaded = onCustomUrlLoaded
     )
 }
 
@@ -49,10 +54,13 @@ fun WebviewScreenContent(
     modifier: Modifier = Modifier,
     uiState: WebViewScreenUiState,
     onInitialized: (userAgent: String) -> Unit,
+    onUrlLoaded: () -> Unit,
+    onRouteLoaded: () -> Unit,
+    onCustomUrlLoaded: () -> Unit,
     onPwaReady: (String) -> Unit,
     onNewGameLauncher: (String) -> Unit,
-    onUrlLoaded: () -> Unit,
-    onRouteLoaded: () -> Unit
+    onNativeAuthenticateGoogle: (String) -> Unit,
+    onNativeLaunchGoogle: (String) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -72,7 +80,9 @@ fun WebviewScreenContent(
             webviewJavascriptSetup(
                 webView = this,
                 onPwaReady = { onPwaReady(it) },
-                onNewGameLauncher = { onNewGameLauncher(it) }
+                onNewGameLauncher = { onNewGameLauncher(it) },
+                onNativeAuthenticateGoogle = { onNativeAuthenticateGoogle(it) },
+                onNativeLaunchGoogle = { onNativeLaunchGoogle(it) }
             )
 
             this.webViewClient = DefaultWebviewClient()
@@ -111,6 +121,12 @@ fun WebviewScreenContent(
                     view.loadUrl(targetRoute)
                     onRouteLoaded()
                 }
+
+                if(uiState.customUrl != null) {
+                    Timber.d("Loading custom url ... ${uiState.customUrl}")
+                    view.loadUrl(uiState.customUrl)
+                    onCustomUrlLoaded()
+                }
             },
             modifier = modifier
                 .fillMaxSize()
@@ -122,7 +138,9 @@ fun WebviewScreenContent(
 fun webviewJavascriptSetup(
     webView: WebView,
     onPwaReady: (data: String) -> Unit,
-    onNewGameLauncher: (url: String) -> Unit
+    onNewGameLauncher: (url: String) -> Unit,
+    onNativeAuthenticateGoogle: (data: String) -> Unit,
+    onNativeLaunchGoogle: (url: String) -> Unit
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -133,6 +151,14 @@ fun webviewJavascriptSetup(
 
                 override fun onNewGameLauncher(url: String) {
                     onNewGameLauncher(url)
+                }
+
+                override fun onNativeAuthenticateGoogle(data: String) {
+                    onNativeAuthenticateGoogle(data)
+                }
+
+                override fun onNativeLaunchGoogle(url: String) {
+                    onNativeLaunchGoogle(url)
                 }
             }
         ),

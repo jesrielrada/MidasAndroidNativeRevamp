@@ -85,6 +85,7 @@ android {
             isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("debug")
+            applicationIdSuffix = ".staging"
         }
     }
 
@@ -93,6 +94,16 @@ android {
         create("vn88") {
             applicationId = "com.prometheus_service.midas.vn88"
             dimension = "operator"
+            buildConfigField(
+                "String",
+                "GoogleClientIdUAT",
+                secretsProperties["VN88_WEB_CLIENT_ID_UAT"] as String? ?: "\"\""
+            )
+            buildConfigField(
+                "String",
+                "GoogleClientIdPROD",
+                secretsProperties["VN88_WEB_CLIENT_ID_PROD"] as String? ?: "\"\""
+            )
         }
     }
 
@@ -144,6 +155,11 @@ dependencies {
 
     // Jetbrains
     implementation(libs.jetbrains.kotlinx.serialization.json)
+
+    //google login
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

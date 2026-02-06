@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.BuildConfig
 import com.prometheus_service.midas.FlavorConfig
+import com.prometheus_service.midas.core.domain.features.google_login.use_cases.GetGoogleAuthUrl
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
@@ -11,16 +12,18 @@ import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAp
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
-import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -31,6 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 
 
 private data class InitializationValues(
@@ -53,11 +57,14 @@ class MainScreenViewModel @Inject constructor(
     private val getDomainFromUrl: GetDomainFromUrl,
     private val initializeNativeCookies: InitializeNativeCookies,
     private val formatGameUrl: FormatGameUrl,
-    private val getAccountLoggedInState: GetAccountLoggedInState
+    private val getGoogleAuthUrl: GetGoogleAuthUrl,
+    @Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
     val uiState = _uiState.asStateFlow()
 
+    private val _sideEffect = MutableSharedFlow<MainScreenSideEffect>()
+    val sideEffect = _sideEffect.asSharedFlow()
 
     private var networkJob: Job? = null
 
@@ -110,8 +117,62 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.LaunchGoogleLogin -> {
+                viewModelScope.launch {
+                    _sideEffect.emit(MainScreenSideEffect.RequestGoogleLogin(event.url))
+                }
+            }
+
+            is MainScreenEvent.ProcessGoogleLogin -> {
+                viewModelScope.launch {
+                    val url = event.url
+                    val clientId = googleClientId
+                    val result = getGoogleAuthUrl.invoke(clientId, url, event.response)
+
+                    result.onSuccess { authUrl ->
+                        _uiState.update {
+                            it.copy(
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customUrl = authUrl
+                                )
+                            )
+                        }
+                    }.onFailure {
+                        Timber.d("Failure on processing google login")
+                    }
+                }
+            }
+
+            MainScreenEvent.ClearGoogleCredentials -> {
+                Timber.d("Clearing google credentials...")
+                viewModelScope.launch {
+                    _sideEffect.emit(MainScreenSideEffect.ClearGoogleCredential)
+                }
+            }
+
+            is MainScreenEvent.LoadCustomUrl -> {
+                viewModelScope.launch {
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customRoute = event.customUrl
+                            )
+                        )
+                    }
+                }
+            }
+
+            is MainScreenEvent.ResetCustomUrl -> {
+                _uiState.update {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            customUrl = null
+                        )
+                    )
+                }
+            }
+
             MainScreenEvent.SetWebviewUrlLoaded -> {
-                Timber.d("Setting webview url loaded ...")
                 _uiState.update {
                     it.copy(
                         webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -122,7 +183,6 @@ class MainScreenViewModel @Inject constructor(
             }
 
             MainScreenEvent.ResetCustomRoute -> {
-                Timber.d("Resetting custom route ...")
                 _uiState.update {
                     it.copy(
                         webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -303,7 +363,6 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-
             MainScreenEvent.InitializeTranslations -> {
                 viewModelScope.launch {
                     Timber.d("Initialize translations on main screen...")
@@ -334,7 +393,6 @@ class MainScreenViewModel @Inject constructor(
                     }
                 }
             }
-
 
             MainScreenEvent.HideGameViewScreen -> {
                 _uiState.update {

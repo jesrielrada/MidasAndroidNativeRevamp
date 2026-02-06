@@ -23,13 +23,7 @@ class DefaultMultiLanguageRepository @Inject constructor(
     override fun getLocalizedLanguageModel(locale: String): Flow<LocalizedModels> {
         return localDataSource.getLocalizedLanguageModel(locale)
             .map { cachedModel ->
-                if (cachedModel != null) {
-                    Timber.d("GetLocalizedLanguageModel, returning cached model ... locale is $locale")
-                    cachedModel
-                } else {
-                    Timber.d("GetLocalizedLanguageModel, returning default model ... locale is $locale")
-                    DefaultLocalizedModels().toDomain()
-                }
+                cachedModel ?: DefaultLocalizedModels().toDomain()
             }
     }
 

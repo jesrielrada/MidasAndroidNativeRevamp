@@ -24,7 +24,6 @@ class DefaultMultiLanguageRemoteRemoteDataSource @Inject constructor(
         )
         if (response.isSuccessful) {
             val body = response.body()
-            Timber.d("Successfully fetched multi-language data with body $body")
             body ?: throw Exception("Response body is null")
         } else {
             throw Exception("Request failed with code: ${response.code()}")

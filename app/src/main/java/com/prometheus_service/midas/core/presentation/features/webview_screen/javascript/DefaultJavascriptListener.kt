@@ -14,4 +14,14 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
     fun newGameLauncher(url: String) {
         callback.onNewGameLauncher(url)
     }
+
+    @JavascriptInterface
+    fun nativeAuthenticateGoogle(data: String) {
+        callback.onNativeAuthenticateGoogle(data)
+    }
+
+    @JavascriptInterface
+    fun nativeLaunchGoogle(url: String) {
+        callback.onNativeLaunchGoogle(url)
+    }
 }
