@@ -25,8 +25,6 @@ sealed class MainScreenEvent {
     data class LoadCustomRoute(val route: String) : MainScreenEvent()
     object ResetCustomRoute : MainScreenEvent()
     object SetWebviewUrlLoaded : MainScreenEvent()
-    object ClearGoogleCredentials : MainScreenEvent()
-    data class LaunchGoogleLogin(val url: String): MainScreenEvent()
     data class ProcessGoogleLogin(
         val clientId: String,
         val url: String,

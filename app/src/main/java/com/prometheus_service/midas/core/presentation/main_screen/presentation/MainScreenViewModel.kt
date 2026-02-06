@@ -115,14 +115,12 @@ class MainScreenViewModel @Inject constructor(
         }
     }
 
+    fun emitSideEffect(effect: MainScreenSideEffect) = viewModelScope.launch {
+        _sideEffect.emit(effect)
+    }
+
     fun onEvent(event: MainScreenEvent) {
         when (event) {
-            is MainScreenEvent.LaunchGoogleLogin -> {
-                viewModelScope.launch {
-                    _sideEffect.emit(MainScreenSideEffect.RequestGoogleLogin(event.url))
-                }
-            }
-
             is MainScreenEvent.ProcessGoogleLogin -> {
                 viewModelScope.launch {
                     val url = event.url
@@ -140,13 +138,6 @@ class MainScreenViewModel @Inject constructor(
                     }.onFailure {
                         Timber.d("Failure on processing google login")
                     }
-                }
-            }
-
-            MainScreenEvent.ClearGoogleCredentials -> {
-                Timber.d("Clearing google credentials...")
-                viewModelScope.launch {
-                    _sideEffect.emit(MainScreenSideEffect.ClearGoogleCredential)
                 }
             }
 

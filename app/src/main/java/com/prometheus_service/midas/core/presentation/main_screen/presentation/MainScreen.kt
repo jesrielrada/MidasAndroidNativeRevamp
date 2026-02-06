@@ -113,10 +113,10 @@ fun MainScreen(
                 viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
             },
             onNativeAuthenticateGoogle = {
-                viewModel.onEvent(MainScreenEvent.ClearGoogleCredentials)
+                viewModel.emitSideEffect(MainScreenSideEffect.ClearGoogleCredential)
             },
             onNativeLaunchGoogle = {
-                viewModel.onEvent(MainScreenEvent.LaunchGoogleLogin(it))
+                viewModel.emitSideEffect(MainScreenSideEffect.RequestGoogleLogin(it))
             }
         )
 
