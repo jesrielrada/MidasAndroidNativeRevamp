@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.BuildConfig
 import com.prometheus_service.midas.FlavorConfig
-import com.prometheus_service.midas.core.domain.features.google_login.use_cases.GetGoogleAuthUrl
+import com.prometheus_service.midas.core.domain.shared.google_login.use_cases.GetGoogleAuthUrl
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel

@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.core.domain.features.google_login.use_cases
+package com.prometheus_service.midas.core.domain.shared.google_login.use_cases
 
 import androidx.core.net.toUri
 import androidx.credentials.CustomCredential
@@ -57,6 +57,7 @@ class GetGoogleAuthUrl @Inject constructor(
         return try {
             GoogleIdTokenCredential.createFrom(credential.data).idToken
         } catch (e: GoogleIdTokenParsingException) {
+            Timber.d("Error parsing Google ID token: $e")
             null
         }
     }

@@ -2,7 +2,7 @@ package com.prometheus_service.midas.core.di
 
 import android.content.Context
 import androidx.credentials.CredentialManager
-import com.prometheus_service.midas.core.domain.features.google_login.use_cases.GetGoogleAuthUrl
+import com.prometheus_service.midas.core.domain.shared.google_login.use_cases.GetGoogleAuthUrl
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import dagger.Module
 import dagger.Provides
