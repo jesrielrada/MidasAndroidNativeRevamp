@@ -36,8 +36,6 @@ class FetchAppBaseUrl @Inject constructor(
                 Timber.e("Failed to fetch app base url.. exception=${e.localizedMessage}")
                 null
             }
-
-
         }
     }
 }

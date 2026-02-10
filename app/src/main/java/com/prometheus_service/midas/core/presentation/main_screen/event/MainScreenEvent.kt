@@ -23,8 +23,8 @@ sealed class MainScreenEvent {
     data class LoadCustomRoute(val route: String) : MainScreenEvent()
     object ResetCustomRoute : MainScreenEvent()
     object SetWebviewUrlLoaded : MainScreenEvent()
-
     data class HandlePwaReady(val data: String) : MainScreenEvent()
+    data class HandleStoreCredentials(val data: String?) : MainScreenEvent()
     data class ProcessGoogleLogin(
         val clientId: String,
         val url: String,

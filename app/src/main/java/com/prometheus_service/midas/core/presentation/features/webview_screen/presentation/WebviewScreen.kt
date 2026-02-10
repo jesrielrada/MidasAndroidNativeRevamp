@@ -29,6 +29,7 @@ fun WebviewScreen(
     onUrlLoaded: () -> Unit,
     onCustomUrlLoaded: () -> Unit,
     onPwaReady: (String) -> Unit,
+    onStoreCredentials: (String?) -> Unit,
     onNewGameLauncher: (String) -> Unit,
     onNativeAuthenticateGoogle: (String) -> Unit,
     onNativeLaunchGoogle: (String) -> Unit
@@ -38,6 +39,7 @@ fun WebviewScreen(
         uiState = uiState,
         onInitialized = { onWebviewInitialized(it) },
         onPwaReady = { onPwaReady(it) },
+        onStoreCredentials = { onStoreCredentials(it) },
         onNewGameLauncher = { onNewGameLauncher(it) },
         onRouteLoaded = { onRouteLoaded() },
         onUrlLoaded = onUrlLoaded,
@@ -58,6 +60,7 @@ fun WebviewScreenContent(
     onRouteLoaded: () -> Unit,
     onCustomUrlLoaded: () -> Unit,
     onPwaReady: (String) -> Unit,
+    onStoreCredentials: (String?) -> Unit,
     onNewGameLauncher: (String) -> Unit,
     onNativeAuthenticateGoogle: (String) -> Unit,
     onNativeLaunchGoogle: (String) -> Unit
@@ -82,7 +85,8 @@ fun WebviewScreenContent(
                 onPwaReady = { onPwaReady(it) },
                 onNewGameLauncher = { onNewGameLauncher(it) },
                 onNativeAuthenticateGoogle = { onNativeAuthenticateGoogle(it) },
-                onNativeLaunchGoogle = { onNativeLaunchGoogle(it) }
+                onNativeLaunchGoogle = { onNativeLaunchGoogle(it) },
+                onStoreCredentials = { onStoreCredentials(it) }
             )
 
             this.webViewClient = DefaultWebviewClient()
@@ -122,7 +126,7 @@ fun WebviewScreenContent(
                     onRouteLoaded()
                 }
 
-                if(uiState.customUrl != null) {
+                if (uiState.customUrl != null) {
                     Timber.d("Loading custom url ... ${uiState.customUrl}")
                     view.loadUrl(uiState.customUrl)
                     onCustomUrlLoaded()
@@ -140,7 +144,8 @@ fun webviewJavascriptSetup(
     onPwaReady: (data: String) -> Unit,
     onNewGameLauncher: (url: String) -> Unit,
     onNativeAuthenticateGoogle: (data: String) -> Unit,
-    onNativeLaunchGoogle: (url: String) -> Unit
+    onNativeLaunchGoogle: (url: String) -> Unit,
+    onStoreCredentials: (data: String?) -> Unit,
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -159,6 +164,18 @@ fun webviewJavascriptSetup(
 
                 override fun onNativeLaunchGoogle(url: String) {
                     onNativeLaunchGoogle(url)
+                }
+
+                override fun onStoreCredentials(data: String?) {
+                    onStoreCredentials(data)
+                }
+
+                override fun onResetCredentials(data: String?) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onShouldDisplayBiometricsLogin(enabled: Boolean) {
+                    TODO("Not yet implemented")
                 }
             }
         ),

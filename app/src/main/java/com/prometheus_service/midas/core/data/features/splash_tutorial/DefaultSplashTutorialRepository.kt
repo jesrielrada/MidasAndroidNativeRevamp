@@ -38,7 +38,6 @@ class DefaultSplashTutorialRepository @Inject constructor(
                 )
                 val model = response.toDomain(hostInterceptor)
                 localDataSource.cacheSplashTutorialModel(model)
-                Timber.d("Successfully fetched and cached splash tutorial data, model=$model")
             }.onFailure { exception ->
                 Timber.e(exception, "Failed to fetch splash tutorial data")
             }

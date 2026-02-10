@@ -26,6 +26,7 @@ import com.prometheus_service.midas.core.presentation.features.splash_screen.pre
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber
@@ -63,9 +64,14 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+                is MainScreenSideEffect.OnStoreCredentials -> {
+                    Timber.d("Store credentials called on side effects, calling handle store credentials...")
+                    viewModel.onEvent(HandleStoreCredentials(effect.data))
+                }
+
                 is MainScreenSideEffect.OnPwaReady -> {
                     Timber.d("PWA ready called on side effects, calling handle pwa ...")
-                    viewModel.onEvent(MainScreenEvent.HandlePwaReady(effect.data))
+                    viewModel.onEvent(HandlePwaReady(effect.data))
                 }
 
                 is MainScreenSideEffect.ClearGoogleCredential -> {
@@ -78,7 +84,7 @@ fun MainScreen(
                         val result = googleAuthManager.getGoogleCredential(clientId)
 
                         viewModel.onEvent(
-                            MainScreenEvent.ProcessGoogleLogin(
+                            ProcessGoogleLogin(
                                 clientId = clientId,
                                 response = result,
                                 url = effect.url,
@@ -88,6 +94,8 @@ fun MainScreen(
                         Timber.e("Creating credential manager failed... $e")
                     }
                 }
+
+
             }
         }
     }
@@ -99,21 +107,23 @@ fun MainScreen(
             modifier = Modifier.alpha(webviewVisibility),
             uiState = uiState.webViewScreenUiState,
             onWebviewInitialized = {
-                viewModel.onEvent(MainScreenEvent.SetUserAgentReady(it))
+                viewModel.onEvent(SetUserAgentReady(it))
             },
             onRouteLoaded = {
-                viewModel.onEvent(MainScreenEvent.ResetCustomRoute)
-                viewModel.onEvent(MainScreenEvent.HideGameViewScreen)
+                viewModel.onEvent(ResetCustomRoute)
+                viewModel.onEvent(HideGameViewScreen)
             },
             onUrlLoaded = {
-                viewModel.onEvent(MainScreenEvent.SetWebviewUrlLoaded)
+                viewModel.onEvent(SetWebviewUrlLoaded)
             },
             onCustomUrlLoaded = {
-                viewModel.onEvent(MainScreenEvent.ResetCustomUrl)
+                viewModel.onEvent(ResetCustomUrl)
             },
             onPwaReady = { data ->
                 viewModel.emitSideEffect(MainScreenSideEffect.OnPwaReady(data))
-                //viewModel.onEvent(MainScreenEvent.OnWebviewReady)
+            },
+            onStoreCredentials = { data ->
+                viewModel.emitSideEffect(MainScreenSideEffect.OnStoreCredentials(data))
             },
             onNewGameLauncher = { path ->
                 viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
@@ -132,14 +142,14 @@ fun MainScreen(
                 gameUrl = uiState.gameUrl,
                 gameScreenTranslations = uiState.viewTranslations.gameScreenTranslations,
                 onReturnDialogConfirm = {
-                    viewModel.onEvent(MainScreenEvent.HideGameViewScreen)
+                    viewModel.onEvent(HideGameViewScreen)
                 },
                 onHomeButtonClicked = {
                     val route = "javascript: window.pwa.navigate({ name: 'dashboard-route'})"
-                    viewModel.onEvent(MainScreenEvent.LoadCustomRoute(route))
+                    viewModel.onEvent(LoadCustomRoute(route))
                 },
                 onDepositButtonClicked = {
-                    viewModel.onEvent(MainScreenEvent.LoadCustomRoute(it))
+                    viewModel.onEvent(LoadCustomRoute(it))
                 }
             )
         }
@@ -148,7 +158,7 @@ fun MainScreen(
             TutorialScreen(
                 tutorialTranslations = uiState.viewTranslations.tutorialScreenTranslations,
                 onTutorialFinished = {
-                    viewModel.onEvent(MainScreenEvent.HideTutorialScreen)
+                    viewModel.onEvent(HideTutorialScreen)
                 }
             )
         }
@@ -157,10 +167,10 @@ fun MainScreen(
             LaunchedEffect(uiState.webViewScreenUiState.isPwaReady) {
                 if (uiState.webViewScreenUiState.isPwaReady && uiState.isAppInitialized) {
                     if (uiState.webViewScreenUiState.isPwaReady) {
-                        viewModel.onEvent(MainScreenEvent.HideSplashScreen)
+                        viewModel.onEvent(HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
-                        viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
+                        viewModel.onEvent(DisplayTutorialScreen)
                     }
                 }
             }
@@ -169,19 +179,19 @@ fun MainScreen(
                 splashScreenTranslations = uiState.viewTranslations.splashScreenTranslations,
                 onClickSkipBtn = {
                     if (uiState.webViewScreenUiState.isPwaReady && uiState.isAppInitialized) {
-                        viewModel.onEvent(MainScreenEvent.HideSplashScreen)
+                        viewModel.onEvent(HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
-                        viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
+                        viewModel.onEvent(DisplayTutorialScreen)
                     }
                 },
                 onScrollFinished = {
                     Timber.d("Scroll finished called")
                     if (uiState.webViewScreenUiState.isPwaReady && uiState.isAppInitialized) {
-                        viewModel.onEvent(MainScreenEvent.HideSplashScreen)
+                        viewModel.onEvent(HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
-                        viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
+                        viewModel.onEvent(DisplayTutorialScreen)
                     }
                 },
                 shouldDisplaySkipButton = uiState.webViewScreenUiState.isPwaReady,
@@ -192,8 +202,8 @@ fun MainScreen(
         if (uiState.shouldDisplayLanguageSelection) {
             LanguageSelectionScreen(
                 onLanguageSelected = { locale ->
-                    viewModel.onEvent(MainScreenEvent.HideLanguageSelectionScreen)
-                    viewModel.onEvent(MainScreenEvent.SetLocaleSelected(locale))
+                    viewModel.onEvent(HideLanguageSelectionScreen)
+                    viewModel.onEvent(SetLocaleSelected(locale))
                 }
             )
         }
@@ -205,8 +215,8 @@ fun MainScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        viewModel.onEvent(MainScreenEvent.DismissErrorDialog)
-                        viewModel.onEvent(MainScreenEvent.InitializeApplication)
+                        viewModel.onEvent(DismissErrorDialog)
+                        viewModel.onEvent(InitializeApplication)
                     }) {
                         Text(
                             color = Color.White,

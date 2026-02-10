@@ -1,7 +1,6 @@
 package com.prometheus_service.midas.core.domain.shared.remote_domains.use_case
 
 import com.prometheus_service.midas.core.domain.shared.remote_domains.RemoteDomainsRepository
-import timber.log.Timber
 import javax.inject.Inject
 
 class SyncRemoteDomains @Inject constructor(
@@ -13,12 +12,11 @@ class SyncRemoteDomains @Inject constructor(
         acceptLanguage: String,
         currency: String?
     ) {
-        val result = repository.syncRemoteDomainsData(
+        repository.syncRemoteDomainsData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,
             currency = currency
         )
-        Timber.d("Remote domains: $result")
     }
 }

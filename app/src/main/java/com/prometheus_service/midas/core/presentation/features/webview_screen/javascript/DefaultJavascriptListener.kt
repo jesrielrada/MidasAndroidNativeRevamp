@@ -24,4 +24,19 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
     fun nativeLaunchGoogle(url: String) {
         callback.onNativeLaunchGoogle(url)
     }
+
+    @JavascriptInterface
+    fun storeCredentials(data: String?) {
+        callback.onStoreCredentials(data)
+    }
+
+    @JavascriptInterface
+    fun resetCredentials(data: String?) {
+       callback.onResetCredentials(data)
+    }
+
+    @JavascriptInterface
+    fun shouldDisplayBiometricsLogin(enabled: Boolean) {
+        callback.onShouldDisplayBiometricsLogin(enabled)
+    }
 }

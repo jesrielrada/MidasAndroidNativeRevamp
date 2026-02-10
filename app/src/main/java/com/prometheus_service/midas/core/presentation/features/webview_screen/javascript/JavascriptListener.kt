@@ -5,6 +5,11 @@ interface JavascriptListener {
     fun onNewGameLauncher(url: String)
     fun onNativeAuthenticateGoogle(data: String)
     fun onNativeLaunchGoogle(url: String)
+    fun onStoreCredentials(data: String?)
+
+    fun onResetCredentials(data: String?)
+
+    fun onShouldDisplayBiometricsLogin(enabled: Boolean)
 
 }
 

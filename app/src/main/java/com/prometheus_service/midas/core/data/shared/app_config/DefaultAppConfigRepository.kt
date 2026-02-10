@@ -49,7 +49,7 @@ class DefaultAppConfigRepository @Inject constructor(
                         ?.jsonPrimitive
                         ?.contentOrNull
 
-                    val memberCurrency = json["memberCurrency"]
+                    val memberCurrency = json["member"]
                         ?.takeIf { it is JsonObject }
                         ?.jsonObject
                         ?.get("currency")

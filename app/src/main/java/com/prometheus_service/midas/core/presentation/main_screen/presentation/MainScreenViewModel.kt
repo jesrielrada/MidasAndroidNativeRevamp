@@ -79,42 +79,49 @@ class MainScreenViewModel @Inject constructor(
 
     private fun observeRequiredInitializationStates() {
         viewModelScope.launch {
-            combine(
-                uiState.map { it.isNetworkReady && it.webViewScreenUiState.isUserAgentReady }
-                    .distinctUntilChanged(),
-                uiState.map { it.webViewScreenUiState.customUserAgent }.distinctUntilChanged(),
-                uiState.map { it.currentLocale }.distinctUntilChanged(),
-                uiState.map { it.isAppInitialized to it.currentLocale }.distinctUntilChanged()
-            ) { isAppReady, customUserAgent, currentLocale, initializationResponse ->
-                InitializationValues(
-                    isAppReady = isAppReady,
-                    customUserAgent = customUserAgent,
-                    currentLocale = currentLocale,
-                    initializationResponse = initializationResponse
-                )
-            }.collect { (isAppReady, customUserAgent, currentLocale, initializationResponse) ->
-                if (isAppReady) {
-                    Timber.d("Network and user agent ready, building user agent ... ")
-                    onEvent(MainScreenEvent.InitializeTutorialSettings)
-                    onEvent(MainScreenEvent.InitializeTranslations)
-                    onEvent(MainScreenEvent.BuildUserAgent)
+            uiState.map { it.isNetworkReady && it.webViewScreenUiState.isUserAgentReady }
+                .distinctUntilChanged()
+                .collect { ready ->
+                    if (ready) {
+                        Timber.d("Network and user agent ready, building user agent ... ")
+                        onEvent(MainScreenEvent.InitializeTutorialSettings)
+                        onEvent(MainScreenEvent.InitializeTranslations)
+                        onEvent(MainScreenEvent.BuildUserAgent)
+                    }
                 }
+        }
 
-                if (customUserAgent.isNotEmpty()) {
-                    Timber.d("Custom user agent ready.. $customUserAgent, initializing locale ... ")
-                    onEvent(MainScreenEvent.InitializeLocale)
+        viewModelScope.launch {
+            uiState.map { it.webViewScreenUiState.customUserAgent }
+                .distinctUntilChanged()
+                .collect { agent ->
+                    if (agent.isNotEmpty()){
+                        Timber.d("Custom user agent ready.. $agent, initializing locale ... ")
+                        onEvent(MainScreenEvent.InitializeLocale)
+                    }
                 }
+        }
 
-                if (currentLocale.isNotEmpty()) {
-                    Timber.d("Locale initialized: $currentLocale, proceeding to initialize app ... ")
-                    onEvent(MainScreenEvent.InitializeApplication)
+        viewModelScope.launch {
+            uiState.map { it.currentLocale }
+                .distinctUntilChanged()
+                .collect { currentLocale ->
+                    if (currentLocale.isNotEmpty()) {
+                        Timber.d("Locale initialized: $currentLocale, proceeding to initialize app ... ")
+                        onEvent(MainScreenEvent.InitializeApplication)
+                    }
                 }
+        }
 
-                if (initializationResponse.first) {
-                    Timber.d("App initialized, syncing remote data ... ")
-                    onEvent(MainScreenEvent.LoadBaseUrl)
+        viewModelScope.launch {
+            uiState.map { it.isAppInitialized}
+                .distinctUntilChanged()
+                .collect { isAppInitialized ->
+                    if (isAppInitialized) {
+                        Timber.d("App initialized, loading base url  ... ")
+                        onEvent(MainScreenEvent.LoadBaseUrl)
+                    }
                 }
-            }
         }
     }
 
@@ -124,6 +131,12 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleStoreCredentials -> {
+                viewModelScope.launch {
+                    Timber.d("Handling store credentials ... ${event.data}")
+                    syncRemoteData.invoke(uiState.value.currentLocale)
+                }
+            }
 
             is MainScreenEvent.HandlePwaReady -> {
                 viewModelScope.launch {
