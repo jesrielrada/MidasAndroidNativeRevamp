@@ -27,6 +27,9 @@ datastore_preferences = "1.2.0"
 kotlin_serialization = "1.7.10"
 jetbrains_serialization_json = "1.7.3"
 
+biometric_ktx = "1.2.0-alpha05"
+
+
 [libraries]
 android-spinkit = { module = "com.github.ybq:Android-SpinKit", version.ref = "androidSpinkit" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
@@ -53,6 +56,8 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore_preferences" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore_preferences" }
+androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version.ref = "biometric_ktx" }
+
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltCompiler" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltCompiler" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
