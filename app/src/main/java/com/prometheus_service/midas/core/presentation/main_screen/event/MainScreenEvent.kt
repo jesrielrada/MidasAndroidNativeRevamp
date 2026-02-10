@@ -7,11 +7,9 @@ sealed class MainScreenEvent {
     object HideTutorialScreen : MainScreenEvent()
     object HideLanguageSelectionScreen : MainScreenEvent()
     object HideGameViewScreen : MainScreenEvent()
-    object OnWebviewReady : MainScreenEvent()
     object InitializeApplication : MainScreenEvent()
     object InitializeTranslations : MainScreenEvent()
     object InitializeTutorialSettings : MainScreenEvent()
-    data class SyncRemoteData(val locale: String) : MainScreenEvent()
     object DismissErrorDialog : MainScreenEvent()
     object InitializeNetworkType : MainScreenEvent()
     object BuildUserAgent : MainScreenEvent()
@@ -25,6 +23,8 @@ sealed class MainScreenEvent {
     data class LoadCustomRoute(val route: String) : MainScreenEvent()
     object ResetCustomRoute : MainScreenEvent()
     object SetWebviewUrlLoaded : MainScreenEvent()
+
+    data class HandlePwaReady(val data: String) : MainScreenEvent()
     data class ProcessGoogleLogin(
         val clientId: String,
         val url: String,

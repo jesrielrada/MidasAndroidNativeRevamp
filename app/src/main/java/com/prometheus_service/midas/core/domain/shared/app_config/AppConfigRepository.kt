@@ -7,4 +7,6 @@ interface AppConfigRepository {
     val appConfigModel: Flow<AppConfigModel>
 
     suspend fun cacheAppConfigModel(model: AppConfigModel) : Result<Unit>
+
+    suspend fun cacheAppCurrency(data: String)
 }

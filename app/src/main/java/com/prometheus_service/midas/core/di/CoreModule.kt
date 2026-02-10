@@ -6,12 +6,15 @@ import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.Ge
 import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.SyncRemoteDomains
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
+import com.prometheus_service.midas.core.domain.shared.app_config.AppConfigRepository
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
+import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
@@ -24,6 +27,26 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object CoreModule {
+
+    @Provides
+    @Singleton
+    fun providePersistNativeCookies(
+        cookieProvider: CookieProvider
+    ): PersistNativeCookies {
+        return PersistNativeCookies(cookieProvider)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideCacheAppCurrency(
+        appConfigRepository: AppConfigRepository
+    ): CacheAppCurrency {
+        return CacheAppCurrency(
+            appConfigRepository = appConfigRepository
+        )
+    }
+
     @Provides
     @Singleton
     fun provideSetInterceptorUrl(

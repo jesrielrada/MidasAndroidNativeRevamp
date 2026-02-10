@@ -31,8 +31,7 @@ class DefaultBiometricsLocalDataSource @Inject constructor(
                         ?: currentData.isBiometricsEnabled,
                     isCmsboEnabled = model.isCmsboEnabled ?: currentData.isCmsboEnabled,
                     usernames = model.usernames ?: currentData.usernames,
-                    cipherList = model.cipherList ?: currentData.cipherList,
-                    currentAccount = model.currentAccount ?: currentData.currentAccount
+                    cipherList = model.cipherList ?: currentData.cipherList
                 )
             }
         } catch (e: Exception) {

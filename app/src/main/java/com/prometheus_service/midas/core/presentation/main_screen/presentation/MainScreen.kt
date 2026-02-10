@@ -63,7 +63,12 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                MainScreenSideEffect.ClearGoogleCredential -> {
+                is MainScreenSideEffect.OnPwaReady -> {
+                    Timber.d("PWA ready called on side effects, calling handle pwa ...")
+                    viewModel.onEvent(MainScreenEvent.HandlePwaReady(effect.data))
+                }
+
+                is MainScreenSideEffect.ClearGoogleCredential -> {
                     googleAuthManager.clearSession()
                 }
 
@@ -106,8 +111,9 @@ fun MainScreen(
             onCustomUrlLoaded = {
                 viewModel.onEvent(MainScreenEvent.ResetCustomUrl)
             },
-            onPwaReady = {
-                viewModel.onEvent(MainScreenEvent.OnWebviewReady)
+            onPwaReady = { data ->
+                viewModel.emitSideEffect(MainScreenSideEffect.OnPwaReady(data))
+                //viewModel.onEvent(MainScreenEvent.OnWebviewReady)
             },
             onNewGameLauncher = { path ->
                 viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
@@ -148,9 +154,9 @@ fun MainScreen(
         }
 
         if (uiState.shouldDisplaySplash) {
-            LaunchedEffect(uiState.webViewScreenUiState.isWebviewReady) {
-                if (uiState.webViewScreenUiState.isWebviewReady && uiState.isAppInitialized) {
-                    if (uiState.webViewScreenUiState.isWebviewReady) {
+            LaunchedEffect(uiState.webViewScreenUiState.isPwaReady) {
+                if (uiState.webViewScreenUiState.isPwaReady && uiState.isAppInitialized) {
+                    if (uiState.webViewScreenUiState.isPwaReady) {
                         viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
@@ -162,7 +168,7 @@ fun MainScreen(
             SplashScreen(
                 splashScreenTranslations = uiState.viewTranslations.splashScreenTranslations,
                 onClickSkipBtn = {
-                    if (uiState.webViewScreenUiState.isWebviewReady && uiState.isAppInitialized) {
+                    if (uiState.webViewScreenUiState.isPwaReady && uiState.isAppInitialized) {
                         viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
@@ -171,14 +177,14 @@ fun MainScreen(
                 },
                 onScrollFinished = {
                     Timber.d("Scroll finished called")
-                    if (uiState.webViewScreenUiState.isWebviewReady && uiState.isAppInitialized) {
+                    if (uiState.webViewScreenUiState.isPwaReady && uiState.isAppInitialized) {
                         viewModel.onEvent(MainScreenEvent.HideSplashScreen)
                     }
                     if (uiState.canDisplayTutorialScreen) {
                         viewModel.onEvent(MainScreenEvent.DisplayTutorialScreen)
                     }
                 },
-                shouldDisplaySkipButton = uiState.webViewScreenUiState.isWebviewReady,
+                shouldDisplaySkipButton = uiState.webViewScreenUiState.isPwaReady,
                 shouldRestartSplash = shouldRestartSplash
             )
         }

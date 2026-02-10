@@ -10,10 +10,12 @@ import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfi
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
+import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
+import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
@@ -58,6 +60,8 @@ class MainScreenViewModel @Inject constructor(
     private val initializeNativeCookies: InitializeNativeCookies,
     private val formatGameUrl: FormatGameUrl,
     private val getGoogleAuthUrl: GetGoogleAuthUrl,
+    private val cacheAppCurrency: CacheAppCurrency,
+    private val persistNativeCookies: PersistNativeCookies,
     @Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -108,7 +112,6 @@ class MainScreenViewModel @Inject constructor(
 
                 if (initializationResponse.first) {
                     Timber.d("App initialized, syncing remote data ... ")
-                    onEvent(MainScreenEvent.SyncRemoteData(initializationResponse.second))
                     onEvent(MainScreenEvent.LoadBaseUrl)
                 }
             }
@@ -121,6 +124,23 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+
+            is MainScreenEvent.HandlePwaReady -> {
+                viewModelScope.launch {
+                    Timber.d("Handling pwa ready ... ${event.data}")
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                isPwaReady = true
+                            )
+                        )
+                    }
+                    persistNativeCookies.invoke()
+                    cacheAppCurrency.invoke(event.data)
+                    syncRemoteData.invoke(uiState.value.currentLocale)
+                }
+            }
+
             is MainScreenEvent.ProcessGoogleLogin -> {
                 viewModelScope.launch {
                     val url = event.url
@@ -414,24 +434,6 @@ class MainScreenViewModel @Inject constructor(
                     it.copy(
                         shouldDisplayLanguageSelection = false
                     )
-                }
-            }
-
-            MainScreenEvent.OnWebviewReady -> {
-                if (!uiState.value.webViewScreenUiState.isWebviewReady) {
-                    _uiState.update {
-                        it.copy(
-                            webViewScreenUiState = it.webViewScreenUiState.copy(
-                                isWebviewReady = true
-                            )
-                        )
-                    }
-                }
-            }
-
-            is MainScreenEvent.SyncRemoteData -> {
-                viewModelScope.launch {
-                    syncRemoteData.invoke(event.locale)
                 }
             }
 

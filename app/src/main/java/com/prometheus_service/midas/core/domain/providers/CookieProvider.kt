@@ -4,4 +4,6 @@ interface CookieProvider {
     suspend fun initializeNativeCookies(domain: String, version: String, language: String)
 
     suspend fun isLoggedIn(baseUrl: String): Boolean
+
+    suspend fun persistCookies()
 }

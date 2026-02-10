@@ -24,9 +24,9 @@ class SyncRemoteData @Inject constructor(
             val config = getAppConfig.invoke().first()
             val userAgent = FlavorConfig.INITIAL_USER_AGENT
             val operatorId = FlavorConfig.OPERATOR_ID
-            val currency = config.currency ?: "VND"
+            val currency = config.currency
 
-            Timber.d("Syncing remote domains ... locale is $locale ")
+            Timber.d("Syncing remote data ... locale is $locale, currency is $currency ")
 
             syncRemoteDomains.invoke(
                 operatorId = operatorId,

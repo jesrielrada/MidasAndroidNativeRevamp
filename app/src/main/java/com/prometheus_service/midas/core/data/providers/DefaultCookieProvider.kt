@@ -45,4 +45,10 @@ class DefaultCookieProvider @Inject constructor(
             }
         }
     }
+
+    override suspend fun persistCookies() {
+        withContext(dispatcherProvider.io) {
+            CookieManager.getInstance().flush()
+        }
+    }
 }
