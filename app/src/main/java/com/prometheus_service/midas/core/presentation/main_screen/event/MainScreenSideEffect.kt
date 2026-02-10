@@ -10,4 +10,6 @@ sealed class MainScreenSideEffect {
     object DisplayBiometricsEnableDialog : MainScreenSideEffect()
     data class DisplayBiometricPrompt(val cipher: Cipher) : MainScreenSideEffect()
     object DisplayBiometricSuccessEnrollment : MainScreenSideEffect()
+
+    data class DisplayBiometricSelectionList(val usernames: List<String>?) : MainScreenSideEffect()
 }

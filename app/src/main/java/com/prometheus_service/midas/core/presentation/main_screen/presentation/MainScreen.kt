@@ -7,6 +7,8 @@ import android.content.pm.ActivityInfo
 import android.util.Log
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt
+import androidx.biometric.BiometricPrompt.*
+import androidx.biometric.BiometricPrompt.PromptInfo.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
@@ -71,6 +73,21 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+                is MainScreenSideEffect.DisplayBiometricSelectionList -> {
+                    Timber.d("Displaying biometric selection list... usernames ${effect.usernames}")
+                    MaterialAlertDialogBuilder(context).apply {
+                        setTitle("Select account to login")
+                        setItems(effect.usernames?.toTypedArray()) { dialog, index ->
+                            //TODO()
+                        }
+                        setOnDismissListener { //TODO() }
+
+                        }
+                        setNegativeButton("CANCEL") { _, _ -> }
+                        show()
+                    }
+                }
+
                 MainScreenSideEffect.DisplayBiometricSuccessEnrollment -> {
                     Toast.makeText(context, "Biometrics login enabled ", Toast.LENGTH_SHORT).show()
                 }
@@ -90,13 +107,13 @@ fun MainScreen(
                         }
                     }
                     val prompt = BiometricPrompt(activity, authCallback)
-                    val info = BiometricPrompt.PromptInfo.Builder().apply {
+                    val info = Builder().apply {
                         setTitle("Biometrics Sign in")
                         setConfirmationRequired(false)
                         setNegativeButtonText("CANCEL")
                     }.build()
 
-                    val crypto = BiometricPrompt.CryptoObject(effect.cipher)
+                    val crypto = CryptoObject(effect.cipher)
                     prompt.authenticate(info, crypto)
                 }
 
@@ -148,6 +165,8 @@ fun MainScreen(
 
                         }.show()
                 }
+
+
             }
         }
     }
@@ -190,6 +209,9 @@ fun MainScreen(
             },
             onNativeLaunchGoogle = {
                 viewModel.emitSideEffect(MainScreenSideEffect.RequestGoogleLogin(it))
+            },
+            onShouldDisplayBiometricsLogin = {
+                viewModel.onEvent(DisplayBiometricAccountSelection)
             }
         )
 

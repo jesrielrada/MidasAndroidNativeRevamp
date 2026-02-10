@@ -9,7 +9,9 @@ import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_cas
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.DisplayResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.EnrollmentResult
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricButtonDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
@@ -72,6 +74,7 @@ class MainScreenViewModel @Inject constructor(
     private val setBiometricsEnabled: SetBiometricsEnabled,
     private val persistBiometricsUser: PersistBiometricsUser,
     private val handleBiometricButtonDisplay: HandleBiometricButtonDisplay,
+    private val handleBiometricAccountDisplay: HandleBiometricAccountDisplay,
     @Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -141,6 +144,27 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.DisplayBiometricAccountSelection -> {
+                viewModelScope.launch {
+                    Timber.d("Displaying biometric account selection ...")
+                    handleBiometricAccountDisplay.invoke().onSuccess { result ->
+                        when (result) {
+                            is DisplayResult.DisplayList -> {
+                                _sideEffect.emit(
+                                    MainScreenSideEffect.DisplayBiometricSelectionList(
+                                        result.usernames
+                                    )
+                                )
+                            }
+
+                            DisplayResult.DisplayNoneEnrolled -> {
+                                Timber.d("Displaying none enrolled")
+                            }
+                        }
+                    }
+                }
+            }
+
             is MainScreenEvent.HandleBiometricsAuthResult -> {
                 viewModelScope.launch {
                     Timber.d("Handling biometric auth result ...")

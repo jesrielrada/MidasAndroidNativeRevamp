@@ -11,6 +11,8 @@ interface BiometricsManager {
     val isNoneEnrolledBiometrics: Boolean
     val currentAccount: CurrentAccount?
 
+    suspend fun getUsernames(): List<String>?
+
     suspend fun isBiometricsEnabled(): Boolean
     suspend fun setBiometricsEnabled(cmsboEnabled: Boolean)
     suspend fun setCurrentAccount(data: String): Result<Unit>

@@ -30,6 +30,10 @@ class DefaultBiometricManager @Inject constructor(
     override val currentAccount: CurrentAccount?
         get() = _currentAccount
 
+    override suspend fun getUsernames(): List<String>? {
+        return repository.getUsernames().first()
+    }
+
     override suspend fun isBiometricsEnabled(): Boolean {
         return repository.isBiometricsEnabled().first()
     }

@@ -14,6 +14,7 @@ import com.prometheus_service.midas.core.domain.features.biometrics.manager.Biom
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.CipherManager
 import com.prometheus_service.midas.core.domain.features.biometrics.model.BiometricsModel
 import com.prometheus_service.midas.core.domain.features.biometrics.repository.BiometricsRepository
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.PersistBiometricsUser
@@ -30,6 +31,16 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object BiometricsModule {
+
+    @Singleton
+    @Provides
+    fun provideHandleBiometricAccountDisplay(
+        biometricsManager: BiometricsManager
+    ): HandleBiometricAccountDisplay {
+        return HandleBiometricAccountDisplay(
+            biometricsManager = biometricsManager
+        )
+    }
 
     @Singleton
     @Provides
