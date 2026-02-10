@@ -32,11 +32,17 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
 
     @JavascriptInterface
     fun resetCredentials(data: String?) {
-       callback.onResetCredentials(data)
+        callback.onResetCredentials(data)
     }
 
     @JavascriptInterface
     fun shouldDisplayBiometricsLogin(enabled: Boolean) {
         callback.onShouldDisplayBiometricsLogin(enabled)
     }
+
+    @JavascriptInterface
+    fun pwaNavigateTo(data: String?) {
+        callback.onPwaNavigate(data)
+    }
+
 }

@@ -6,9 +6,9 @@ import javax.crypto.SecretKey
 
 interface CipherManager {
 
-    val cipher: Cipher
+    val cipher: Cipher?
     fun getSecretKey(key: String): SecretKey
-    fun setCipherMode(mode: Int, key: String, vector: ByteArray)
-    fun decryptData(cipherText: ByteArray): String
-    fun encryptData(plainText: String): CipherTextWrapper
+    fun setCipherMode(mode: Int, key: String, vector: ByteArray?)
+    fun decryptData(cipherText: ByteArray): String?
+    fun encryptData(plainText: String): CipherTextWrapper?
 }

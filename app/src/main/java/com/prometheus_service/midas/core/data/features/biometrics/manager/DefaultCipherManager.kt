@@ -26,9 +26,9 @@ class DefaultCipherManager @Inject constructor() : CipherManager {
             "$KEY_ALGORITHM_AES/$BLOCK_MODE_CBC/$ENCRYPTION_PADDING_PKCS7"
     }
 
-    override val cipher: Cipher by lazy {
-        Cipher.getInstance(CIPHER_TRANSFORMATION)
-    }
+    private var _cipher: Cipher? = Cipher.getInstance(CIPHER_TRANSFORMATION)
+    override val cipher: Cipher?
+        get() = _cipher
 
     override fun getSecretKey(key: String): SecretKey {
         // If SecretKey was previously created for that keyName, then grab and return it.
@@ -67,36 +67,57 @@ class DefaultCipherManager @Inject constructor() : CipherManager {
         return keyGenerator.generateKey()
     }
 
-    override fun setCipherMode(mode: Int, key: String, vector: ByteArray) {
+    override fun setCipherMode(mode: Int, key: String, vector: ByteArray?) {
         val secretKey = getSecretKey(key)
-        val vector = IvParameterSpec(vector)
+
         try {
-            cipher.init(mode, secretKey, vector)
+            if (vector == null) {
+                cipher?.init(mode, secretKey)
+            } else {
+                cipher?.init(mode, secretKey, IvParameterSpec(vector))
+            }
         } catch (e: KeyPermanentlyInvalidatedException) {
 
-            Timber.e("Failed to init cipher, key exception $e, reinitializing ...")
+            Timber.d("Failed to init encrypt cipher, key exception $e, reinitializing ...")
 
             val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
+
             keyStore.load(null)
             keyStore.deleteEntry(key)
 
-            cipher.init(mode, secretKey)
+            try {
+                cipher?.init(Cipher.ENCRYPT_MODE, secretKey)
+            } catch (e: Exception) {
+                Timber.e("Failed again to init encrypt cipher, $e")
+                _cipher = null
+            }
 
         } catch (e: Exception) {
-            Timber.e("Failed to init cipher, $e")
+            Timber.e("Failed to init decrypt cipher, $e")
+            _cipher = null
         }
     }
 
-    override fun decryptData(cipherText: ByteArray): String {
-        val plainText = cipher.doFinal(cipherText)
+    override fun decryptData(cipherText: ByteArray): String? {
+        val plainText = cipher?.doFinal(cipherText)
         Timber.d("Decrypted data: $plainText")
-        return String(plainText, Charset.forName("UTF-8"))
+
+        return if (plainText != null && cipher != null) {
+            String(plainText, Charset.forName("UTF-8"))
+        } else {
+            null
+        }
     }
 
-    override fun encryptData(plainText: String): CipherTextWrapper {
-        val cipherText = cipher.doFinal(plainText.toByteArray(Charset.forName("UTF-8")))
+    override fun encryptData(plainText: String): CipherTextWrapper? {
+        val cipherText = cipher?.doFinal(plainText.toByteArray(Charset.forName("UTF-8")))
         Timber.d("Encrypted data: $cipherText")
-        return CipherTextWrapper(cipherText, cipher.iv)
+
+        return if (cipherText != null && cipher != null) {
+            CipherTextWrapper(cipherText, cipher!!.iv)
+        } else {
+            null
+        }
     }
 
 }

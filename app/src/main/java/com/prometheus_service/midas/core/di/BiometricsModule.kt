@@ -14,18 +14,70 @@ import com.prometheus_service.midas.core.domain.features.biometrics.manager.Biom
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.CipherManager
 import com.prometheus_service.midas.core.domain.features.biometrics.model.BiometricsModel
 import com.prometheus_service.midas.core.domain.features.biometrics.repository.BiometricsRepository
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.PersistBiometricsUser
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.SetBiometricsEnabled
+import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object BiometricsModule {
+
+    @Singleton
+    @Provides
+    fun providePersistBiometricsUser(
+        biometricsManager: BiometricsManager,
+        cipherManager: CipherManager
+    ): PersistBiometricsUser {
+        return PersistBiometricsUser(
+            biometricsManager = biometricsManager,
+            cipherManager = cipherManager
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideSetBiometricsEnabled(
+        repository: BiometricsRepository,
+        getMultiLanguageData: GetMultiLanguageData
+    ): SetBiometricsEnabled {
+        return SetBiometricsEnabled(
+            repository = repository,
+            getMultiLanguageData = getMultiLanguageData
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideInitializeBiometricsPrompt(
+        cipherManager: CipherManager,
+        biometricsManager: BiometricsManager
+    ): InitializeBiometricsPrompt {
+        return InitializeBiometricsPrompt(
+            cipherManager = cipherManager,
+            biometricsManager = biometricsManager
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideHandleBiometricEnrollment(
+        biometricsManager: BiometricsManager,
+        cipherManager: CipherManager
+    ): HandleBiometricsEnrollment {
+        return HandleBiometricsEnrollment(
+            biometricsManager = biometricsManager,
+            cipherManager = cipherManager
+        )
+    }
 
     @Singleton
     @Provides
@@ -38,12 +90,6 @@ object BiometricsModule {
                 context.dataStoreFile("biometrics_settings.json")
             }
         )
-    }
-
-    @Provides
-    @Singleton
-    fun provideJson(): Json = Json {
-        ignoreUnknownKeys = true
     }
 
     @Provides
@@ -70,8 +116,6 @@ object BiometricsModule {
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class BiometricsBindModule {
-
-
     @Binds
     @Singleton
     abstract fun bindBiometricsRepository(

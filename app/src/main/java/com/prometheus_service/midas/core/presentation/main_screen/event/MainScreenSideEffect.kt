@@ -1,10 +1,13 @@
 package com.prometheus_service.midas.core.presentation.main_screen.event
 
+import javax.crypto.Cipher
+
 sealed class MainScreenSideEffect {
     data class RequestGoogleLogin(val url: String) : MainScreenSideEffect()
-    object ClearGoogleCredential: MainScreenSideEffect()
-
+    object ClearGoogleCredential : MainScreenSideEffect()
     data class OnPwaReady(val data: String) : MainScreenSideEffect()
-
     data class OnStoreCredentials(val data: String?) : MainScreenSideEffect()
+    object DisplayBiometricsEnableDialog : MainScreenSideEffect()
+    data class DisplayBiometricPrompt(val cipher: Cipher) : MainScreenSideEffect()
+    object DisplayBiometricSuccessEnrollment : MainScreenSideEffect()
 }

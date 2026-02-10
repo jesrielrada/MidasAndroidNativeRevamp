@@ -9,6 +9,12 @@ import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_cas
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.EnrollmentResult
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricButtonDisplay
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.PersistBiometricsUser
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.SetBiometricsEnabled
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
@@ -27,7 +33,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -62,6 +67,11 @@ class MainScreenViewModel @Inject constructor(
     private val getGoogleAuthUrl: GetGoogleAuthUrl,
     private val cacheAppCurrency: CacheAppCurrency,
     private val persistNativeCookies: PersistNativeCookies,
+    private val handleBiometricsEnrollment: HandleBiometricsEnrollment,
+    private val initializeBiometricsPrompt: InitializeBiometricsPrompt,
+    private val setBiometricsEnabled: SetBiometricsEnabled,
+    private val persistBiometricsUser: PersistBiometricsUser,
+    private val handleBiometricButtonDisplay: HandleBiometricButtonDisplay,
     @Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -95,7 +105,7 @@ class MainScreenViewModel @Inject constructor(
             uiState.map { it.webViewScreenUiState.customUserAgent }
                 .distinctUntilChanged()
                 .collect { agent ->
-                    if (agent.isNotEmpty()){
+                    if (agent.isNotEmpty()) {
                         Timber.d("Custom user agent ready.. $agent, initializing locale ... ")
                         onEvent(MainScreenEvent.InitializeLocale)
                     }
@@ -114,7 +124,7 @@ class MainScreenViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            uiState.map { it.isAppInitialized}
+            uiState.map { it.isAppInitialized }
                 .distinctUntilChanged()
                 .collect { isAppInitialized ->
                     if (isAppInitialized) {
@@ -131,10 +141,71 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleBiometricsAuthResult -> {
+                viewModelScope.launch {
+                    Timber.d("Handling biometric auth result ...")
+                    event.result.cryptoObject?.cipher?.apply {
+                        persistBiometricsUser.invoke()
+                            .onSuccess {
+                                Timber.d("Success persisting biometrics user")
+                                _sideEffect.emit(MainScreenSideEffect.DisplayBiometricSuccessEnrollment)
+                            }.onFailure {
+                                Timber.d("Failed persisting biometrics user")
+                            }
+                    }
+                }
+            }
+
+            is MainScreenEvent.InitializeBiometricPrompt -> {
+                viewModelScope.launch {
+                    Timber.d("Initializing biometric prompt ...")
+                    val locale = uiState.value.currentLocale
+                    Timber.d("Locale: $locale")
+                    setBiometricsEnabled.invoke(locale)
+                    initializeBiometricsPrompt.invoke(FlavorConfig.OPERATOR_ID)
+                        .onSuccess { cipher ->
+                            cipher?.let {
+                                Timber.d("Success initializing biometric prompt")
+                                _sideEffect.emit(MainScreenSideEffect.DisplayBiometricPrompt(cipher))
+                            }
+                        }.onFailure {
+                            Timber.d("Failure initializing biometric prompt")
+                        }
+                }
+            }
+
+            is MainScreenEvent.UpdateCurrentRoute -> {
+                _uiState.update {
+                    it.copy(
+                        currentRoute = event.route
+                    )
+                }
+            }
+
             is MainScreenEvent.HandleStoreCredentials -> {
                 viewModelScope.launch {
                     Timber.d("Handling store credentials ... ${event.data}")
                     syncRemoteData.invoke(uiState.value.currentLocale)
+
+                    event.data?.let {
+                        val biometricStatus = handleBiometricsEnrollment
+                            .invoke(event.data)
+                            .getOrNull()
+                        when (biometricStatus) {
+                            EnrollmentResult.BIOMETRICS_NOT_ENROLLED -> {
+                                Timber.d("User is not enrolled")
+                                _sideEffect.emit(MainScreenSideEffect.DisplayBiometricsEnableDialog)
+                            }
+
+                            EnrollmentResult.BIOMETRICS_FAILED -> {
+                                Timber.d("User enrollment failed")
+                            }
+
+                            null -> {
+                                Timber.d("User enrollment null")
+                            }
+                        }
+                    }
                 }
             }
 
@@ -147,6 +218,19 @@ class MainScreenViewModel @Inject constructor(
                                 isPwaReady = true
                             )
                         )
+                    }
+
+                    handleBiometricButtonDisplay.invoke().onSuccess {
+                        Timber.d("Success handling biometric button display, loading script ... ")
+                        val script =
+                            "javascript: window.app._events['native-biometrics-is-enabled'][0](true)"
+                        _uiState.update {
+                            it.copy(
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customScript = script
+                                )
+                            )
+                        }
                     }
                     persistNativeCookies.invoke()
                     cacheAppCurrency.invoke(event.data)
@@ -190,7 +274,8 @@ class MainScreenViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         webViewScreenUiState = it.webViewScreenUiState.copy(
-                            customUrl = null
+                            customUrl = null,
+                            customScript = null
                         )
                     )
                 }

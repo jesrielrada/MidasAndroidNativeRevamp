@@ -2,7 +2,11 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
+import android.util.Log
+import android.widget.Toast
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
@@ -18,8 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.GameScreen
 import com.prometheus_service.midas.core.presentation.features.language_selection.presentation.LanguageSelectionScreen
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
@@ -45,7 +51,8 @@ fun LockScreenOrientation(orientation: Int, context: Context) {
 
 @Composable
 fun MainScreen(
-    viewModel: MainScreenViewModel = hiltViewModel()
+    viewModel: MainScreenViewModel = hiltViewModel(),
+    activity: FragmentActivity
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -64,6 +71,35 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+                MainScreenSideEffect.DisplayBiometricSuccessEnrollment -> {
+                    Toast.makeText(context, "Biometrics login enabled ", Toast.LENGTH_SHORT).show()
+                }
+
+                is MainScreenSideEffect.DisplayBiometricPrompt -> {
+                    Timber.d("Displaying biometric prompt...")
+                    val authCallback = object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            super.onAuthenticationSucceeded(result)
+                            val isFromAccountSelection = false
+                            if (isFromAccountSelection) {
+                                Timber.d("Biometric authentication succeeded, is from account selection .. ")
+                            } else {
+                                Timber.d("Biometric authentication succeeded, is not from account selection .. ")
+                                viewModel.onEvent(HandleBiometricsAuthResult(result))
+                            }
+                        }
+                    }
+                    val prompt = BiometricPrompt(activity, authCallback)
+                    val info = BiometricPrompt.PromptInfo.Builder().apply {
+                        setTitle("Biometrics Sign in")
+                        setConfirmationRequired(false)
+                        setNegativeButtonText("CANCEL")
+                    }.build()
+
+                    val crypto = BiometricPrompt.CryptoObject(effect.cipher)
+                    prompt.authenticate(info, crypto)
+                }
+
                 is MainScreenSideEffect.OnStoreCredentials -> {
                     Timber.d("Store credentials called on side effects, calling handle store credentials...")
                     viewModel.onEvent(HandleStoreCredentials(effect.data))
@@ -95,7 +131,23 @@ fun MainScreen(
                     }
                 }
 
+                MainScreenSideEffect.DisplayBiometricsEnableDialog -> {
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle("Enabled biometric authentication")
+                        .setMessage("Use your biometric on your next sign in")
+                        .setPositiveButton("Enable") { _, _ ->
+                            Timber.tag("BiometricsPrompt").d("Enable")
+                            viewModel.onEvent(InitializeBiometricPrompt)
+                        }
+                        .setNeutralButton("Later") { _, _ ->
+                            Timber.tag("BiometricsPrompt").d("Not Now")
+                        }
+                        .setNegativeButton("Dont show again") { _, _ ->
+                            // do nothing, hide prompt
+                            Timber.tag("BiometricsPrompt").d("Dont show again")
 
+                        }.show()
+                }
             }
         }
     }
@@ -121,6 +173,11 @@ fun MainScreen(
             },
             onPwaReady = { data ->
                 viewModel.emitSideEffect(MainScreenSideEffect.OnPwaReady(data))
+            },
+            onPwaNavigate = { route ->
+                route?.let {
+                    viewModel.onEvent(UpdateCurrentRoute(it))
+                }
             },
             onStoreCredentials = { data ->
                 viewModel.emitSideEffect(MainScreenSideEffect.OnStoreCredentials(data))

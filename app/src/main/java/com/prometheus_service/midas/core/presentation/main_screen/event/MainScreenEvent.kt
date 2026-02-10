@@ -1,5 +1,6 @@
 package com.prometheus_service.midas.core.presentation.main_screen.event
 
+import androidx.biometric.BiometricPrompt
 import androidx.credentials.GetCredentialResponse
 
 sealed class MainScreenEvent {
@@ -32,5 +33,10 @@ sealed class MainScreenEvent {
     ) : MainScreenEvent()
 
     data class LoadCustomUrl(val customUrl: String) : MainScreenEvent()
-    object ResetCustomUrl: MainScreenEvent()
+    object ResetCustomUrl : MainScreenEvent()
+    data class UpdateCurrentRoute(val route: String) : MainScreenEvent()
+    object InitializeBiometricPrompt : MainScreenEvent()
+
+    data class HandleBiometricsAuthResult(val result: BiometricPrompt.AuthenticationResult) :
+        MainScreenEvent()
 }

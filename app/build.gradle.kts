@@ -133,6 +133,7 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.material)
     ksp(libs.hilt.compiler)
 
     // Glide

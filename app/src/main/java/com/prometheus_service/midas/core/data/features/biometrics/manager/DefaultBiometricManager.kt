@@ -4,13 +4,16 @@ import android.content.Context
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.BiometricsManager
+import com.prometheus_service.midas.core.domain.features.biometrics.model.CipherTextWrapper
 import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
 import com.prometheus_service.midas.core.domain.features.biometrics.repository.BiometricsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import timber.log.Timber
 import javax.inject.Inject
 
 class DefaultBiometricManager @Inject constructor(
@@ -24,18 +27,36 @@ class DefaultBiometricManager @Inject constructor(
     override val isNoneEnrolledBiometrics: Boolean
         get() = biometricsManager.canAuthenticate(BIOMETRIC_STRONG) ==
                 BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED
-
     override val currentAccount: CurrentAccount?
-        get() = currentAccount
+        get() = _currentAccount
 
-    override fun setCurrentAccount(username: String, password: String) {
-        currentAccount?.copy(memberCode = username, password = password)
+    override suspend fun isBiometricsEnabled(): Boolean {
+        return repository.isBiometricsEnabled().first()
     }
+
+    override suspend fun setBiometricsEnabled(cmsboEnabled: Boolean) {
+        return repository.setBiometricsEnabled(true, cmsboEnabled)
+    }
+
+    private var _currentAccount: CurrentAccount? = null
+
+    override suspend fun setCurrentAccount(data: String): Result<Unit> {
+        return runCatching {
+            _currentAccount = repository.parseRemoteData(data)
+            Timber.d("Setting current account: $currentAccount")
+        }.onFailure {
+            Timber.d("Setting current account failed: $it")
+        }
+    }
+
     override suspend fun canAuthenticateBiometrics(): Flow<Boolean> {
         return combine(
             repository.isBiometricsEnabled(),
             repository.isCmsboEnabled()
         ) { isUserEnabled, isCmsboEnabled ->
+
+            Timber.d("is biometrics enabled: $isUserEnabled, is cmsbo enabled: $isCmsboEnabled")
+
             val hasHardwareCapability = checkHardwareCapability()
             isUserEnabled && isCmsboEnabled && hasHardwareCapability
         }
@@ -48,8 +69,35 @@ class DefaultBiometricManager @Inject constructor(
         ) { canAuthenticate, usernames ->
             val hasEnrolledBiometrics = checkHardwareCapability()
             val hasSavedAccounts = usernames != null
+
+            Timber.d("Can authenticate: $canAuthenticate, has enrolled biometrics: $hasEnrolledBiometrics, has saved accounts: $hasSavedAccounts")
+
             canAuthenticate && hasEnrolledBiometrics && hasSavedAccounts
         }.distinctUntilChanged()
+    }
+
+    override suspend fun canEnrollBiometrics(): Boolean {
+        return checkHardwareCapability()
+    }
+
+    override suspend fun isUserEnrolled(username: String): Boolean {
+        return repository.doesUserExists(username).first()
+    }
+
+    override suspend fun persistAccount(
+        username: String,
+        encryptedPassword: CipherTextWrapper?
+    ): Result<Unit> {
+        return runCatching {
+            repository.persistCipherTextWrapper(
+                cipherTextWrapper = encryptedPassword!!,
+                memberCode = username
+            )
+            repository.persistUsername(username)
+            Timber.d("Success persisting account ... ")
+        }.onFailure {
+            Timber.d("Persisting account failed: $it")
+        }
     }
 
     private fun checkHardwareCapability(): Boolean {

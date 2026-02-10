@@ -17,6 +17,7 @@ data class MainScreenUiState(
     val isNetworkReady: Boolean = false,
     val networkType: String = "",
     val currentLocale: String = "",
+    val currentRoute: String = "",
     val isErrorDialogVisible: Boolean = false,
     val gameUrl: String? = null,
     val webViewScreenUiState: WebViewScreenUiState = WebViewScreenUiState(),

@@ -44,7 +44,6 @@ object SplashTutorialSerializer : Serializer<SplashTutorialModel> {
                     value = t
                 ).encodeToByteArray()
             )
-            Timber.d("Success in writing SplashTutorialModel")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write SplashTutorialModel")
             throw e

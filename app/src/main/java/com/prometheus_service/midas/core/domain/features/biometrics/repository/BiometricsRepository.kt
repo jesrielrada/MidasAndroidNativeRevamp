@@ -20,11 +20,9 @@ interface BiometricsRepository {
 
     suspend fun deleteAccountsList()
 
-    suspend fun setBiometricsEnabled(enabled: Boolean)
+    suspend fun setBiometricsEnabled(enabled: Boolean, cmsboEnabled: Boolean)
 
     suspend fun isBiometricsEnabled(): Flow<Boolean>
-
-    suspend fun setCmsboEnabled(enabled: Boolean)
 
     suspend fun isCmsboEnabled(): Flow<Boolean>
 

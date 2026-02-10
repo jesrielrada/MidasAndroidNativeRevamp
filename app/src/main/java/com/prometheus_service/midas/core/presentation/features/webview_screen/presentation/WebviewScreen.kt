@@ -29,6 +29,7 @@ fun WebviewScreen(
     onUrlLoaded: () -> Unit,
     onCustomUrlLoaded: () -> Unit,
     onPwaReady: (String) -> Unit,
+    onPwaNavigate: (String?) -> Unit,
     onStoreCredentials: (String?) -> Unit,
     onNewGameLauncher: (String) -> Unit,
     onNativeAuthenticateGoogle: (String) -> Unit,
@@ -39,6 +40,7 @@ fun WebviewScreen(
         uiState = uiState,
         onInitialized = { onWebviewInitialized(it) },
         onPwaReady = { onPwaReady(it) },
+        onPwaNavigate = { onPwaNavigate(it) },
         onStoreCredentials = { onStoreCredentials(it) },
         onNewGameLauncher = { onNewGameLauncher(it) },
         onRouteLoaded = { onRouteLoaded() },
@@ -60,6 +62,7 @@ fun WebviewScreenContent(
     onRouteLoaded: () -> Unit,
     onCustomUrlLoaded: () -> Unit,
     onPwaReady: (String) -> Unit,
+    onPwaNavigate: (String?) -> Unit,
     onStoreCredentials: (String?) -> Unit,
     onNewGameLauncher: (String) -> Unit,
     onNativeAuthenticateGoogle: (String) -> Unit,
@@ -86,7 +89,8 @@ fun WebviewScreenContent(
                 onNewGameLauncher = { onNewGameLauncher(it) },
                 onNativeAuthenticateGoogle = { onNativeAuthenticateGoogle(it) },
                 onNativeLaunchGoogle = { onNativeLaunchGoogle(it) },
-                onStoreCredentials = { onStoreCredentials(it) }
+                onStoreCredentials = { onStoreCredentials(it) },
+                onPwaNavigate = { onPwaNavigate(it) }
             )
 
             this.webViewClient = DefaultWebviewClient()
@@ -131,6 +135,12 @@ fun WebviewScreenContent(
                     view.loadUrl(uiState.customUrl)
                     onCustomUrlLoaded()
                 }
+
+                if(uiState.customScript != null) {
+                    Timber.d("Loading custom script ... ${uiState.customScript}")
+                    view.loadUrl(uiState.customScript)
+                    onCustomUrlLoaded()
+                }
             },
             modifier = modifier
                 .fillMaxSize()
@@ -146,6 +156,7 @@ fun webviewJavascriptSetup(
     onNativeAuthenticateGoogle: (data: String) -> Unit,
     onNativeLaunchGoogle: (url: String) -> Unit,
     onStoreCredentials: (data: String?) -> Unit,
+    onPwaNavigate: (route: String?) -> Unit
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -156,6 +167,10 @@ fun webviewJavascriptSetup(
 
                 override fun onNewGameLauncher(url: String) {
                     onNewGameLauncher(url)
+                }
+
+                override fun onPwaNavigate(route: String?) {
+                    onPwaNavigate(route)
                 }
 
                 override fun onNativeAuthenticateGoogle(data: String) {
