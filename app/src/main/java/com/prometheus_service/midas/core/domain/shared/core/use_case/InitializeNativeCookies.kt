@@ -1,6 +1,7 @@
 package com.prometheus_service.midas.core.domain.shared.core.use_case
 
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 class InitializeNativeCookies @Inject constructor(
@@ -16,5 +17,7 @@ class InitializeNativeCookies @Inject constructor(
             version = version,
             language = language
         )
+        delay(500) // Add delay so that cookies are updated
+        cookieProvider.persistCookies()
     }
 }

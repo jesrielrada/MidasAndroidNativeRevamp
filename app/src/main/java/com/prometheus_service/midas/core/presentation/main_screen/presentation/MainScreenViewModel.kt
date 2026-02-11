@@ -136,7 +136,7 @@ class MainScreenViewModel @Inject constructor(
             uiState.map { it.currentLocale }
                 .distinctUntilChanged()
                 .collect { currentLocale ->
-                    if (currentLocale.isNotEmpty()) {
+                    if (currentLocale.isNotEmpty() && uiState.value.isAppInitialized.not()) {
                         Timber.d("Locale initialized: $currentLocale, proceeding to initialize app ... ")
                         onEvent(MainScreenEvent.InitializeApplication)
                     }
@@ -148,8 +148,16 @@ class MainScreenViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .collect { isAppInitialized ->
                     if (isAppInitialized) {
-                        Timber.d("App initialized, loading base url  ... ")
-                        onEvent(MainScreenEvent.LoadBaseUrl)
+                        val config = getAppConfigModel.invoke().firstOrNull()
+                        val isLanguageSelectionDisplayed = config?.isLanguageSelectionDisplayed
+
+                        if (isLanguageSelectionDisplayed == null) {
+                            Timber.d("App initialized, displaying language selection  ... ")
+                            onEvent(MainScreenEvent.DisplayLanguageSelectionScreen)
+                        } else {
+                            Timber.d("App initialized, loading base url  ... ")
+                            onEvent(MainScreenEvent.LoadBaseUrl)
+                        }
                     }
                 }
         }
@@ -638,12 +646,6 @@ class MainScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     val config = getAppConfigModel.invoke().firstOrNull()
                     val locale = config?.locale ?: FlavorConfig.DEFAULT_LOCALE
-                    val isLanguageSelectionDisplayed = config?.isLanguageSelectionDisplayed
-
-                    if (isLanguageSelectionDisplayed == null) {
-                        onEvent(MainScreenEvent.DisplayLanguageSelectionScreen)
-                    }
-
                     onEvent(MainScreenEvent.SetLocaleSelected(locale))
                 }
             }

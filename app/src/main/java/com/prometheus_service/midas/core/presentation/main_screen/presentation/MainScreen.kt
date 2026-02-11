@@ -299,6 +299,7 @@ fun MainScreen(
                 onLanguageSelected = { locale ->
                     viewModel.onEvent(HideLanguageSelectionScreen)
                     viewModel.onEvent(SetLocaleSelected(locale))
+                    viewModel.onEvent(LoadBaseUrl)
                 }
             )
         }
