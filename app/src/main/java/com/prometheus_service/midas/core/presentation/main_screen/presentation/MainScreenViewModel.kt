@@ -36,6 +36,7 @@ import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.G
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadCustomRoute
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constant.Companion.LOGIN_LAUNCHER_SCRIPT
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -223,23 +224,17 @@ class MainScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     handleBiometricAccountSelectedAuthSucceed.invoke(event.result)
                         .onSuccess { result ->
-                            when (result) {
-                                AuthSucceedResult.Authorized -> {
-                                    Timber.d("Account selected auth succeed authorized")
-                                    val script = "javascript: Android.loginLauncher('')"
-                                    _uiState.update {
-                                        it.copy(
-                                            webViewScreenUiState = it.webViewScreenUiState.copy(
-                                                customScript = script
-                                            )
-                                        )
-                                    }
-                                }
-
-                                AuthSucceedResult.Failed -> {
-                                    Timber.d("Account selected auth succeed failed")
-                                }
+                            _uiState.update {
+                                it.copy(
+                                    webViewScreenUiState = it.webViewScreenUiState.copy(
+                                        customScript = LOGIN_LAUNCHER_SCRIPT
+                                    )
+                                )
                             }
+                        }.onFailure {
+                            Timber.e(
+                                "Failure handling account " + "selected auth succeed ${it.localizedMessage}"
+                            )
                         }
                 }
             }
@@ -299,15 +294,14 @@ class MainScreenViewModel @Inject constructor(
             is MainScreenEvent.HandleBiometricsAuthResult -> {
                 viewModelScope.launch {
                     Timber.d("Handling biometric auth result ...")
-                    event.result.cryptoObject?.cipher?.apply {
-                        persistBiometricsUser.invoke()
-                            .onSuccess {
-                                Timber.d("Success persisting biometrics user")
-                                _sideEffect.emit(MainScreenSideEffect.DisplayBiometricSuccessEnrollment)
-                            }.onFailure {
-                                Timber.d("Failed persisting biometrics user")
-                            }
-                    }
+                    persistBiometricsUser.invoke(event.result)
+                        .onSuccess {
+                            Timber.d("Success persisting biometrics user")
+                            _sideEffect.emit(MainScreenSideEffect.DisplayBiometricSuccessEnrollment)
+                        }.onFailure {
+                            Timber.d("Failed persisting biometrics user")
+                        }
+
                 }
             }
 
