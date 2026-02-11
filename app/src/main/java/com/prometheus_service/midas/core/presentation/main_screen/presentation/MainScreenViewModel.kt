@@ -4,14 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.BuildConfig
 import com.prometheus_service.midas.FlavorConfig
-import com.prometheus_service.midas.core.domain.shared.google_login.use_cases.GetGoogleAuthUrl
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountSelectedResult
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AuthSucceedResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.DisplayResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.EnrollmentResult
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBiometricCurrentAccount
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountSelected
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricButtonDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
@@ -26,11 +30,14 @@ import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeN
 import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
+import com.prometheus_service.midas.core.domain.shared.google_login.use_cases.GetGoogleAuthUrl
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadCustomRoute
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -45,13 +52,6 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
-
-private data class InitializationValues(
-    val isAppReady: Boolean,
-    val customUserAgent: String,
-    val currentLocale: String,
-    val initializationResponse: Pair<Boolean, String>
-)
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
@@ -75,6 +75,9 @@ class MainScreenViewModel @Inject constructor(
     private val persistBiometricsUser: PersistBiometricsUser,
     private val handleBiometricButtonDisplay: HandleBiometricButtonDisplay,
     private val handleBiometricAccountDisplay: HandleBiometricAccountDisplay,
+    private val handleBiometricAccountSelected: HandleBiometricAccountSelected,
+    private val handleBiometricAccountSelectedAuthSucceed: HandleAccountSelectedAuthSucceed,
+    private val getBiometricCurrentAccount: GetBiometricCurrentAccount,
     @Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -144,6 +147,101 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HandleBiometricsLogin -> {
+                viewModelScope.launch {
+                    val currentAccount = getBiometricCurrentAccount.invoke()
+                    val loginRoute = "javascript: window.pwa.navigate({ name: 'login-route'})"
+                    _uiState.update {
+                        it.copy(
+                            biometricCurrentAccount = currentAccount,
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customRoute = loginRoute
+                            )
+                        )
+                    }
+
+                    Timber.d("Logging in via biometrics current account: $currentAccount")
+                    if (currentAccount != null) {
+                        val script = "javascript: window.pwa.authenticate({" +
+                                "username:'${currentAccount.memberCode}'," +
+                                "password:'${currentAccount.password}'" +
+                                "});"
+                        _uiState.update {
+                            it.copy(
+                                isLoadingDialogVisible = true,
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customScript = script
+                                )
+                            )
+                        }
+
+                        delay(500)
+
+                        _uiState.update {
+                            it.copy(
+                                isLoadingDialogVisible = false
+                            )
+                        }
+                    }
+                }
+            }
+
+            is MainScreenEvent.HandleAccountSelectedAuthSucceed -> {
+                viewModelScope.launch {
+                    handleBiometricAccountSelectedAuthSucceed.invoke(event.result)
+                        .onSuccess { result ->
+                            when (result) {
+                                AuthSucceedResult.Authorized -> {
+                                    Timber.d("Account selected auth succeed authorized")
+                                    val script = "javascript: Android.loginLauncher('')"
+                                    _uiState.update {
+                                        it.copy(
+                                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                                customScript = script
+                                            )
+                                        )
+                                    }
+                                }
+
+                                AuthSucceedResult.Failed -> {
+                                    Timber.d("Account selected auth succeed failed")
+                                }
+                            }
+                        }
+                }
+            }
+
+            is MainScreenEvent.HandleAccountSelected -> {
+                viewModelScope.launch {
+                    Timber.d("Handling account selected ...")
+                    val key = FlavorConfig.OPERATOR_ID
+                    handleBiometricAccountSelected.invoke(
+                        key = key,
+                        username = event.username
+                    ).onSuccess { result ->
+                        when (result) {
+                            is AccountSelectedResult.Authorized -> {
+                                Timber.d("Account selected authorized")
+                                _sideEffect.emit(
+                                    MainScreenSideEffect.DisplayBiometricPrompt(
+                                        result.cipher,
+                                        true
+                                    )
+                                )
+                            }
+
+                            AccountSelectedResult.Failed -> {
+                                Timber.d("Account selected failed")
+                            }
+
+                            AccountSelectedResult.NonEnrolled -> {
+                                Timber.d("Account selected non enrolled")
+                            }
+                        }
+                    }
+                }
+            }
+
             MainScreenEvent.DisplayBiometricAccountSelection -> {
                 viewModelScope.launch {
                     Timber.d("Displaying biometric account selection ...")
@@ -325,11 +423,21 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-            is MainScreenEvent.LoadCustomRoute -> {
+            is LoadCustomRoute -> {
                 _uiState.update {
                     it.copy(
                         webViewScreenUiState = it.webViewScreenUiState.copy(
                             customRoute = event.route
+                        )
+                    )
+                }
+            }
+
+            is MainScreenEvent.LoadCustomScript -> {
+                _uiState.update {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            customScript = event.script
                         )
                     )
                 }

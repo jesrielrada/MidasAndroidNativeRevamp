@@ -22,9 +22,9 @@ class DefaultBiometricsRepository @Inject constructor(
     private val json: Json
 ) : BiometricsRepository {
 
-    override suspend fun getCipherTextWrapper(key: String): Flow<CipherTextWrapper?> {
+    override suspend fun getCipherTextWrapper(username: String): Flow<CipherTextWrapper?> {
         return localDataSource.biometricsModel.map { model ->
-            model.cipherList?.find { it.first == key }?.second
+            model.cipherList?.find { it.first == username }?.second
         }.distinctUntilChanged()
     }
 

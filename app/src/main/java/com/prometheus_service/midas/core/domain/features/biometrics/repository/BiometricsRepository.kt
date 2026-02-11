@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BiometricsRepository {
 
-    suspend fun getCipherTextWrapper(key: String): Flow<CipherTextWrapper?>
+    suspend fun getCipherTextWrapper(username: String): Flow<CipherTextWrapper?>
 
     suspend fun persistCipherTextWrapper(cipherTextWrapper: CipherTextWrapper, memberCode: String)
 

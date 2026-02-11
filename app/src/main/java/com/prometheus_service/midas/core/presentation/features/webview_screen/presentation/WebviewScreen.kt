@@ -34,7 +34,8 @@ fun WebviewScreen(
     onNewGameLauncher: (String) -> Unit,
     onNativeAuthenticateGoogle: (String) -> Unit,
     onNativeLaunchGoogle: (String) -> Unit,
-    onShouldDisplayBiometricsLogin: () -> Unit
+    onShouldDisplayBiometricsLogin: () -> Unit,
+    onLoginLauncher: (String?) -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
@@ -49,7 +50,8 @@ fun WebviewScreen(
         onNativeAuthenticateGoogle = { onNativeAuthenticateGoogle(it) },
         onNativeLaunchGoogle = { onNativeLaunchGoogle(it) },
         onCustomUrlLoaded = onCustomUrlLoaded,
-        onShouldDisplayBiometricsLogin = onShouldDisplayBiometricsLogin
+        onShouldDisplayBiometricsLogin = onShouldDisplayBiometricsLogin,
+        onLoginLauncher = { onLoginLauncher(it) }
     )
 }
 
@@ -69,7 +71,8 @@ fun WebviewScreenContent(
     onNewGameLauncher: (String) -> Unit,
     onNativeAuthenticateGoogle: (String) -> Unit,
     onNativeLaunchGoogle: (String) -> Unit,
-    onShouldDisplayBiometricsLogin: () -> Unit
+    onShouldDisplayBiometricsLogin: () -> Unit,
+    onLoginLauncher: (String?) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -94,7 +97,8 @@ fun WebviewScreenContent(
                 onNativeLaunchGoogle = { onNativeLaunchGoogle(it) },
                 onStoreCredentials = { onStoreCredentials(it) },
                 onPwaNavigate = { onPwaNavigate(it) },
-                onShouldDisplayBiometricsLogin = { onShouldDisplayBiometricsLogin() }
+                onShouldDisplayBiometricsLogin = { onShouldDisplayBiometricsLogin() },
+                onLoginLauncher = { onLoginLauncher(it) }
             )
 
             this.webViewClient = DefaultWebviewClient()
@@ -161,7 +165,8 @@ fun webviewJavascriptSetup(
     onNativeLaunchGoogle: (url: String) -> Unit,
     onStoreCredentials: (data: String?) -> Unit,
     onPwaNavigate: (route: String?) -> Unit,
-    onShouldDisplayBiometricsLogin: () -> Unit
+    onShouldDisplayBiometricsLogin: () -> Unit,
+    onLoginLauncher: (data: String?) -> Unit
 
 ) {
     webView.addJavascriptInterface(
@@ -197,6 +202,10 @@ fun webviewJavascriptSetup(
 
                 override fun onShouldDisplayBiometricsLogin(enabled: Boolean) {
                     onShouldDisplayBiometricsLogin()
+                }
+
+                override fun onLoginLauncher(data: String?) {
+                    onLoginLauncher(data)
                 }
             }
         ),

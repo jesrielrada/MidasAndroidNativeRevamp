@@ -11,7 +11,12 @@ import androidx.biometric.BiometricPrompt.*
 import androidx.biometric.BiometricPrompt.PromptInfo.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,10 +25,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +45,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
+import kotlinx.coroutines.delay
 import timber.log.Timber
 
 @Composable
@@ -47,6 +56,21 @@ fun LockScreenOrientation(orientation: Int, context: Context) {
         activity.requestedOrientation = orientation
         onDispose {
             activity.requestedOrientation = originalOrientation
+        }
+    }
+}
+
+@Composable
+fun LoadingDialog(onDismissRequest: () -> Unit = {}) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.size(120.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
     }
 }
@@ -78,7 +102,9 @@ fun MainScreen(
                     MaterialAlertDialogBuilder(context).apply {
                         setTitle("Select account to login")
                         setItems(effect.usernames?.toTypedArray()) { dialog, index ->
-                            //TODO()
+                            effect.usernames?.get(index)?.let {
+                                viewModel.onEvent(HandleAccountSelected(it))
+                            }
                         }
                         setOnDismissListener { //TODO() }
 
@@ -94,12 +120,12 @@ fun MainScreen(
 
                 is MainScreenSideEffect.DisplayBiometricPrompt -> {
                     Timber.d("Displaying biometric prompt...")
-                    val authCallback = object : BiometricPrompt.AuthenticationCallback() {
-                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    val authCallback = object : AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: AuthenticationResult) {
                             super.onAuthenticationSucceeded(result)
-                            val isFromAccountSelection = false
-                            if (isFromAccountSelection) {
+                            if (effect.isFromAccountSelection) {
                                 Timber.d("Biometric authentication succeeded, is from account selection .. ")
+                                viewModel.onEvent(HandleAccountSelectedAuthSucceed(result))
                             } else {
                                 Timber.d("Biometric authentication succeeded, is not from account selection .. ")
                                 viewModel.onEvent(HandleBiometricsAuthResult(result))
@@ -212,6 +238,10 @@ fun MainScreen(
             },
             onShouldDisplayBiometricsLogin = {
                 viewModel.onEvent(DisplayBiometricAccountSelection)
+            },
+            onLoginLauncher = {
+                Timber.d("Login launcher called")
+                viewModel.onEvent(HandleBiometricsLogin)
             }
         )
 
@@ -310,6 +340,10 @@ fun MainScreen(
                     )
                 }
             )
+        }
+
+        if (uiState.isLoadingDialogVisible) {
+            LoadingDialog()
         }
     }
 }

@@ -45,4 +45,9 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
         callback.onPwaNavigate(data)
     }
 
+    @JavascriptInterface
+    fun loginLauncher(data: String?) {
+        callback.onLoginLauncher(data)
+    }
+
 }

@@ -22,6 +22,7 @@ sealed class MainScreenEvent {
     object LoadBaseUrl : MainScreenEvent()
     data class LaunchGamePage(val gamePath: String) : MainScreenEvent()
     data class LoadCustomRoute(val route: String) : MainScreenEvent()
+    data class LoadCustomScript(val script: String) : MainScreenEvent()
     object ResetCustomRoute : MainScreenEvent()
     object SetWebviewUrlLoaded : MainScreenEvent()
     data class HandlePwaReady(val data: String) : MainScreenEvent()
@@ -38,4 +39,7 @@ sealed class MainScreenEvent {
     object InitializeBiometricPrompt : MainScreenEvent()
     data class HandleBiometricsAuthResult(val result: BiometricPrompt.AuthenticationResult) : MainScreenEvent()
     object DisplayBiometricAccountSelection: MainScreenEvent()
+    data class HandleAccountSelected(val username: String) : MainScreenEvent()
+    data class HandleAccountSelectedAuthSucceed(val result: BiometricPrompt.AuthenticationResult) : MainScreenEvent()
+    object HandleBiometricsLogin : MainScreenEvent()
 }

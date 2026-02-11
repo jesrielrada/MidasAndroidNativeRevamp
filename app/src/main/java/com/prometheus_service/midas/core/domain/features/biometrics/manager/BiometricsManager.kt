@@ -10,16 +10,22 @@ interface BiometricsManager {
     val biometricsManager: BiometricManager
     val isNoneEnrolledBiometrics: Boolean
     val currentAccount: CurrentAccount?
-
+    val cipherTextWrapper: CipherTextWrapper?
+    suspend fun setCipherTextWrapper(cipherTextWrapper: CipherTextWrapper)
+    suspend fun getEncryptedPassword(username: String): CipherTextWrapper?
     suspend fun getUsernames(): List<String>?
-
     suspend fun isBiometricsEnabled(): Boolean
     suspend fun setBiometricsEnabled(cmsboEnabled: Boolean)
     suspend fun setCurrentAccount(data: String): Result<Unit>
+    suspend fun setCurrentAccount(currentAccount: CurrentAccount)
     suspend fun canAuthenticateBiometrics(): Flow<Boolean>
     suspend fun canDisplayBiometrics(): Flow<Boolean>
     suspend fun canEnrollBiometrics(): Boolean
     suspend fun isUserEnrolled(username: String): Boolean
-    suspend fun persistAccount(username: String, encryptedPassword: CipherTextWrapper?) : Result<Unit>
+    suspend fun persistAccount(
+        username: String,
+        encryptedPassword: CipherTextWrapper?
+    ): Result<Unit>
+
 
 }

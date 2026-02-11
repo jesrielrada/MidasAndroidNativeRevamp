@@ -1,5 +1,6 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
+import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebViewScreenUiState
 
 /**
@@ -18,7 +19,9 @@ data class MainScreenUiState(
     val networkType: String = "",
     val currentLocale: String = "",
     val currentRoute: String = "",
+    val biometricCurrentAccount: CurrentAccount? = null,
     val isErrorDialogVisible: Boolean = false,
+    val isLoadingDialogVisible: Boolean = false,
     val gameUrl: String? = null,
     val webViewScreenUiState: WebViewScreenUiState = WebViewScreenUiState(),
     val viewTranslations: ViewTranslations = ViewTranslations(

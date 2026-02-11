@@ -9,5 +9,6 @@ interface JavascriptListener {
     fun onStoreCredentials(data: String?)
     fun onResetCredentials(data: String?)
     fun onShouldDisplayBiometricsLogin(enabled: Boolean)
+    fun onLoginLauncher(data: String?)
 }
 
