@@ -56,7 +56,6 @@ class DefaultBiometricManager @Inject constructor(
         return repository.setBiometricsEnabled(true, cmsboEnabled)
     }
 
-
     override suspend fun setCurrentAccount(data: String): Result<Unit> {
         return runCatching {
             _currentAccount = repository.parseRemoteData(data)
@@ -131,7 +130,7 @@ class DefaultBiometricManager @Inject constructor(
     }
 
     private fun checkHardwareCapability(): Boolean {
-        val authenticators = BIOMETRIC_STRONG // or BIOMETRIC_WEAK
+        val authenticators = BIOMETRIC_STRONG
         return biometricsManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
     }
 }

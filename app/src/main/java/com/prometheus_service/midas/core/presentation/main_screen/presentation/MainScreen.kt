@@ -97,6 +97,14 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+                MainScreenSideEffect.DisplayBiometricFailedDialog -> {
+                    MaterialAlertDialogBuilder(context).apply {
+                        setTitle("Error")
+                        setMessage("Biometrics may not be configured or has been changed. Please re-login to enable this feature.")
+                        setNeutralButton("DON'T SHOW AGAIN") { _, _ -> }
+                    }.show()
+                }
+
                 is MainScreenSideEffect.DisplayBiometricSelectionList -> {
                     Timber.d("Displaying biometric selection list... usernames ${effect.usernames}")
                     MaterialAlertDialogBuilder(context).apply {

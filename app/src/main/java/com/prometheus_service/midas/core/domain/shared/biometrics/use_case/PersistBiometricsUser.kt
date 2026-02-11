@@ -10,12 +10,10 @@ class PersistBiometricsUser @Inject constructor(
     private val cipherManager: CipherManager
 ) {
     suspend operator fun invoke(): Result<Unit> {
-        val account = biometricsManager.currentAccount
-            ?: return Result.failure(Exception("No current account found"))
+        val account = biometricsManager.currentAccount ?: return Result.failure(Exception("No current account found"))
 
         return try {
-            val username =
-                account.memberCode ?: return Result.failure(Exception("Username is null"))
+            val username = account.memberCode ?: return Result.failure(Exception("Username is null"))
             val password = account.password ?: return Result.failure(Exception("Password is null"))
 
             val encryptedPassword = cipherManager.encryptData(password)

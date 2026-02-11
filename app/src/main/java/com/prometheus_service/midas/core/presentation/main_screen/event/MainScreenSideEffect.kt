@@ -14,6 +14,7 @@ sealed class MainScreenSideEffect {
     ) : MainScreenSideEffect()
 
     object DisplayBiometricSuccessEnrollment : MainScreenSideEffect()
+    object DisplayBiometricFailedDialog : MainScreenSideEffect()
     data class DisplayBiometricSelectionList(val usernames: List<String>?) : MainScreenSideEffect()
 }
 

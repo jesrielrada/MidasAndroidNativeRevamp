@@ -149,6 +149,7 @@ class MainScreenViewModel @Inject constructor(
         when (event) {
             MainScreenEvent.HandleBiometricsLogin -> {
                 viewModelScope.launch {
+
                     val currentAccount = getBiometricCurrentAccount.invoke()
                     val loginRoute = "javascript: window.pwa.navigate({ name: 'login-route'})"
                     _uiState.update {
@@ -161,11 +162,13 @@ class MainScreenViewModel @Inject constructor(
                     }
 
                     Timber.d("Logging in via biometrics current account: $currentAccount")
+
                     if (currentAccount != null) {
                         val script = "javascript: window.pwa.authenticate({" +
                                 "username:'${currentAccount.memberCode}'," +
                                 "password:'${currentAccount.password}'" +
                                 "});"
+
                         _uiState.update {
                             it.copy(
                                 isLoadingDialogVisible = true,
@@ -296,38 +299,54 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-            is MainScreenEvent.UpdateCurrentRoute -> {
-                _uiState.update {
-                    it.copy(
-                        currentRoute = event.route
-                    )
-                }
-            }
 
             is MainScreenEvent.HandleStoreCredentials -> {
                 viewModelScope.launch {
                     Timber.d("Handling store credentials ... ${event.data}")
                     syncRemoteData.invoke(uiState.value.currentLocale)
 
-                    event.data?.let {
-                        val biometricStatus = handleBiometricsEnrollment
-                            .invoke(event.data)
-                            .getOrNull()
-                        when (biometricStatus) {
-                            EnrollmentResult.BIOMETRICS_NOT_ENROLLED -> {
-                                Timber.d("User is not enrolled")
-                                _sideEffect.emit(MainScreenSideEffect.DisplayBiometricsEnableDialog)
+                    val remoteData = event.data
+                    val key = FlavorConfig.OPERATOR_ID
+                    val currentRoute = uiState.value.currentRoute
+
+                    handleBiometricsEnrollment.invoke(
+                        data = remoteData,
+                        key = key,
+                        currentRoute = currentRoute
+                    ).onSuccess { result ->
+                        when (result) {
+                            EnrollmentResult.NonEnrolled -> {
+                                _sideEffect.emit(
+                                    MainScreenSideEffect.DisplayBiometricsEnableDialog
+                                )
                             }
 
-                            EnrollmentResult.BIOMETRICS_FAILED -> {
-                                Timber.d("User enrollment failed")
+                            is EnrollmentResult.UpdateEnrollment -> {
+                                _sideEffect.emit(
+                                    MainScreenSideEffect.DisplayBiometricPrompt(
+                                        result.cipher
+                                    )
+                                )
                             }
 
-                            null -> {
-                                Timber.d("User enrollment null")
+                            EnrollmentResult.FailedUpdateEnrollment -> {
+                                _sideEffect.emit(
+                                    MainScreenSideEffect.DisplayBiometricFailedDialog
+                                )
                             }
                         }
+
+                    }.onFailure { e ->
+                        Timber.e("Failure handling store credentials, ${e.localizedMessage}")
                     }
+                }
+            }
+
+            is MainScreenEvent.UpdateCurrentRoute -> {
+                _uiState.update {
+                    it.copy(
+                        currentRoute = event.route
+                    )
                 }
             }
 
