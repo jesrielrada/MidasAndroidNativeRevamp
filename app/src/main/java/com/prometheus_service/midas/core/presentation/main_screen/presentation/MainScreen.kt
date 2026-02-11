@@ -35,6 +35,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.prometheus_service.midas.core.presentation.features.biometrics.BiometricAuthenticator
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.GameScreen
 import com.prometheus_service.midas.core.presentation.features.language_selection.presentation.LanguageSelectionScreen
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
@@ -66,7 +67,9 @@ fun MainScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
     val googleAuthManager = remember { GoogleAuthManager(context) }
+    val authenticator = remember(activity) { BiometricAuthenticator(activity) }
 
     val shouldDisplayWebview = uiState.shouldDisplayWebview
     val shouldDisplayGameView = uiState.shouldDisplayGameView
@@ -74,9 +77,27 @@ fun MainScreen(
 
     val shouldRestartSplash by remember { derivedStateOf { uiState.isErrorDialogVisible } }
 
+
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+                is MainScreenSideEffect.DisplayBiometricAuthError -> {
+                    val errorMessage = when (effect.code) {
+                        ERROR_CANCELED,
+                        ERROR_USER_CANCELED,
+                        ERROR_NEGATIVE_BUTTON -> {
+                            "Cancelled"
+                        }
+                        ERROR_LOCKOUT,
+                        ERROR_LOCKOUT_PERMANENT -> {
+                            "Too many attempts, please try again later."
+                        }
+
+                        else -> effect.message
+                    }
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                }
+
                 MainScreenSideEffect.DisplayBiometricFailedDialog -> {
                     MaterialAlertDialogBuilder(context).apply {
                         setTitle("Error")
@@ -108,9 +129,9 @@ fun MainScreen(
 
                 is MainScreenSideEffect.DisplayBiometricPrompt -> {
                     Timber.d("Displaying biometric prompt...")
-                    val authCallback = object : AuthenticationCallback() {
-                        override fun onAuthenticationSucceeded(result: AuthenticationResult) {
-                            super.onAuthenticationSucceeded(result)
+                    authenticator.authenticate(
+                        cryptoObject = CryptoObject(effect.cipher),
+                        onSuccess = { result ->
                             if (effect.isFromAccountSelection) {
                                 Timber.d("Biometric authentication succeeded, is from account selection .. ")
                                 viewModel.onEvent(HandleAccountSelectedAuthSucceed(result))
@@ -118,17 +139,12 @@ fun MainScreen(
                                 Timber.d("Biometric authentication succeeded, is not from account selection .. ")
                                 viewModel.onEvent(HandleBiometricsAuthResult(result))
                             }
+                        },
+                        onError = { code, msg ->
+                            viewModel.onEvent(HandleBiometricsAuthError(code = code, message = msg))
                         }
-                    }
-                    val prompt = BiometricPrompt(activity, authCallback)
-                    val info = Builder().apply {
-                        setTitle("Biometrics Sign in")
-                        setConfirmationRequired(false)
-                        setNegativeButtonText("CANCEL")
-                    }.build()
+                    )
 
-                    val crypto = CryptoObject(effect.cipher)
-                    prompt.authenticate(info, crypto)
                 }
 
                 is MainScreenSideEffect.OnStoreCredentials -> {

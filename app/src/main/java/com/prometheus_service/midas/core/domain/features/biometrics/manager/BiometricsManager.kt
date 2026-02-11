@@ -27,5 +27,6 @@ interface BiometricsManager {
         encryptedPassword: CipherTextWrapper?
     ): Result<Unit>
 
+    suspend fun deleteAccount(username: String)
 
 }

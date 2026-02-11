@@ -11,10 +11,10 @@ sealed class MainScreenSideEffect {
         val cipher: Cipher,
         val isFromAccountSelection: Boolean = false
     ) : MainScreenSideEffect()
-
     object DisplayBiometricSuccessEnrollment : MainScreenSideEffect()
     object DisplayBiometricFailedDialog : MainScreenSideEffect()
     data class DisplayBiometricSelectionList(val usernames: List<String>?) : MainScreenSideEffect()
+    data class DisplayBiometricAuthError(val code: Int, val message: CharSequence) : MainScreenSideEffect()
 }
 
 

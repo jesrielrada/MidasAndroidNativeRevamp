@@ -16,6 +16,7 @@ import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBi
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountSelected
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthError
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricButtonDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
@@ -78,6 +79,7 @@ class MainScreenViewModel @Inject constructor(
     private val handleBiometricAccountSelected: HandleBiometricAccountSelected,
     private val handleBiometricAccountSelectedAuthSucceed: HandleAccountSelectedAuthSucceed,
     private val getBiometricCurrentAccount: GetBiometricCurrentAccount,
+    private val handleBiometricAuthError: HandleBiometricAuthError,
     @Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -147,6 +149,21 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleBiometricsAuthError -> {
+                viewModelScope.launch {
+                    _sideEffect.emit(
+                        MainScreenSideEffect.DisplayBiometricAuthError(
+                            event.code,
+                            event.message
+                        )
+                    )
+
+                    val locale = uiState.value.currentLocale
+                    val currentRoute = uiState.value.currentRoute
+                    handleBiometricAuthError.invoke(currentRoute = currentRoute, locale = locale)
+                }
+            }
+
             MainScreenEvent.HideBiometricEnableDialog -> {
                 _uiState.update {
                     it.copy(
@@ -163,7 +180,6 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.HandleBiometricsLogin -> {
                 viewModelScope.launch {
-
                     val currentAccount = getBiometricCurrentAccount.invoke()
                     val loginRoute = "javascript: window.pwa.navigate({ name: 'login-route'})"
                     _uiState.update {
@@ -298,17 +314,23 @@ class MainScreenViewModel @Inject constructor(
             is MainScreenEvent.InitializeBiometricPrompt -> {
                 viewModelScope.launch {
                     Timber.d("Initializing biometric prompt ...")
+
                     val locale = uiState.value.currentLocale
-                    Timber.d("Locale: $locale")
+                    val key = FlavorConfig.OPERATOR_ID
+
                     setBiometricsEnabled.invoke(locale, true)
-                    initializeBiometricsPrompt.invoke(FlavorConfig.OPERATOR_ID)
+                    initializeBiometricsPrompt.invoke(key)
                         .onSuccess { cipher ->
                             cipher?.let {
-                                Timber.d("Success initializing biometric prompt")
-                                _sideEffect.emit(MainScreenSideEffect.DisplayBiometricPrompt(cipher))
+                                _sideEffect.emit(
+                                    MainScreenSideEffect.DisplayBiometricPrompt(cipher)
+                                )
                             }
                         }.onFailure {
                             Timber.d("Failure initializing biometric prompt")
+                            _sideEffect.emit(
+                                MainScreenSideEffect.DisplayBiometricFailedDialog
+                            )
                         }
                 }
             }

@@ -17,9 +17,10 @@ class InitializeBiometricsPrompt @Inject constructor(
                 key = key,
                 vector = null
             )
+            val cipher = cipherManager.cipher
 
             return if (cipherManager.cipher != null) {
-                Result.success(cipherManager.cipher)
+                Result.success(cipher)
             } else {
                 Result.failure(Exception("Cipher is null"))
             }

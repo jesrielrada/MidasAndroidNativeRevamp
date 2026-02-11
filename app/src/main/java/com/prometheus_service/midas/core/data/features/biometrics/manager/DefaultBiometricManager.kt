@@ -129,6 +129,10 @@ class DefaultBiometricManager @Inject constructor(
         }
     }
 
+    override suspend fun deleteAccount(username: String) {
+        repository.deleteAccount(username)
+    }
+
     private fun checkHardwareCapability(): Boolean {
         val authenticators = BIOMETRIC_STRONG
         return biometricsManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS

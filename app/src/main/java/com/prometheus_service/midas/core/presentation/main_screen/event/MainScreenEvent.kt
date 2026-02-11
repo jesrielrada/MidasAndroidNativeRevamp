@@ -37,11 +37,19 @@ sealed class MainScreenEvent {
     object ResetCustomUrl : MainScreenEvent()
     data class UpdateCurrentRoute(val route: String) : MainScreenEvent()
     object InitializeBiometricPrompt : MainScreenEvent()
-    data class HandleBiometricsAuthResult(val result: BiometricPrompt.AuthenticationResult) : MainScreenEvent()
-    object DisplayBiometricAccountSelection: MainScreenEvent()
+    data class HandleBiometricsAuthResult(val result: BiometricPrompt.AuthenticationResult) :
+        MainScreenEvent()
+
+    object DisplayBiometricAccountSelection : MainScreenEvent()
     data class HandleAccountSelected(val username: String) : MainScreenEvent()
-    data class HandleAccountSelectedAuthSucceed(val result: BiometricPrompt.AuthenticationResult) : MainScreenEvent()
+    data class HandleAccountSelectedAuthSucceed(val result: BiometricPrompt.AuthenticationResult) :
+        MainScreenEvent()
+
     object HandleBiometricsLogin : MainScreenEvent()
-    object SetBiometricsDisabled: MainScreenEvent()
-    object HideBiometricEnableDialog: MainScreenEvent()
+    object SetBiometricsDisabled : MainScreenEvent()
+    object HideBiometricEnableDialog : MainScreenEvent()
+    data class HandleBiometricsAuthError(
+        val code: Int,
+        val message: CharSequence
+    ) : MainScreenEvent()
 }

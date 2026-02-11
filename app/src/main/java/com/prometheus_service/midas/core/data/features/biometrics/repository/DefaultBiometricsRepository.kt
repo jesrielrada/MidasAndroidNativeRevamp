@@ -96,6 +96,27 @@ class DefaultBiometricsRepository @Inject constructor(
         }
     }
 
+    override suspend fun deleteAccount(username: String) {
+        withContext(dispatcherProvider.io) {
+            val currentModel = localDataSource.biometricsModel.first()
+
+            val updatedUsernames = currentModel.usernames.orEmpty().toMutableList().apply {
+                remove(username)
+            }.distinct()
+
+            val cipherList = currentModel.cipherList.orEmpty().toMutableList().apply {
+                removeAll { it.first == username }
+            }.distinct()
+
+            localDataSource.cacheBiometricsModel(
+                currentModel.copy(
+                    usernames = updatedUsernames,
+                    cipherList = cipherList
+                )
+            )
+        }
+    }
+
     override suspend fun setBiometricsEnabled(enabled: Boolean, cmsboEnabled: Boolean) {
         withContext(dispatcherProvider.io) {
             val currentModel = localDataSource.biometricsModel.first()

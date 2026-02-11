@@ -5,7 +5,6 @@ import com.prometheus_service.midas.core.domain.features.biometrics.manager.Biom
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.CipherManager
 import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
 import timber.log.Timber
-import javax.crypto.Cipher
 import javax.inject.Inject
 
 sealed class AuthSucceedResult {
