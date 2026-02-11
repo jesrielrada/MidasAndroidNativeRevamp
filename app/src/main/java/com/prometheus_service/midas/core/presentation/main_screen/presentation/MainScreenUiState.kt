@@ -23,13 +23,15 @@ data class MainScreenUiState(
     val isErrorDialogVisible: Boolean = false,
     val isBiometricsLoadingDialogVisible: Boolean = false,
     val isBiometricsEnableDialogVisible: Boolean = false,
+    val isBiometricsErrorDialogVisible: Boolean = false,
     val gameUrl: String? = null,
     val webViewScreenUiState: WebViewScreenUiState = WebViewScreenUiState(),
     val viewTranslations: ViewTranslations = ViewTranslations(
         mainScreenTranslations = MainScreenTranslations(),
         tutorialScreenTranslations = TutorialScreenTranslations(),
         splashScreenTranslations = SplashScreenTranslations(),
-        gameScreenTranslations = GameScreenTranslations()
+        gameScreenTranslations = GameScreenTranslations(),
+        biometricsTranslations = BiometricsTranslations()
     )
 )
 
@@ -37,9 +39,15 @@ data class ViewTranslations(
     val mainScreenTranslations: MainScreenTranslations,
     val tutorialScreenTranslations: TutorialScreenTranslations,
     val splashScreenTranslations: SplashScreenTranslations,
-    val gameScreenTranslations: GameScreenTranslations
+    val gameScreenTranslations: GameScreenTranslations,
+    val biometricsTranslations: BiometricsTranslations
 )
 
+data class BiometricsTranslations(
+    val biometricsDialogTitle: String = "",
+    val biometricsDialogMessage: String = "",
+    val biometricsDialogButtonLabel: String = "",
+)
 data class SplashScreenTranslations(
     val skipLabel: String = ""
 )

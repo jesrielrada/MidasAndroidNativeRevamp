@@ -74,11 +74,13 @@ object BiometricsModule {
     @Provides
     fun provideHandleBiometricAccountSelected(
         biometricsManager: BiometricsManager,
-        cipherManager: CipherManager
+        cipherManager: CipherManager,
+        setBiometricsEnabled: SetBiometricsEnabled
     ): HandleBiometricAccountSelected {
         return HandleBiometricAccountSelected(
             biometricsManager = biometricsManager,
-            cipherManager = cipherManager
+            cipherManager = cipherManager,
+            setBiometricsEnabled = setBiometricsEnabled
         )
     }
 
@@ -86,10 +88,12 @@ object BiometricsModule {
     @Singleton
     @Provides
     fun provideHandleBiometricAccountDisplay(
-        biometricsManager: BiometricsManager
+        biometricsManager: BiometricsManager,
+        setBiometricsEnabled: SetBiometricsEnabled
     ): HandleBiometricAccountDisplay {
         return HandleBiometricAccountDisplay(
-            biometricsManager = biometricsManager
+            biometricsManager = biometricsManager,
+            setBiometricsEnabled = setBiometricsEnabled
         )
     }
 

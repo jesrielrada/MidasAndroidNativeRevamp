@@ -14,7 +14,7 @@ class HandleBiometricButtonDisplay @Inject constructor(
             if (result) {
                 Result.success(true)
             } else {
-                throw Exception("Biometrics not enabled")
+                Result.failure(Exception("Biometrics not enabled"))
             }
         } catch (e: Exception) {
             Timber.e("Error handling biometric button display: $e")

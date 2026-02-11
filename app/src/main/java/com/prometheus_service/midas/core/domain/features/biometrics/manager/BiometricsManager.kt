@@ -29,4 +29,6 @@ interface BiometricsManager {
 
     suspend fun deleteAccount(username: String)
 
+    suspend fun deleteAllAccounts()
+
 }

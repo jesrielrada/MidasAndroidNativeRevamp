@@ -9,8 +9,7 @@ import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfi
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountSelectedResult
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AuthSucceedResult
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.DisplayResult
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountDisplayResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.EnrollmentResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBiometricCurrentAccount
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
@@ -36,7 +35,11 @@ import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.G
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadCustomRoute
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constant.Companion.LOGIN_LAUNCHER_SCRIPT
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.DISPLAY_BIOMETRICS_SCRIPT
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.HIDE_BIOMETRICS_SCRIPT
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_LAUNCHER_SCRIPT
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_ROUTE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -81,7 +84,7 @@ class MainScreenViewModel @Inject constructor(
     private val handleBiometricAccountSelectedAuthSucceed: HandleAccountSelectedAuthSucceed,
     private val getBiometricCurrentAccount: GetBiometricCurrentAccount,
     private val handleBiometricAuthError: HandleBiometricAuthError,
-    @Named("google_client_id") val googleClientId: String
+    @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
     val uiState = _uiState.asStateFlow()
@@ -152,15 +155,14 @@ class MainScreenViewModel @Inject constructor(
         when (event) {
             is MainScreenEvent.HandleBiometricsAuthError -> {
                 viewModelScope.launch {
+                    val locale = uiState.value.currentLocale
+                    val currentRoute = uiState.value.currentRoute
                     _sideEffect.emit(
                         MainScreenSideEffect.DisplayBiometricAuthError(
                             event.code,
                             event.message
                         )
                     )
-
-                    val locale = uiState.value.currentLocale
-                    val currentRoute = uiState.value.currentRoute
                     handleBiometricAuthError.invoke(currentRoute = currentRoute, locale = locale)
                 }
             }
@@ -182,23 +184,20 @@ class MainScreenViewModel @Inject constructor(
             MainScreenEvent.HandleBiometricsLogin -> {
                 viewModelScope.launch {
                     val currentAccount = getBiometricCurrentAccount.invoke()
-                    val loginRoute = "javascript: window.pwa.navigate({ name: 'login-route'})"
                     _uiState.update {
                         it.copy(
                             biometricCurrentAccount = currentAccount,
                             webViewScreenUiState = it.webViewScreenUiState.copy(
-                                customRoute = loginRoute
+                                customRoute = LOGIN_ROUTE
                             )
                         )
                     }
 
-                    Timber.d("Logging in via biometrics current account: $currentAccount")
-
                     if (currentAccount != null) {
-                        val script = "javascript: window.pwa.authenticate({" +
-                                "username:'${currentAccount.memberCode}'," +
-                                "password:'${currentAccount.password}'" +
-                                "});"
+                        val script = Constants.authenticateScript(
+                            memberCode = currentAccount.memberCode!!,
+                            password = currentAccount.password!!
+                        )
 
                         _uiState.update {
                             it.copy(
@@ -233,7 +232,8 @@ class MainScreenViewModel @Inject constructor(
                             }
                         }.onFailure {
                             Timber.e(
-                                "Failure handling account " + "selected auth succeed ${it.localizedMessage}"
+                                "Failure handling account " +
+                                        "selected auth succeed ${it.localizedMessage}"
                             )
                         }
                 }
@@ -243,9 +243,11 @@ class MainScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     Timber.d("Handling account selected ...")
                     val key = FlavorConfig.OPERATOR_ID
+                    val locale = uiState.value.currentLocale
                     handleBiometricAccountSelected.invoke(
                         key = key,
-                        username = event.username
+                        username = event.username,
+                        locale = locale
                     ).onSuccess { result ->
                         when (result) {
                             is AccountSelectedResult.Authorized -> {
@@ -258,14 +260,13 @@ class MainScreenViewModel @Inject constructor(
                                 )
                             }
 
-                            AccountSelectedResult.Failed -> {
-                                Timber.d("Account selected failed")
-                            }
-
-                            AccountSelectedResult.NonEnrolled -> {
-                                Timber.d("Account selected non enrolled")
+                            is AccountSelectedResult.NonEnrolled -> {
+                                Timber.d("Account selected, displaying non enrolled")
+                                displayBiometricNoneEnrolled()
                             }
                         }
+                    }.onFailure {
+                        Timber.e("Failure handling account selected ${it.localizedMessage}")
                     }
                 }
             }
@@ -273,21 +274,30 @@ class MainScreenViewModel @Inject constructor(
             MainScreenEvent.DisplayBiometricAccountSelection -> {
                 viewModelScope.launch {
                     Timber.d("Displaying biometric account selection ...")
-                    handleBiometricAccountDisplay.invoke().onSuccess { result ->
-                        when (result) {
-                            is DisplayResult.DisplayList -> {
-                                _sideEffect.emit(
-                                    MainScreenSideEffect.DisplayBiometricSelectionList(
-                                        result.usernames
+                    val locale = uiState.value.currentLocale
+                    handleBiometricAccountDisplay.invoke(locale)
+                        .onSuccess { result ->
+                            when (result) {
+                                is AccountDisplayResult.AccountDisplayList -> {
+                                    _sideEffect.emit(
+                                        MainScreenSideEffect.DisplayBiometricSelectionList(
+                                            result.usernames
+                                        )
                                     )
-                                )
-                            }
+                                }
 
-                            DisplayResult.DisplayNoneEnrolled -> {
-                                Timber.d("Displaying none enrolled")
+                                AccountDisplayResult.DisplayNoneEnrolled -> {
+                                    Timber.d("Displaying none enrolled")
+                                    displayBiometricNoneEnrolled()
+                                }
                             }
                         }
-                    }
+                        .onFailure {
+                            Timber.e(
+                                "Failure displaying biometric " +
+                                        "account selection ${it.localizedMessage}"
+                            )
+                        }
                 }
             }
 
@@ -301,7 +311,6 @@ class MainScreenViewModel @Inject constructor(
                         }.onFailure {
                             Timber.d("Failed persisting biometrics user")
                         }
-
                 }
             }
 
@@ -322,9 +331,7 @@ class MainScreenViewModel @Inject constructor(
                             }
                         }.onFailure {
                             Timber.d("Failure initializing biometric prompt")
-                            _sideEffect.emit(
-                                MainScreenSideEffect.DisplayBiometricFailedDialog
-                            )
+                            displayBiometricFailedDialog()
                         }
                 }
             }
@@ -361,13 +368,10 @@ class MainScreenViewModel @Inject constructor(
                                 )
                             }
 
-                            EnrollmentResult.FailedUpdateEnrollment -> {
-                                _sideEffect.emit(
-                                    MainScreenSideEffect.DisplayBiometricFailedDialog
-                                )
+                            is EnrollmentResult.FailedUpdateEnrollment -> {
+                                displayBiometricFailedDialog()
                             }
                         }
-
                     }.onFailure { e ->
                         Timber.e("Failure handling store credentials, ${e.localizedMessage}")
                     }
@@ -393,18 +397,22 @@ class MainScreenViewModel @Inject constructor(
                         )
                     }
 
-                    handleBiometricButtonDisplay.invoke().onSuccess {
-                        Timber.d("Success handling biometric button display, loading script ... ")
-                        val script =
-                            "javascript: window.app._events['native-biometrics-is-enabled'][0](true)"
-                        _uiState.update {
-                            it.copy(
-                                webViewScreenUiState = it.webViewScreenUiState.copy(
-                                    customScript = script
+                    handleBiometricButtonDisplay.invoke()
+                        .onSuccess {
+                            _uiState.update {
+                                it.copy(
+                                    webViewScreenUiState = it.webViewScreenUiState.copy(
+                                        customScript = DISPLAY_BIOMETRICS_SCRIPT
+                                    )
                                 )
+                            }
+                        }.onFailure {
+                            Timber.e(
+                                "Failure handling biometric " +
+                                        "button display, ${it.localizedMessage}"
                             )
                         }
-                    }
+
                     persistNativeCookies.invoke()
                     cacheAppCurrency.invoke(event.data)
                     syncRemoteData.invoke(uiState.value.currentLocale)
@@ -431,15 +439,13 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-            is MainScreenEvent.LoadCustomUrl -> {
-                viewModelScope.launch {
-                    _uiState.update {
-                        it.copy(
-                            webViewScreenUiState = it.webViewScreenUiState.copy(
-                                customRoute = event.customUrl
-                            )
+            MainScreenEvent.SetWebviewUrlLoaded -> {
+                _uiState.update {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            isWebViewUrlLoaded = true
                         )
-                    }
+                    )
                 }
             }
 
@@ -454,16 +460,6 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-            MainScreenEvent.SetWebviewUrlLoaded -> {
-                _uiState.update {
-                    it.copy(
-                        webViewScreenUiState = it.webViewScreenUiState.copy(
-                            isWebViewUrlLoaded = true
-                        )
-                    )
-                }
-            }
-
             MainScreenEvent.ResetCustomRoute -> {
                 _uiState.update {
                     it.copy(
@@ -471,6 +467,18 @@ class MainScreenViewModel @Inject constructor(
                             customRoute = null
                         )
                     )
+                }
+            }
+
+            is MainScreenEvent.LoadCustomUrl -> {
+                viewModelScope.launch {
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customRoute = event.customUrl
+                            )
+                        )
+                    }
                 }
             }
 
@@ -513,29 +521,6 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-            MainScreenEvent.LoadBaseUrl -> {
-                viewModelScope.launch {
-                    val config = getAppConfigModel.invoke().firstOrNull()
-                    val domain = config?.domain
-                    val version = BuildConfig.VERSION_NAME
-                    val baseUrl = config?.baseUrl
-
-                    initializeNativeCookies.invoke(
-                        domain = domain!!,
-                        version = version,
-                        language = uiState.value.currentLocale
-                    )
-
-                    _uiState.update {
-                        it.copy(
-                            webViewScreenUiState = it.webViewScreenUiState.copy(
-                                webviewUrl = baseUrl
-                            )
-                        )
-                    }
-                }
-            }
-
             MainScreenEvent.InitializeTutorialSettings -> {
                 viewModelScope.launch {
                     if (canDisplayTutorial.invoke()) {
@@ -572,34 +557,25 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-            MainScreenEvent.InitializeLocale -> {
+            MainScreenEvent.LoadBaseUrl -> {
                 viewModelScope.launch {
                     val config = getAppConfigModel.invoke().firstOrNull()
-                    val locale = config?.locale ?: FlavorConfig.DEFAULT_LOCALE
-                    val isLanguageSelectionDisplayed = config?.isLanguageSelectionDisplayed
+                    val domain = config?.domain
+                    val version = BuildConfig.VERSION_NAME
+                    val baseUrl = config?.baseUrl
 
-                    if (isLanguageSelectionDisplayed == null) {
-                        onEvent(MainScreenEvent.DisplayLanguageSelectionScreen)
-                    }
+                    initializeNativeCookies.invoke(
+                        domain = domain!!,
+                        version = version,
+                        language = uiState.value.currentLocale
+                    )
 
-                    onEvent(MainScreenEvent.SetLocaleSelected(locale))
-                }
-            }
-
-
-            MainScreenEvent.InitializeNetworkType -> {
-                networkJob?.cancel()
-                networkJob = viewModelScope.launch {
-                    getNetworkType.invoke().collect { networkType ->
-                        Timber.d("Initializing network ... $networkType")
-                        if (networkType.isNotEmpty()) {
-                            _uiState.update {
-                                it.copy(
-                                    networkType = networkType,
-                                    isNetworkReady = true
-                                )
-                            }
-                        }
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                webviewUrl = baseUrl
+                            )
+                        )
                     }
                 }
             }
@@ -630,6 +606,20 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
+            MainScreenEvent.InitializeLocale -> {
+                viewModelScope.launch {
+                    val config = getAppConfigModel.invoke().firstOrNull()
+                    val locale = config?.locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val isLanguageSelectionDisplayed = config?.isLanguageSelectionDisplayed
+
+                    if (isLanguageSelectionDisplayed == null) {
+                        onEvent(MainScreenEvent.DisplayLanguageSelectionScreen)
+                    }
+
+                    onEvent(MainScreenEvent.SetLocaleSelected(locale))
+                }
+            }
+
             is MainScreenEvent.SetUserAgentReady -> {
                 _uiState.update {
                     it.copy(
@@ -652,6 +642,23 @@ class MainScreenViewModel @Inject constructor(
                             customUserAgent = customUserAgent
                         ),
                     )
+                }
+            }
+
+            MainScreenEvent.InitializeNetworkType -> {
+                networkJob?.cancel()
+                networkJob = viewModelScope.launch {
+                    getNetworkType.invoke().collect { networkType ->
+                        Timber.d("Initializing network ... $networkType")
+                        if (networkType.isNotEmpty()) {
+                            _uiState.update {
+                                it.copy(
+                                    networkType = networkType,
+                                    isNetworkReady = true
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -679,7 +686,8 @@ class MainScreenViewModel @Inject constructor(
                                     returnDialogMessage = data.popupMessages.popupExitMessage,
                                     returnDialogConfirm = data.popupMessages.popupYes,
                                     returnDialogCancel = data.popupMessages.popupNo
-                                )
+                                ),
+                                biometricsTranslations = BiometricsTranslations()
                             )
                         )
                     }
@@ -725,6 +733,46 @@ class MainScreenViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun displayBiometricFailedDialog() {
+        _uiState.update {
+            it.copy(
+                isBiometricsErrorDialogVisible = true,
+                webViewScreenUiState = it.webViewScreenUiState.copy(
+                    customScript = HIDE_BIOMETRICS_SCRIPT
+                ),
+                viewTranslations = it.viewTranslations.copy(
+                    biometricsTranslations = it.viewTranslations.biometricsTranslations.copy(
+                        biometricsDialogTitle = "Error",
+                        biometricsDialogMessage = "Biometrics login not available. " +
+                                "Please setup your fingerprint from the device " +
+                                "settings and re-login to enable this feature.",
+                        biometricsDialogButtonLabel = "DON'T SHOW AGAIN"
+                    )
+                )
+            )
+        }
+    }
+
+    private fun displayBiometricNoneEnrolled() {
+        _uiState.update {
+            it.copy(
+                isBiometricsErrorDialogVisible = true,
+                webViewScreenUiState = it.webViewScreenUiState.copy(
+                    customScript = HIDE_BIOMETRICS_SCRIPT
+                ),
+                viewTranslations = it.viewTranslations.copy(
+                    biometricsTranslations = it.viewTranslations.biometricsTranslations.copy(
+                        biometricsDialogTitle = "No biometrics enrolled",
+                        biometricsDialogMessage = "Biometrics login not available. " +
+                                "Please setup your fingerprint from the device " +
+                                "settings and re-login to enable this feature.",
+                        biometricsDialogButtonLabel = "DON'T SHOW AGAIN"
+                    )
+                )
+            )
         }
     }
 }

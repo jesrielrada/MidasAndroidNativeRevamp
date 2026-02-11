@@ -9,32 +9,44 @@ import javax.inject.Inject
 sealed class AccountSelectedResult {
     data class Authorized(val cipher: Cipher) : AccountSelectedResult()
     object NonEnrolled : AccountSelectedResult()
-    object Failed : AccountSelectedResult()
 }
 
 class HandleBiometricAccountSelected @Inject constructor(
     private val biometricsManager: BiometricsManager,
     private val cipherManager: CipherManager,
+    private val setBiometricsEnabled: SetBiometricsEnabled
 ) {
-    suspend operator fun invoke(key: String, username: String): Result<AccountSelectedResult> {
-        val encryptedPassword = biometricsManager.getEncryptedPassword(username)
-        if (encryptedPassword != null) {
-            val vector = encryptedPassword.initializationVector
+    suspend operator fun invoke(
+        key: String,
+        username: String,
+        locale: String
+    ): Result<AccountSelectedResult> {
+        try {
+            val encryptedPassword = biometricsManager.getEncryptedPassword(username)
+            if (encryptedPassword != null) {
+                val vector = encryptedPassword.initializationVector
 
-            biometricsManager.setCipherTextWrapper(encryptedPassword)
-            biometricsManager.setCurrentAccount(CurrentAccount(memberCode = username))
+                biometricsManager.setCipherTextWrapper(encryptedPassword)
+                biometricsManager.setCurrentAccount(CurrentAccount(memberCode = username))
 
-            cipherManager.setCipherMode(Cipher.DECRYPT_MODE, key, vector)
-            val cipher = cipherManager.cipher
+                cipherManager.setCipherMode(Cipher.DECRYPT_MODE, key, vector)
+                val cipher = cipherManager.cipher
 
-            return if (cipher != null) {
-                Result.success(AccountSelectedResult.Authorized(cipher))
-            } else if (!biometricsManager.isUserEnrolled(username)) {
-                Result.success(AccountSelectedResult.NonEnrolled)
-            } else {
-                Result.success(AccountSelectedResult.Failed)
+                if (cipher != null) {
+                    Result.success(AccountSelectedResult.Authorized(cipher))
+                } else if (!biometricsManager.isUserEnrolled(username)) {
+                    biometricsManager.setCurrentAccount(CurrentAccount()) //to clear account
+                    biometricsManager.deleteAllAccounts()
+                    Result.success(AccountSelectedResult.NonEnrolled)
+                } else {
+                    biometricsManager.setCurrentAccount(CurrentAccount()) //to clear account
+                    biometricsManager.deleteAllAccounts()
+                    setBiometricsEnabled.invoke(locale, false)
+                }
             }
+        } catch (e: Exception) {
+            return Result.failure(e)
         }
-        return Result.success(AccountSelectedResult.Failed)
+        return Result.failure(Exception("Biometrics not enabled"))
     }
 }

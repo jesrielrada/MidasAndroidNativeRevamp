@@ -4,11 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.widget.Toast
-import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.*
-import androidx.biometric.BiometricPrompt.PromptInfo.*
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -81,6 +78,11 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+                MainScreenSideEffect.DisplayNoneEnrolled -> {
+
+                }
+
+
                 is MainScreenSideEffect.DisplayBiometricAuthError -> {
                     val errorMessage = when (effect.code) {
                         ERROR_CANCELED,
@@ -88,6 +90,7 @@ fun MainScreen(
                         ERROR_NEGATIVE_BUTTON -> {
                             "Cancelled"
                         }
+
                         ERROR_LOCKOUT,
                         ERROR_LOCKOUT_PERMANENT -> {
                             "Too many attempts, please try again later."
@@ -96,14 +99,6 @@ fun MainScreen(
                         else -> effect.message
                     }
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                }
-
-                MainScreenSideEffect.DisplayBiometricFailedDialog -> {
-                    MaterialAlertDialogBuilder(context).apply {
-                        setTitle("Error")
-                        setMessage("Biometrics may not be configured or has been changed. Please re-login to enable this feature.")
-                        setNeutralButton("DON'T SHOW AGAIN") { _, _ -> }
-                    }.show()
                 }
 
                 is MainScreenSideEffect.DisplayBiometricSelectionList -> {
@@ -177,8 +172,6 @@ fun MainScreen(
                         Timber.e("Creating credential manager failed... $e")
                     }
                 }
-
-
             }
         }
     }
@@ -347,14 +340,89 @@ fun MainScreen(
                 }
             )
         }
+
+        if (uiState.isBiometricsErrorDialogVisible) {
+            BiometricsErrorDialog(
+                onConfirm = {
+
+                },
+                onDismiss = {
+
+                },
+                uiState = uiState
+            )
+        }
     }
 }
+
+@Composable
+fun BiometricsErrorDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    uiState: MainScreenUiState
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(uiState.viewTranslations.biometricsTranslations.biometricsDialogTitle) },
+        text = {
+            Text(
+                text = uiState.viewTranslations.biometricsTranslations.biometricsDialogMessage,
+                color = Color.White
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = uiState.viewTranslations.biometricsTranslations.biometricsDialogButtonLabel,
+                    color = Color.White
+                )
+            }
+        }
+    )
+}
+
 
 @Composable
 fun BiometricsEnableDialog(
     onConfirm: () -> Unit,
     onDontShowAgain: () -> Unit,
     onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Enable biometric authentication") },
+        text = {
+            Text(
+                text = "Use your biometric on your next sign in",
+                color = Color.White
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = "Enable",
+                    color = Color.White
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDontShowAgain) {
+                Text(
+                    text = "Don't show again",
+                    color = Color.White
+                )
+            }
+        }
+    )
+}
+
+
+@Composable
+fun BiometricsDialog2(
+    onConfirm: () -> Unit,
+    onDontShowAgain: () -> Unit,
+    onDismiss: () -> Unit,
+    uiState: MainScreenUiState
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
