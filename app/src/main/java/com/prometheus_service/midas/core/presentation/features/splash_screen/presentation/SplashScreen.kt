@@ -117,10 +117,9 @@ fun SplashScreenContent(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            val (versionRef, progressRef, skipBtnRef, brandLogoRef) = createRefs()
-            val versionVerticalGuideline = createGuidelineFromTop(.39f)
-            val progressVerticalGuideline = createGuidelineFromTop(.57f)
-
+            val (versionRef, progressRef, skipBtnRef) = createRefs()
+            val versionVerticalGuideline = createGuidelineFromTop(.29f)
+            val progressVerticalGuideline = createGuidelineFromTop(.53f)
 
             SplashViewPager(
                 images = uiState.images,
@@ -136,13 +135,6 @@ fun SplashScreenContent(
                 version = uiState.appVersion
             )
 
-            SplashScreenBrandLogo(
-                modifier = Modifier.constrainAs(brandLogoRef) {
-                    centerTo(parent)
-                },
-                contentDescription = null,
-                brandLogo = uiState.brandLogo
-            )
 
             if (uiState.isSkipVisible) {
                 SplashSkipButton(
