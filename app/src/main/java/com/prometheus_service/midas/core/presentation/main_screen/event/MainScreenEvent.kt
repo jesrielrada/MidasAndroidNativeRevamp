@@ -48,6 +48,7 @@ sealed class MainScreenEvent {
     object HandleBiometricsLogin : MainScreenEvent()
     object SetBiometricsDisabled : MainScreenEvent()
     object HideBiometricEnableDialog : MainScreenEvent()
+    object HideBiometricErrorDialog : MainScreenEvent()
     data class HandleBiometricsAuthError(
         val code: Int,
         val message: CharSequence

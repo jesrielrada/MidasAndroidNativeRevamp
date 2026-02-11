@@ -35,6 +35,12 @@ import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.G
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadCustomRoute
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SplashScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.TutorialScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.ViewTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.DISPLAY_BIOMETRICS_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.HIDE_BIOMETRICS_SCRIPT
@@ -164,6 +170,14 @@ class MainScreenViewModel @Inject constructor(
                         )
                     )
                     handleBiometricAuthError.invoke(currentRoute = currentRoute, locale = locale)
+                }
+            }
+
+            MainScreenEvent.HideBiometricErrorDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isBiometricsErrorDialogVisible = false
+                    )
                 }
             }
 
@@ -687,7 +701,22 @@ class MainScreenViewModel @Inject constructor(
                                     returnDialogConfirm = data.popupMessages.popupYes,
                                     returnDialogCancel = data.popupMessages.popupNo
                                 ),
-                                biometricsTranslations = BiometricsTranslations()
+                                biometricsTranslations = BiometricsTranslations(
+                                    dialogSelectAccount = data.biometricsTranslations.biometricsSelectAccount,
+                                    promptTitle = data.biometricsTranslations.promptInfoTitle,
+                                    promptCancel = data.biometricsTranslations.promptInfoCancel,
+                                    dialogEnableTitle = data.biometricsTranslations.biometricsAlertTitle,
+                                    dialogEnableMessage = data.biometricsTranslations.biometricsAlertMessage,
+                                    dialogNeutralBtnLabel = data.biometricsTranslations.biometricsAlertNeutralBtn,
+                                    dialogPositiveBtnLabel = data.biometricsTranslations.biometricsAlertPositiveBtn,
+                                    dialogNegativeBtnLabel = data.biometricsTranslations.biometricsAlertNegativeBtn,
+                                    biometricToastMessage = data.biometricsTranslations.biometricsToastMessage,
+                                    biometricErrorSetupRequired = data.biometricsTranslations.biometricsErrorSetupRequired,
+                                    biometricErrorCancelled = data.biometricsTranslations.biometricsErrorCanceled,
+                                    biometricErrorDefault = data.biometricsTranslations.biometricsErrorDefault,
+                                    biometricErrorLockout = data.biometricsTranslations.biometricsErrorLockout,
+                                    biometricNoneEnrolled = data.biometricsTranslations.biometricsErrorNoneEnrolled
+                                )
                             )
                         )
                     }
@@ -745,11 +774,9 @@ class MainScreenViewModel @Inject constructor(
                 ),
                 viewTranslations = it.viewTranslations.copy(
                     biometricsTranslations = it.viewTranslations.biometricsTranslations.copy(
-                        biometricsDialogTitle = "Error",
-                        biometricsDialogMessage = "Biometrics login not available. " +
-                                "Please setup your fingerprint from the device " +
-                                "settings and re-login to enable this feature.",
-                        biometricsDialogButtonLabel = "DON'T SHOW AGAIN"
+                        currentDialogTitle = "Error",
+                        currentDialogMessage = it.viewTranslations.biometricsTranslations.biometricErrorSetupRequired,
+                        currentDialogButtonLabel = it.viewTranslations.biometricsTranslations.dialogNeutralBtnLabel
                     )
                 )
             )
@@ -765,11 +792,9 @@ class MainScreenViewModel @Inject constructor(
                 ),
                 viewTranslations = it.viewTranslations.copy(
                     biometricsTranslations = it.viewTranslations.biometricsTranslations.copy(
-                        biometricsDialogTitle = "No biometrics enrolled",
-                        biometricsDialogMessage = "Biometrics login not available. " +
-                                "Please setup your fingerprint from the device " +
-                                "settings and re-login to enable this feature.",
-                        biometricsDialogButtonLabel = "DON'T SHOW AGAIN"
+                        currentDialogTitle = it.viewTranslations.biometricsTranslations.biometricNoneEnrolled,
+                        currentDialogMessage = it.viewTranslations.biometricsTranslations.biometricErrorSetupRequired,
+                        currentDialogButtonLabel = it.viewTranslations.biometricsTranslations.dialogNeutralBtnLabel
                     )
                 )
             )

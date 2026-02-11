@@ -2,11 +2,14 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebViewScreenUiState
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SplashScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.TutorialScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.ViewTranslations
 
-/**
- * Initialize setup is splash, tutorial, language selection, and webview should be set to true
- * It will hide on its own when the condition is met
- */
+
 data class MainScreenUiState(
     val shouldDisplaySplash: Boolean = true,
     val shouldDisplayTutorial: Boolean = false,
@@ -31,39 +34,7 @@ data class MainScreenUiState(
         tutorialScreenTranslations = TutorialScreenTranslations(),
         splashScreenTranslations = SplashScreenTranslations(),
         gameScreenTranslations = GameScreenTranslations(),
-        biometricsTranslations = BiometricsTranslations()
+        biometricsTranslations = BiometricsTranslations(),
     )
 )
 
-data class ViewTranslations(
-    val mainScreenTranslations: MainScreenTranslations,
-    val tutorialScreenTranslations: TutorialScreenTranslations,
-    val splashScreenTranslations: SplashScreenTranslations,
-    val gameScreenTranslations: GameScreenTranslations,
-    val biometricsTranslations: BiometricsTranslations
-)
-
-data class BiometricsTranslations(
-    val biometricsDialogTitle: String = "",
-    val biometricsDialogMessage: String = "",
-    val biometricsDialogButtonLabel: String = "",
-)
-data class SplashScreenTranslations(
-    val skipLabel: String = ""
-)
-
-data class TutorialScreenTranslations(
-    val buttonDefaultLabel: String = "",
-    val buttonEndLabel: String = ""
-)
-
-data class MainScreenTranslations(
-    val initializeErrorMessage: String = "",
-    val retryButtonLabel: String = ""
-)
-
-data class GameScreenTranslations(
-    val returnDialogMessage: String = "",
-    val returnDialogConfirm: String = "",
-    val returnDialogCancel: String = ""
-)

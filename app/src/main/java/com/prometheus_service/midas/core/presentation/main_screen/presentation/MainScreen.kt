@@ -41,6 +41,7 @@ import com.prometheus_service.midas.core.presentation.features.webview_screen.pr
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber
 
@@ -74,37 +75,32 @@ fun MainScreen(
 
     val shouldRestartSplash by remember { derivedStateOf { uiState.isErrorDialogVisible } }
 
-
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                MainScreenSideEffect.DisplayNoneEnrolled -> {
-
-                }
-
-
                 is MainScreenSideEffect.DisplayBiometricAuthError -> {
+
+                    val negative = uiState.viewTranslations.biometricsTranslations.biometricErrorCancelled
+                    val lockout = uiState.viewTranslations.biometricsTranslations.biometricErrorLockout
+
                     val errorMessage = when (effect.code) {
                         ERROR_CANCELED,
                         ERROR_USER_CANCELED,
-                        ERROR_NEGATIVE_BUTTON -> {
-                            "Cancelled"
-                        }
-
+                        ERROR_NEGATIVE_BUTTON -> { negative }
                         ERROR_LOCKOUT,
-                        ERROR_LOCKOUT_PERMANENT -> {
-                            "Too many attempts, please try again later."
-                        }
-
+                        ERROR_LOCKOUT_PERMANENT -> { lockout }
                         else -> effect.message
                     }
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                 }
 
                 is MainScreenSideEffect.DisplayBiometricSelectionList -> {
-                    Timber.d("Displaying biometric selection list... usernames ${effect.usernames}")
+                    val cancelBtnLabel =
+                        uiState.viewTranslations.biometricsTranslations.promptCancel
+                    val selectAccountLabel =
+                        uiState.viewTranslations.biometricsTranslations.dialogSelectAccount
                     MaterialAlertDialogBuilder(context).apply {
-                        setTitle("Select account to login")
+                        setTitle(selectAccountLabel)
                         setItems(effect.usernames?.toTypedArray()) { dialog, index ->
                             effect.usernames?.get(index)?.let {
                                 viewModel.onEvent(HandleAccountSelected(it))
@@ -113,13 +109,17 @@ fun MainScreen(
                         setOnDismissListener { //TODO() }
 
                         }
-                        setNegativeButton("CANCEL") { _, _ -> }
+                        setNegativeButton(cancelBtnLabel) { _, _ -> }
                         show()
                     }
                 }
 
                 MainScreenSideEffect.DisplayBiometricSuccessEnrollment -> {
-                    Toast.makeText(context, "Biometrics login enabled ", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        uiState.viewTranslations.biometricsTranslations.biometricToastMessage,
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 is MainScreenSideEffect.DisplayBiometricPrompt -> {
@@ -327,6 +327,7 @@ fun MainScreen(
 
         if (uiState.isBiometricsEnableDialogVisible) {
             BiometricsEnableDialog(
+                translations = uiState.viewTranslations.biometricsTranslations,
                 onConfirm = {
                     viewModel.onEvent(InitializeBiometricPrompt)
                     viewModel.onEvent(HideBiometricEnableDialog)
@@ -344,12 +345,13 @@ fun MainScreen(
         if (uiState.isBiometricsErrorDialogVisible) {
             BiometricsErrorDialog(
                 onConfirm = {
-
+                    viewModel.onEvent(SetBiometricsDisabled)
+                    viewModel.onEvent(HideBiometricErrorDialog)
                 },
                 onDismiss = {
-
+                    viewModel.onEvent(HideBiometricErrorDialog)
                 },
-                uiState = uiState
+                translations = uiState.viewTranslations.biometricsTranslations
             )
         }
     }
@@ -359,21 +361,21 @@ fun MainScreen(
 fun BiometricsErrorDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    uiState: MainScreenUiState
+    translations: BiometricsTranslations
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(uiState.viewTranslations.biometricsTranslations.biometricsDialogTitle) },
+        title = { Text(translations.currentDialogTitle) },
         text = {
             Text(
-                text = uiState.viewTranslations.biometricsTranslations.biometricsDialogMessage,
+                text = translations.currentDialogMessage,
                 color = Color.White
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
-                    text = uiState.viewTranslations.biometricsTranslations.biometricsDialogButtonLabel,
+                    text = translations.currentDialogButtonLabel,
                     color = Color.White
                 )
             }
@@ -386,57 +388,22 @@ fun BiometricsErrorDialog(
 fun BiometricsEnableDialog(
     onConfirm: () -> Unit,
     onDontShowAgain: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Enable biometric authentication") },
-        text = {
-            Text(
-                text = "Use your biometric on your next sign in",
-                color = Color.White
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = "Enable",
-                    color = Color.White
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDontShowAgain) {
-                Text(
-                    text = "Don't show again",
-                    color = Color.White
-                )
-            }
-        }
-    )
-}
-
-
-@Composable
-fun BiometricsDialog2(
-    onConfirm: () -> Unit,
-    onDontShowAgain: () -> Unit,
     onDismiss: () -> Unit,
-    uiState: MainScreenUiState
+    translations: BiometricsTranslations
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Enable biometric authentication") },
+        title = { Text(translations.dialogEnableTitle) },
         text = {
             Text(
-                text = "Use your biometric on your next sign in",
+                text = translations.dialogEnableMessage,
                 color = Color.White
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
-                    text = "Enable",
+                    text = translations.dialogPositiveBtnLabel,
                     color = Color.White
                 )
             }
@@ -444,7 +411,7 @@ fun BiometricsDialog2(
         dismissButton = {
             TextButton(onClick = onDontShowAgain) {
                 Text(
-                    text = "Don't show again",
+                    text = translations.dialogNeutralBtnLabel,
                     color = Color.White
                 )
             }
