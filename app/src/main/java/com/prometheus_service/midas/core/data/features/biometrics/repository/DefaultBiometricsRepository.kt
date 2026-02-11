@@ -101,7 +101,7 @@ class DefaultBiometricsRepository @Inject constructor(
             val currentModel = localDataSource.biometricsModel.first()
             localDataSource.cacheBiometricsModel(
                 currentModel.copy(
-                    isBiometricsEnabled = enabled,
+                    isUserEnabled = enabled,
                     isCmsboEnabled = cmsboEnabled
                 )
             )
@@ -110,7 +110,7 @@ class DefaultBiometricsRepository @Inject constructor(
 
     override suspend fun isBiometricsEnabled(): Flow<Boolean> {
         return localDataSource.biometricsModel.map { model ->
-            model.isBiometricsEnabled ?: false
+            model.isUserEnabled ?: false
         }.distinctUntilChanged()
     }
 

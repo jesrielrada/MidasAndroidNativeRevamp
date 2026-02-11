@@ -2,14 +2,13 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
-import android.util.Log
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.*
 import androidx.biometric.BiometricPrompt.PromptInfo.*
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,7 +44,6 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
-import kotlinx.coroutines.delay
 import timber.log.Timber
 
 @Composable
@@ -60,20 +58,6 @@ fun LockScreenOrientation(orientation: Int, context: Context) {
     }
 }
 
-@Composable
-fun LoadingDialog(onDismissRequest: () -> Unit = {}) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.size(120.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
-    }
-}
 
 @Composable
 fun MainScreen(
@@ -88,11 +72,7 @@ fun MainScreen(
     val shouldDisplayGameView = uiState.shouldDisplayGameView
     val webviewVisibility = if (shouldDisplayWebview) 1f else 0f
 
-    val shouldRestartSplash by remember {
-        derivedStateOf {
-            uiState.isErrorDialogVisible
-        }
-    }
+    val shouldRestartSplash by remember { derivedStateOf { uiState.isErrorDialogVisible } }
 
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
@@ -180,24 +160,6 @@ fun MainScreen(
                     } catch (e: Exception) {
                         Timber.e("Creating credential manager failed... $e")
                     }
-                }
-
-                MainScreenSideEffect.DisplayBiometricsEnableDialog -> {
-                    MaterialAlertDialogBuilder(context)
-                        .setTitle("Enabled biometric authentication")
-                        .setMessage("Use your biometric on your next sign in")
-                        .setPositiveButton("Enable") { _, _ ->
-                            Timber.tag("BiometricsPrompt").d("Enable")
-                            viewModel.onEvent(InitializeBiometricPrompt)
-                        }
-                        .setNeutralButton("Later") { _, _ ->
-                            Timber.tag("BiometricsPrompt").d("Not Now")
-                        }
-                        .setNegativeButton("Dont show again") { _, _ ->
-                            // do nothing, hide prompt
-                            Timber.tag("BiometricsPrompt").d("Dont show again")
-
-                        }.show()
                 }
 
 
@@ -350,8 +312,73 @@ fun MainScreen(
             )
         }
 
-        if (uiState.isLoadingDialogVisible) {
-            LoadingDialog()
+        if (uiState.isBiometricsLoadingDialogVisible) {
+            BiometricsLoadingDialog()
+        }
+
+        if (uiState.isBiometricsEnableDialogVisible) {
+            BiometricsEnableDialog(
+                onConfirm = {
+                    viewModel.onEvent(InitializeBiometricPrompt)
+                    viewModel.onEvent(HideBiometricEnableDialog)
+                },
+                onDismiss = {
+                    viewModel.onEvent(HideBiometricEnableDialog)
+                },
+                onDontShowAgain = {
+                    viewModel.onEvent(SetBiometricsDisabled)
+                    viewModel.onEvent(HideBiometricEnableDialog)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun BiometricsEnableDialog(
+    onConfirm: () -> Unit,
+    onDontShowAgain: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Enable biometric authentication") },
+        text = {
+            Text(
+                text = "Use your biometric on your next sign in",
+                color = Color.White
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = "Enable",
+                    color = Color.White
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDontShowAgain) {
+                Text(
+                    text = "Don't show again",
+                    color = Color.White
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun BiometricsLoadingDialog(onDismissRequest: () -> Unit = {}) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.size(120.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
     }
 }

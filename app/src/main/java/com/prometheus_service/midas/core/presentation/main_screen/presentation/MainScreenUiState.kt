@@ -21,7 +21,8 @@ data class MainScreenUiState(
     val currentRoute: String = "",
     val biometricCurrentAccount: CurrentAccount? = null,
     val isErrorDialogVisible: Boolean = false,
-    val isLoadingDialogVisible: Boolean = false,
+    val isBiometricsLoadingDialogVisible: Boolean = false,
+    val isBiometricsEnableDialogVisible: Boolean = false,
     val gameUrl: String? = null,
     val webViewScreenUiState: WebViewScreenUiState = WebViewScreenUiState(),
     val viewTranslations: ViewTranslations = ViewTranslations(

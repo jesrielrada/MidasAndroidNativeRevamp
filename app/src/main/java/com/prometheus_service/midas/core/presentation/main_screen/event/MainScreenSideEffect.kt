@@ -7,7 +7,6 @@ sealed class MainScreenSideEffect {
     object ClearGoogleCredential : MainScreenSideEffect()
     data class OnPwaReady(val data: String) : MainScreenSideEffect()
     data class OnStoreCredentials(val data: String?) : MainScreenSideEffect()
-    object DisplayBiometricsEnableDialog : MainScreenSideEffect()
     data class DisplayBiometricPrompt(
         val cipher: Cipher,
         val isFromAccountSelection: Boolean = false

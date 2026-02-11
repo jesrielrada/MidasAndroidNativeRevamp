@@ -147,6 +147,20 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HideBiometricEnableDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isBiometricsEnableDialogVisible = false
+                    )
+                }
+            }
+
+            MainScreenEvent.SetBiometricsDisabled -> {
+                viewModelScope.launch {
+                    setBiometricsEnabled.invoke(uiState.value.currentLocale, false)
+                }
+            }
+
             MainScreenEvent.HandleBiometricsLogin -> {
                 viewModelScope.launch {
 
@@ -171,7 +185,7 @@ class MainScreenViewModel @Inject constructor(
 
                         _uiState.update {
                             it.copy(
-                                isLoadingDialogVisible = true,
+                                isBiometricsLoadingDialogVisible = true,
                                 webViewScreenUiState = it.webViewScreenUiState.copy(
                                     customScript = script
                                 )
@@ -182,7 +196,7 @@ class MainScreenViewModel @Inject constructor(
 
                         _uiState.update {
                             it.copy(
-                                isLoadingDialogVisible = false
+                                isBiometricsLoadingDialogVisible = false
                             )
                         }
                     }
@@ -286,7 +300,7 @@ class MainScreenViewModel @Inject constructor(
                     Timber.d("Initializing biometric prompt ...")
                     val locale = uiState.value.currentLocale
                     Timber.d("Locale: $locale")
-                    setBiometricsEnabled.invoke(locale)
+                    setBiometricsEnabled.invoke(locale, true)
                     initializeBiometricsPrompt.invoke(FlavorConfig.OPERATOR_ID)
                         .onSuccess { cipher ->
                             cipher?.let {
@@ -316,9 +330,11 @@ class MainScreenViewModel @Inject constructor(
                     ).onSuccess { result ->
                         when (result) {
                             EnrollmentResult.NonEnrolled -> {
-                                _sideEffect.emit(
-                                    MainScreenSideEffect.DisplayBiometricsEnableDialog
-                                )
+                                _uiState.update {
+                                    it.copy(
+                                        isBiometricsEnableDialogVisible = true
+                                    )
+                                }
                             }
 
                             is EnrollmentResult.UpdateEnrollment -> {

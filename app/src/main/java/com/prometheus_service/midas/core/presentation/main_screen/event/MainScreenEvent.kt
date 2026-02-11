@@ -42,4 +42,6 @@ sealed class MainScreenEvent {
     data class HandleAccountSelected(val username: String) : MainScreenEvent()
     data class HandleAccountSelectedAuthSucceed(val result: BiometricPrompt.AuthenticationResult) : MainScreenEvent()
     object HandleBiometricsLogin : MainScreenEvent()
+    object SetBiometricsDisabled: MainScreenEvent()
+    object HideBiometricEnableDialog: MainScreenEvent()
 }

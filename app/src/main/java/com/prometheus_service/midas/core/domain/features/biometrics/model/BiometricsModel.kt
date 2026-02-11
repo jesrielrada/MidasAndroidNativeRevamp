@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BiometricsModel(
     val cipherList: List<Pair<String, CipherTextWrapper>>? = null,
-    val isBiometricsEnabled: Boolean? = false,
+    val isUserEnabled: Boolean? = false,
     val isCmsboEnabled: Boolean? = false,
     val usernames: List<String>? = emptyList()
 )
