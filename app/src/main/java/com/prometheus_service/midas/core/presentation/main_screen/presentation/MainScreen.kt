@@ -131,7 +131,15 @@ fun MainScreen(
 
                 is MainScreenSideEffect.DisplayBiometricPrompt -> {
                     Timber.d("Displaying biometric prompt...")
+
+                    val promptInfo = PromptInfo.Builder()
+                        .setTitle(uiState.viewTranslations.biometricsTranslations.promptTitle)
+                        .setNegativeButtonText(uiState.viewTranslations.biometricsTranslations.promptCancel)
+                        .setConfirmationRequired(false)
+                        .build()
+
                     authenticator.authenticate(
+                        promptInfo = promptInfo,
                         cryptoObject = CryptoObject(effect.cipher),
                         onSuccess = { result ->
                             if (effect.isFromAccountSelection) {

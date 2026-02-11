@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity
 class BiometricAuthenticator (private val activity: FragmentActivity){
     fun authenticate(
         cryptoObject: BiometricPrompt.CryptoObject,
+        promptInfo: BiometricPrompt.PromptInfo,
         onSuccess: (BiometricPrompt.AuthenticationResult) -> Unit,
         onError: (Int, CharSequence) -> Unit
     ) {
@@ -20,12 +21,6 @@ class BiometricAuthenticator (private val activity: FragmentActivity){
             }
         })
 
-        val info = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Biometrics Sign in")
-            .setConfirmationRequired(false)
-            .setNegativeButtonText("Cancel")
-            .build()
-
-        prompt.authenticate(info, cryptoObject)
+        prompt.authenticate(promptInfo, cryptoObject)
     }
 }
