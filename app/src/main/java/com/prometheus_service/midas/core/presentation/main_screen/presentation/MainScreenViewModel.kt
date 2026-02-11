@@ -15,6 +15,7 @@ import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBi
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountSelected
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthCancelled
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthError
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricButtonDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
@@ -90,6 +91,7 @@ class MainScreenViewModel @Inject constructor(
     private val handleBiometricAccountSelectedAuthSucceed: HandleAccountSelectedAuthSucceed,
     private val getBiometricCurrentAccount: GetBiometricCurrentAccount,
     private val handleBiometricAuthError: HandleBiometricAuthError,
+    private val handleBiometricAuthCancelled: HandleBiometricAuthCancelled,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -159,6 +161,18 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HandleAccountSelectionAuthCancelled -> {
+                viewModelScope.launch {
+                    val locale = uiState.value.currentLocale
+                    handleBiometricAuthCancelled.invoke(locale)
+                        .onSuccess {
+                            displayBiometricNoneEnrolled()
+                        }.onFailure {
+                            Timber.e("Failure handling account selection auth dismissed")
+                        }
+                }
+            }
+
             is MainScreenEvent.HandleBiometricsAuthError -> {
                 viewModelScope.launch {
                     val locale = uiState.value.currentLocale

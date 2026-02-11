@@ -80,15 +80,23 @@ fun MainScreen(
             when (effect) {
                 is MainScreenSideEffect.DisplayBiometricAuthError -> {
 
-                    val negative = uiState.viewTranslations.biometricsTranslations.biometricErrorCancelled
-                    val lockout = uiState.viewTranslations.biometricsTranslations.biometricErrorLockout
+                    val negative =
+                        uiState.viewTranslations.biometricsTranslations.biometricErrorCancelled
+                    val lockout =
+                        uiState.viewTranslations.biometricsTranslations.biometricErrorLockout
 
                     val errorMessage = when (effect.code) {
                         ERROR_CANCELED,
                         ERROR_USER_CANCELED,
-                        ERROR_NEGATIVE_BUTTON -> { negative }
+                        ERROR_NEGATIVE_BUTTON -> {
+                            negative
+                        }
+
                         ERROR_LOCKOUT,
-                        ERROR_LOCKOUT_PERMANENT -> { lockout }
+                        ERROR_LOCKOUT_PERMANENT -> {
+                            lockout
+                        }
+
                         else -> effect.message
                     }
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -106,10 +114,9 @@ fun MainScreen(
                                 viewModel.onEvent(HandleAccountSelected(it))
                             }
                         }
-                        setOnDismissListener { //TODO() }
-
+                        setNegativeButton(cancelBtnLabel) { _, _ ->
+                            viewModel.onEvent(HandleAccountSelectionAuthCancelled)
                         }
-                        setNegativeButton(cancelBtnLabel) { _, _ -> }
                         show()
                     }
                 }

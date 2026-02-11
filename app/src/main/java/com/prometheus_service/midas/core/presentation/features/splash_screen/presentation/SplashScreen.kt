@@ -51,7 +51,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.github.ybq.android.spinkit.R
 import com.github.ybq.android.spinkit.SpinKitView
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.event.SplashScreenEvent
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.SplashScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SplashScreenTranslations
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.delay
 import timber.log.Timber

@@ -18,6 +18,7 @@ import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBi
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountSelected
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthCancelled
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthError
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
@@ -35,6 +36,18 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object BiometricsModule {
+
+    @Provides
+    @Singleton
+    fun provideHandleBiometricAuthDismissed(
+        biometricsManager: BiometricsManager,
+        setBiometricsEnabled: SetBiometricsEnabled
+    ): HandleBiometricAuthCancelled {
+        return HandleBiometricAuthCancelled(
+            biometricManager = biometricsManager,
+            setBiometricsEnabled = setBiometricsEnabled
+        )
+    }
 
     @Singleton
     @Provides

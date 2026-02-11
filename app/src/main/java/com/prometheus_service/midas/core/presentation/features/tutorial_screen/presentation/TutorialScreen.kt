@@ -50,7 +50,7 @@ import com.prometheus_service.midas.core.presentation.features.tutorial_screen.t
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonFinishColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerDefaultColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerFinishColor
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.TutorialScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.TutorialScreenTranslations
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.launch
 import timber.log.Timber

@@ -13,7 +13,6 @@ data class BiometricsTranslations(
     val promptTitle: String = "",
     val promptCancel: String = "",
 
-
     val dialogSelectAccount: String = "",
     val dialogEnableTitle: String = "",
     val dialogEnableMessage: String = "",

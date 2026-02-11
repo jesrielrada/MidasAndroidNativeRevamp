@@ -25,7 +25,7 @@ import com.prometheus_service.midas.core.presentation.features.game_screen.prese
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.components.side_fab.GameSideFab
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.components.webview.GameWebview
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.event.GameScreenEvent
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.GameScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import timber.log.Timber
 import kotlin.math.roundToInt
 
