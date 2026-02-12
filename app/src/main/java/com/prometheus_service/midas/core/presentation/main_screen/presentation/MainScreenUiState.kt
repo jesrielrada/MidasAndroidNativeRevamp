@@ -16,6 +16,7 @@ data class MainScreenUiState(
     val shouldDisplayLanguageSelection: Boolean = false,
     val shouldDisplayWebview: Boolean = true,
     val shouldDisplayGameView: Boolean = false,
+    val shouldDisplaySecondStage: Boolean = true,
     val canDisplayTutorialScreen: Boolean = false,
     val isAppInitialized: Boolean = false,
     val isNetworkReady: Boolean = false,

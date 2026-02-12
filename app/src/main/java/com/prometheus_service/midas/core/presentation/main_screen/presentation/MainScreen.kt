@@ -35,12 +35,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.prometheus_service.midas.core.presentation.features.biometrics.BiometricAuthenticator
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.GameScreen
 import com.prometheus_service.midas.core.presentation.features.language_selection.presentation.LanguageSelectionScreen
+import com.prometheus_service.midas.core.presentation.features.second_stage.presentation.SecondStageScreen
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenEffectHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber
@@ -75,121 +77,13 @@ fun MainScreen(
 
     val shouldRestartSplash by remember { derivedStateOf { uiState.isErrorDialogVisible } }
 
-    LaunchedEffect(Unit) {
-        viewModel.sideEffect.collect { effect ->
-            when (effect) {
-                is MainScreenSideEffect.DisplayBiometricAuthError -> {
-
-                    val negative =
-                        uiState.viewTranslations.biometricsTranslations.biometricErrorCancelled
-                    val lockout =
-                        uiState.viewTranslations.biometricsTranslations.biometricErrorLockout
-
-                    val errorMessage = when (effect.code) {
-                        ERROR_CANCELED,
-                        ERROR_USER_CANCELED,
-                        ERROR_NEGATIVE_BUTTON -> {
-                            negative
-                        }
-
-                        ERROR_LOCKOUT,
-                        ERROR_LOCKOUT_PERMANENT -> {
-                            lockout
-                        }
-
-                        else -> effect.message
-                    }
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                }
-
-                is MainScreenSideEffect.DisplayBiometricSelectionList -> {
-                    val cancelBtnLabel =
-                        uiState.viewTranslations.biometricsTranslations.promptCancel
-                    val selectAccountLabel =
-                        uiState.viewTranslations.biometricsTranslations.dialogSelectAccount
-                    MaterialAlertDialogBuilder(context).apply {
-                        setTitle(selectAccountLabel)
-                        setItems(effect.usernames?.toTypedArray()) { dialog, index ->
-                            effect.usernames?.get(index)?.let {
-                                viewModel.onEvent(HandleAccountSelected(it))
-                            }
-                        }
-                        setNegativeButton(cancelBtnLabel) { _, _ ->
-                            viewModel.onEvent(HandleAccountSelectionAuthCancelled)
-                        }
-                        show()
-                    }
-                }
-
-                MainScreenSideEffect.DisplayBiometricSuccessEnrollment -> {
-                    Toast.makeText(
-                        context,
-                        uiState.viewTranslations.biometricsTranslations.biometricToastMessage,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-                is MainScreenSideEffect.DisplayBiometricPrompt -> {
-                    Timber.d("Displaying biometric prompt...")
-
-                    val promptInfo = PromptInfo.Builder()
-                        .setTitle(uiState.viewTranslations.biometricsTranslations.promptTitle)
-                        .setNegativeButtonText(uiState.viewTranslations.biometricsTranslations.promptCancel)
-                        .setConfirmationRequired(false)
-                        .build()
-
-                    authenticator.authenticate(
-                        promptInfo = promptInfo,
-                        cryptoObject = CryptoObject(effect.cipher),
-                        onSuccess = { result ->
-                            if (effect.isFromAccountSelection) {
-                                Timber.d("Biometric authentication succeeded, is from account selection .. ")
-                                viewModel.onEvent(HandleAccountSelectedAuthSucceed(result))
-                            } else {
-                                Timber.d("Biometric authentication succeeded, is not from account selection .. ")
-                                viewModel.onEvent(HandleBiometricsAuthResult(result))
-                            }
-                        },
-                        onError = { code, msg ->
-                            viewModel.onEvent(HandleBiometricsAuthError(code = code, message = msg))
-                        }
-                    )
-
-                }
-
-                is MainScreenSideEffect.OnStoreCredentials -> {
-                    Timber.d("Store credentials called on side effects, calling handle store credentials...")
-                    viewModel.onEvent(HandleStoreCredentials(effect.data))
-                }
-
-                is MainScreenSideEffect.OnPwaReady -> {
-                    Timber.d("PWA ready called on side effects, calling handle pwa ...")
-                    viewModel.onEvent(HandlePwaReady(effect.data))
-                }
-
-                is MainScreenSideEffect.ClearGoogleCredential -> {
-                    googleAuthManager.clearSession()
-                }
-
-                is MainScreenSideEffect.RequestGoogleLogin -> {
-                    try {
-                        val clientId = viewModel.googleClientId
-                        val result = googleAuthManager.getGoogleCredential(clientId)
-
-                        viewModel.onEvent(
-                            ProcessGoogleLogin(
-                                clientId = clientId,
-                                response = result,
-                                url = effect.url,
-                            )
-                        )
-                    } catch (e: Exception) {
-                        Timber.e("Creating credential manager failed... $e")
-                    }
-                }
-            }
-        }
-    }
+    MainScreenEffectHandler(
+        viewModel = viewModel,
+        uiState = uiState,
+        context = context,
+        authenticator = authenticator,
+        googleAuthManager = googleAuthManager
+    )
 
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, context)
 
@@ -310,6 +204,10 @@ fun MainScreen(
                     viewModel.onEvent(LoadBaseUrl)
                 }
             )
+        }
+
+        if (uiState.shouldDisplaySecondStage) {
+            SecondStageScreen()
         }
 
         if (uiState.isErrorDialogVisible) {
