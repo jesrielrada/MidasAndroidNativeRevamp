@@ -207,7 +207,27 @@ fun MainScreen(
         }
 
         if (uiState.shouldDisplaySecondStage) {
-            SecondStageScreen()
+            SecondStageScreen(
+                translations = uiState.viewTranslations.secondStageTranslations,
+                onCancel = {
+
+                },
+                onHideScreen = {
+                    viewModel.updateMainState {
+                        it.copy(
+                            shouldDisplaySecondStage = false
+                        )
+                    }
+                },
+                onMaxAttempt = {
+                    Timber.d("Max attempt called")
+                    viewModel.updateMainState {
+                        it.copy(
+                            shouldDisplaySecondStage = false
+                        )
+                    }
+                }
+            )
         }
 
         if (uiState.isErrorDialogVisible) {

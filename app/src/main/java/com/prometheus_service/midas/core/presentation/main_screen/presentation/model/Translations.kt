@@ -6,7 +6,18 @@ data class ViewTranslations(
     val tutorialScreenTranslations: TutorialScreenTranslations,
     val splashScreenTranslations: SplashScreenTranslations,
     val gameScreenTranslations: GameScreenTranslations,
-    val biometricsTranslations: BiometricsTranslations
+    val biometricsTranslations: BiometricsTranslations,
+    val secondStageTranslations: SecondStageTranslations
+)
+
+data class SecondStageTranslations(
+    val pinHeaderCreatePin: String = "",
+    val pinHeaderConfirmPin: String = "",
+    val pinHeaderEnterPin: String = "",
+    val pinHeaderIncorrectPin: String = "",
+    val pinHeaderIncorrectPinCreateNew: String = "",
+    val pinFooterCancelSettings: String = "",
+    val pinFooterRemainingAttempts: String = ""
 )
 
 data class BiometricsTranslations(

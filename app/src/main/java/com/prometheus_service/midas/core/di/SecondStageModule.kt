@@ -10,8 +10,10 @@ import com.prometheus_service.midas.core.data.features.second_stage.repository.D
 import com.prometheus_service.midas.core.data.features.second_stage.util.serializer.SecondStageSerializer
 import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
 import com.prometheus_service.midas.core.domain.features.second_stage.repository.SecondStageRepository
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.DecryptPin
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.EncryptPin
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.GetSecondStageConfig
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.InitializeKey
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.InitializeVector
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
@@ -26,6 +28,26 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object SecondStageModule {
+
+    @Provides
+    @Singleton
+    fun provideCacheSecondStageConfig(
+        repository: SecondStageRepository
+    ): CacheSecondStageConfig {
+        return CacheSecondStageConfig(
+            repository = repository
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideGetSecondStageConfig(
+        repository: SecondStageRepository
+    ): GetSecondStageConfig {
+        return GetSecondStageConfig(
+            repository = repository
+        )
+    }
 
     @Singleton
     @Provides

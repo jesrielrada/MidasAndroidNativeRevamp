@@ -39,6 +39,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SplashScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.TutorialScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.ViewTranslations
@@ -165,6 +166,10 @@ class MainScreenViewModel @Inject constructor(
 
     fun emitSideEffect(effect: MainScreenSideEffect) = viewModelScope.launch {
         _sideEffect.emit(effect)
+    }
+
+    fun updateMainState(state: (MainScreenUiState) -> MainScreenUiState) {
+        _uiState.update(state)
     }
 
     fun onEvent(event: MainScreenEvent) {
@@ -424,7 +429,7 @@ class MainScreenViewModel @Inject constructor(
 
             is MainScreenEvent.HandlePwaReady -> {
                 viewModelScope.launch {
-                    Timber.d("Handling pwa ready ... ${event.data}")
+                    Timber.d("Handling pwa ready ... ${event.data}, locale ${uiState.value.currentLocale}")
                     _uiState.update {
                         it.copy(
                             webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -695,9 +700,12 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.InitializeTranslations -> {
                 viewModelScope.launch {
-                    Timber.d("Initialize translations on main screen...")
-                    val locale = FlavorConfig.DEFAULT_LOCALE
+
+                    val config = getAppConfigModel.invoke()
+                    val locale = config.first().locale ?: FlavorConfig.DEFAULT_LOCALE
+                    Timber.d("Initializing translations ... $locale")
                     val data = getMultiLanguageData.invoke(locale).first()
+                    Timber.d("Initializing translations ... $data")
                     val errorMessage = "(Error Code: E001) ${data.errorMessages.fetchDomain}"
                     _uiState.update {
                         it.copy(
@@ -733,6 +741,15 @@ class MainScreenViewModel @Inject constructor(
                                     biometricErrorDefault = data.biometricsTranslations.biometricsErrorDefault,
                                     biometricErrorLockout = data.biometricsTranslations.biometricsErrorLockout,
                                     biometricNoneEnrolled = data.biometricsTranslations.biometricsErrorNoneEnrolled
+                                ),
+                                secondStageTranslations = SecondStageTranslations(
+                                    pinHeaderCreatePin = data.pinLockTranslations.pinCreate,
+                                    pinHeaderConfirmPin = data.pinLockTranslations.pinConfirm,
+                                    pinHeaderEnterPin = data.pinLockTranslations.pinEnter,
+                                    pinHeaderIncorrectPin = data.pinLockTranslations.pinIncorrect,
+                                    pinHeaderIncorrectPinCreateNew = data.pinLockTranslations.pinIncorrectNew,
+                                    pinFooterCancelSettings = data.pinLockTranslations.pinForgotButtonCancel,
+                                    pinFooterRemainingAttempts = data.pinLockTranslations.pinAttemptsText
                                 )
                             )
                         )

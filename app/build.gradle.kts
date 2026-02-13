@@ -1,7 +1,5 @@
-import com.android.build.api.variant.BuildConfigField
 import java.io.FileInputStream
 import java.util.Properties
-import kotlin.apply
 
 plugins {
     alias(libs.plugins.android.application)
@@ -130,6 +128,9 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // Stetho
+    implementation(libs.stetho)
 
     // Hilt
     implementation(libs.hilt.android)

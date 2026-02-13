@@ -2,6 +2,7 @@ package com.prometheus_service.midas.core.domain.shared.core.use_case
 
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import kotlinx.coroutines.delay
+import timber.log.Timber
 import javax.inject.Inject
 
 class InitializeNativeCookies @Inject constructor(
@@ -12,12 +13,17 @@ class InitializeNativeCookies @Inject constructor(
         version: String,
         language: String
     ) {
-        cookieProvider.initializeNativeCookies(
-            domain = domain,
-            version = version,
-            language = language
-        )
-        delay(500) // Add delay so that cookies are updated
-        cookieProvider.persistCookies()
+        try {
+            Timber.d("Setting native cookies ..., domain: $domain")
+            cookieProvider.initializeNativeCookies(
+                domain = domain,
+                version = version,
+                language = language
+            )
+            delay(500) // Add delay so that cookies are updated
+            cookieProvider.persistCookies()
+        } catch (e: Exception) {
+            Timber.e("Error setting native cookies: ${e.message}")
+        }
     }
 }

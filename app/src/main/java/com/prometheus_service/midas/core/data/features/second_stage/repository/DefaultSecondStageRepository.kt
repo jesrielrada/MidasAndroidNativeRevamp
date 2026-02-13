@@ -5,6 +5,7 @@ import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvide
 import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
 import com.prometheus_service.midas.core.domain.features.second_stage.repository.SecondStageRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -15,7 +16,7 @@ class DefaultSecondStageRepository @Inject constructor(
 ) : SecondStageRepository {
 
     override val secondStageModel: Flow<SecondStageModel>
-        get() = localDataSource.getSecondStageModel()
+        get() = localDataSource.getSecondStageModel().flowOn(dispatcherProvider.io)
 
     override suspend fun cacheSecondStageModel(model: SecondStageModel): Result<Unit> {
         return withContext(dispatcherProvider.io) {

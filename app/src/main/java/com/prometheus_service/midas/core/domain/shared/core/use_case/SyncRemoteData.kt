@@ -44,7 +44,7 @@ class SyncRemoteData @Inject constructor(
                 currency = currency
             )
 
-            Timber.d("Syncing multi language data")
+            Timber.d("Syncing multi language data, locale is $locale")
 
             syncMultiLanguageData.invoke(
                 operatorId = operatorId,

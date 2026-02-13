@@ -4,7 +4,6 @@ package com.prometheus_service.midas.core.presentation.features.second_stage.pre
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +19,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -37,30 +39,68 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.prometheus_service.midas.R
 import com.prometheus_service.midas.SecondStagePrimaryColor
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
+import timber.log.Timber
 
 @Composable
 fun SecondStageScreen(
     modifier: Modifier = Modifier,
+    onCancel: () -> Unit,
+    onHideScreen: () -> Unit,
+    onMaxAttempt: () -> Unit,
+    translations: SecondStageTranslations?,
     viewModel: SecondStageScreenViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val source = remember { MutableInteractionSource() }
 
+    LaunchedEffect(
+        uiState.shouldHideScreen,
+        uiState.onMaxAttempt,
+        translations
+    ) {
+        if (uiState.shouldHideScreen) {
+            onHideScreen()
+        }
+
+        if (uiState.onMaxAttempt) {
+            onMaxAttempt()
+        }
+
+        if (translations != null) {
+            Timber.d("Setting up translations ...")
+            viewModel.updateState {
+                it.copy(
+                    translations = translations
+                )
+            }
+        }
+    }
+
     SecondStageScreenContent(
         uiState = uiState,
         source = source,
         modifier = modifier,
-        onEnteredValue = {
-
+        onEnteredValue = { value ->
+            viewModel.updateState { state ->
+                state.copy(
+                    pinEnteredValue = value
+                )
+            }
         },
-        onCompleteText = {
-
+        onCompleteText = { value ->
+            Timber.d("On Complete.. entered value: $value")
+            viewModel.onCompleteText(value)
         },
         onCancel = {
-
+            onCancel()
         },
         onDelete = {
-
+            viewModel.updateState {
+                it.copy(
+                    pinEnteredValue = uiState.pinEnteredValue.dropLast(1)
+                )
+            }
         }
     )
 }
@@ -100,12 +140,12 @@ fun SecondStageScreenContent(
 
         PinFieldView(
             modifier = Modifier
-                .padding(top = 10.dp)
+                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .constrainAs(createRef()) {
                     centerHorizontallyTo(parent)
                     top.linkTo(logoRef.bottom)
                 },
-            value = uiState.pinEnteredTexts,
+            value = uiState.pinEnteredValue,
             headerValue = uiState.pinHeaderValue
         )
 
@@ -118,11 +158,9 @@ fun SecondStageScreenContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 source = source,
                 onClick = {
-                    if (uiState.pinEnteredTexts.length < 4) {
-                        val newValue = uiState.pinEnteredTexts + it
-
+                    if (uiState.pinEnteredValue.length < 4) {
+                        val newValue = uiState.pinEnteredValue + it
                         onEnteredValue(newValue)
-
 
                         if (newValue.length == 4) {
                             onCompleteText(newValue)
@@ -170,9 +208,10 @@ fun PinFieldView(
 
         Text(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            text = "Enter the lock screen password",
+            text = headerValue,
+            textAlign = TextAlign.Center,
             fontSize = 16.sp,
-            color = Color.White
+            color = Color(0XFFC5CBD3)
         )
     }
 }
@@ -182,6 +221,7 @@ fun CustomCirclePinField(
     modifier: Modifier = Modifier,
     value: String
 ) {
+    Timber.d("CustomPinField, value: $value")
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -202,19 +242,24 @@ fun CustomCirclePinView(
     modifier: Modifier = Modifier,
     value: String
 ) {
-    val fieldColor = if (value.isBlank()) Color(0XFF404954) else Color.White
+    val fieldColor = if (value.isBlank()) Color(0XFF404954) else Color(0XFFC5CBD3)
 
     TextField(
         modifier = modifier
             .size(16.dp)
             .clip(CircleShape)
-            .background(fieldColor),
+            .background(Color.White),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = fieldColor,
+            unfocusedContainerColor = fieldColor,
+            disabledContainerColor = fieldColor,
+            focusedIndicatorColor = Color.Transparent, // Removes the bottom line
+            unfocusedIndicatorColor = Color.Transparent // Removes the bottom line
+        ),
         value = value,
         singleLine = true,
         maxLines = 1,
-        onValueChange = {
-
-        }
+        onValueChange = {}
     )
 }
 
@@ -222,7 +267,7 @@ fun CustomCirclePinView(
 fun CancelAttemptText(modifier: Modifier = Modifier, footerValue: String) {
     Text(
         modifier = modifier,
-        text = "Cancel",
+        text = footerValue,
         color = SecondStagePrimaryColor,
         fontSize = 16.sp
     )

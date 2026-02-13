@@ -21,6 +21,7 @@ hilt = "2.57.2"
 ksp = "2.2.20-2.0.3"
 loggingInterceptor = "4.9.1"
 retrofit = "2.9.0"
+stetho = "1.6.0"
 timber = "5.0.1"
 datastore_preferences = "1.2.0"
 
@@ -63,6 +64,7 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltC
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltCompiler" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+stetho = { module = "com.facebook.stetho:stetho", version.ref = "stetho" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "jetbrains_serialization_json" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
