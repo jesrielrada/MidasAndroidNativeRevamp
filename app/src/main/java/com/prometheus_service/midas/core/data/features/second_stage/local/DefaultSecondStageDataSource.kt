@@ -31,8 +31,8 @@ class DefaultSecondStageDataSource @Inject constructor(
         try {
             dataStore.updateData { currentData ->
                 currentData.copy(
-                    isUserEnabled = data.isUserEnabled ?: false,
-                    isCmsboEnabled = data.isCmsboEnabled ?: false,
+                    isUserEnabled = data.isUserEnabled ?: currentData.isUserEnabled,
+                    isCmsboEnabled = data.isCmsboEnabled ?: currentData.isCmsboEnabled,
                     pin = data.pin ?: currentData.pin,
                     credentials = data.credentials ?: currentData.credentials
                 )

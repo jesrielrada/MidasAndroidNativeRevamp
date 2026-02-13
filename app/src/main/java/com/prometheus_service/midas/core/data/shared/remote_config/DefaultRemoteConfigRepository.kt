@@ -7,6 +7,7 @@ import com.prometheus_service.midas.core.domain.shared.remote_config.RemoteConfi
 import com.prometheus_service.midas.core.domain.shared.remote_config.model.RemoteConfigModel
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -18,7 +19,7 @@ class DefaultRemoteConfigRepository @Inject constructor(
 ) : RemoteConfigRepository {
 
     override val remoteConfigModel: Flow<RemoteConfigModel>
-        get() = localDataSource.getRemoteConfigModel()
+        get() = localDataSource.getRemoteConfigModel().flowOn(dispatcherProvider.io)
 
     override suspend fun syncRemoteConfigData(
         operatorId: String,

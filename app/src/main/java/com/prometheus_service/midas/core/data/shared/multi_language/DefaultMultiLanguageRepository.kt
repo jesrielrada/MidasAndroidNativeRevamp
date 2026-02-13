@@ -9,6 +9,7 @@ import com.prometheus_service.midas.core.domain.shared.multi_language.MultiLangu
 import com.prometheus_service.midas.core.domain.shared.multi_language.model.LocalizedModels
 import com.prometheus_service.midas.toDomain
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -32,7 +33,7 @@ class DefaultMultiLanguageRepository @Inject constructor(
                     DefaultLocalizedModels().toDomain()
                 }
 
-            }
+            }.flowOn(dispatcherProvider.io)
     }
 
     override suspend fun syncMultiLanguageData(

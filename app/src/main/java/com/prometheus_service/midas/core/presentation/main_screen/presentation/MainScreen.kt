@@ -43,21 +43,11 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenEffectHandler
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenLifecycleHandler
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenOrientationHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber
-
-@Composable
-fun LockScreenOrientation(orientation: Int, context: Context) {
-    DisposableEffect(orientation) {
-        val activity = context as? Activity ?: return@DisposableEffect onDispose {}
-        val originalOrientation = activity.requestedOrientation
-        activity.requestedOrientation = orientation
-        onDispose {
-            activity.requestedOrientation = originalOrientation
-        }
-    }
-}
 
 
 @Composable
@@ -85,7 +75,9 @@ fun MainScreen(
         googleAuthManager = googleAuthManager
     )
 
-    LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, context)
+    MainScreenLifecycleHandler(viewModel = viewModel)
+
+    MainScreenOrientationHandler(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, context)
 
     Box(modifier = Modifier.fillMaxSize()) {
         WebviewScreen(
@@ -136,7 +128,7 @@ fun MainScreen(
         )
 
         if (shouldDisplayGameView) {
-            LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, context)
+            MainScreenOrientationHandler(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, context)
             GameScreen(
                 gameUrl = uiState.gameUrl,
                 gameScreenTranslations = uiState.viewTranslations.gameScreenTranslations,
@@ -209,14 +201,11 @@ fun MainScreen(
         }
 
         if (uiState.shouldDisplaySecondStage) {
+            Timber.d("Should display second stage .. ")
             SecondStageScreen(
                 translations = uiState.viewTranslations.secondStageTranslations,
                 onCancel = {
-                    viewModel.updateMainState {
-                        it.copy(
-                            shouldDisplaySecondStage = false
-                        )
-                    }
+                    viewModel.onEvent(HandlePinCodeToggleOff)
                 },
                 onHideScreen = {
                     viewModel.updateMainState {

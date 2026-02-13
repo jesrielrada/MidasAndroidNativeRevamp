@@ -10,6 +10,7 @@ data class SecondStageScreenUiState(
     val pinValue: String = "",
     val pinHeaderValue: String = "",
     val pinFooterValue: String = "",
+    val isFooterClickable: Boolean = false,
     val shouldHideScreen: Boolean = false,
     val onMaxAttempt: Boolean = false,
     val currentState: SecondStageState = SecondStageState.DisplayCreatePin,

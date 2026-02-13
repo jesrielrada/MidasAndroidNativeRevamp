@@ -40,6 +40,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.prometheus_service.midas.R
 import com.prometheus_service.midas.SecondStagePrimaryColor
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
+import timber.log.Timber
 
 @Composable
 fun SecondStageScreen(
@@ -53,25 +54,31 @@ fun SecondStageScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val source = remember { MutableInteractionSource() }
 
+    LaunchedEffect(Unit) {
+        Timber.d("Setting up translations ... ")
+        viewModel.updateState {
+            it.copy(
+                translations = translations ?: uiState.translations
+            )
+        }
+
+        viewModel.initializeScreen()
+    }
+
     LaunchedEffect(
         uiState.shouldHideScreen,
-        uiState.onMaxAttempt,
-        translations
+        uiState.onMaxAttempt
     ) {
         if (uiState.shouldHideScreen) {
+            Timber.d("Hide screen called")
+            viewModel.resetUiState()
             onHideScreen()
         }
 
         if (uiState.onMaxAttempt) {
+            Timber.d("Max attempt called")
+            viewModel.resetUiState()
             onMaxAttempt()
-        }
-
-        if (translations != null) {
-            viewModel.updateState {
-                it.copy(
-                    translations = translations
-                )
-            }
         }
     }
 
@@ -181,7 +188,9 @@ fun SecondStageScreenContent(
                     indication = null,
                     interactionSource = source
                 ) {
-                    onCancel()
+                    if(uiState.isFooterClickable){
+                        onCancel()
+                    }
                 }, footerValue = uiState.pinFooterValue
         )
     }

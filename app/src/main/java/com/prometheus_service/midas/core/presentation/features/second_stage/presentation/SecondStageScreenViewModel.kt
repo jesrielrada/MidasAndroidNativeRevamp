@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,10 +33,14 @@ class SecondStageScreenViewModel @Inject constructor(
     private val clientSecret = FlavorConfig.CLIENT_SECRET
 
 
-    init {
+    fun initializeScreen() {
         viewModelScope.launch {
             val config = getSecondStageConfig.invoke().firstOrNull()
-            val userEnabled = config != null && config.isUserEnabled != null && config.isUserEnabled
+            val userEnabled = config != null && config.isUserEnabled != null
+                    && config.isUserEnabled
+                    && config.pin != null
+
+            Timber.d("On init second stage viewmodel, userEnabled: $userEnabled")
 
             if (userEnabled) {
                 val encryptedPin = config.pin
@@ -50,7 +55,8 @@ class SecondStageScreenViewModel @Inject constructor(
                         pinValue = decryptedPin ?: "",
                         currentState = SecondStageState.DisplayLockScreen,
                         pinHeaderValue = uiState.value.translations.pinHeaderEnterPin,
-                        pinFooterValue = remainingAttemptsString()
+                        pinFooterValue = remainingAttemptsString(),
+                        isFooterClickable = false
                     )
                 }
             } else {
@@ -58,10 +64,24 @@ class SecondStageScreenViewModel @Inject constructor(
                     it.copy(
                         currentState = SecondStageState.DisplayCreatePin,
                         pinHeaderValue = uiState.value.translations.pinHeaderCreatePin,
-                        pinFooterValue = uiState.value.translations.pinFooterCancelSettings
+                        pinFooterValue = uiState.value.translations.pinFooterCancelSettings,
+                        isFooterClickable = true
                     )
                 }
             }
+        }
+    }
+
+    fun resetUiState() {
+        _uiState.update {
+            it.copy(
+                shouldHideScreen = false,
+                tryCount = 0,
+                remainingAttempts = 3,
+                pinEnteredValue = "",
+                pinValue = "",
+                onMaxAttempt = false
+            )
         }
     }
 
@@ -100,7 +120,8 @@ class SecondStageScreenViewModel @Inject constructor(
                             pinHeaderValue = uiState.value.translations.pinHeaderIncorrectPin,
                             pinFooterValue = uiState.value.translations.pinFooterCancelSettings,
                             pinEnteredValue = "",
-                            pinValue = ""
+                            pinValue = "",
+                            isFooterClickable = true
                         )
                     }
                 }
@@ -113,7 +134,8 @@ class SecondStageScreenViewModel @Inject constructor(
                         pinValue = value,
                         currentState = SecondStageState.DisplayConfirmPin,
                         pinHeaderValue = uiState.value.translations.pinHeaderConfirmPin,
-                        pinFooterValue = uiState.value.translations.pinFooterCancelSettings
+                        pinFooterValue = uiState.value.translations.pinFooterCancelSettings,
+                        isFooterClickable = true
                     )
                 }
             }
@@ -150,8 +172,9 @@ class SecondStageScreenViewModel @Inject constructor(
                                 tryCount = uiState.value.tryCount,
                                 remainingAttempts = uiState.value.remainingAttempts,
                                 pinHeaderValue = uiState.value.translations.pinHeaderIncorrectPin,
-                                pinFooterValue = remainingAttemptsString(),
-                                pinEnteredValue = ""
+                                pinFooterValue = remainingAttemptsString(remainingAttempts),
+                                pinEnteredValue = "",
+                                isFooterClickable = false
                             )
                         }
                     }
@@ -165,7 +188,8 @@ class SecondStageScreenViewModel @Inject constructor(
                         pinFooterValue = uiState.value.translations.pinFooterCancelSettings,
                         currentState = SecondStageState.DisplayConfirmPin,
                         pinEnteredValue = "",
-                        pinValue = value
+                        pinValue = value,
+                        isFooterClickable = true
                     )
                 }
             }
@@ -187,8 +211,9 @@ class SecondStageScreenViewModel @Inject constructor(
                             remainingAttempts = remainingAttempts,
                             currentState = SecondStageState.DisplayIncorrectPin,
                             pinHeaderValue = uiState.value.translations.pinHeaderIncorrectPin,
-                            pinFooterValue = remainingAttemptsString(),
-                            pinEnteredValue = ""
+                            pinFooterValue = remainingAttemptsString(remainingAttempts),
+                            pinEnteredValue = "",
+                            isFooterClickable = true
                         )
                     }
                 }
@@ -200,9 +225,12 @@ class SecondStageScreenViewModel @Inject constructor(
         _uiState.update(state)
     }
 
+    private fun remainingAttemptsString(remainingAttempts: Int): String {
+        return "${uiState.value.translations.pinFooterRemainingAttempts} ($remainingAttempts)"
+    }
+
     private fun remainingAttemptsString(): String {
         return "${uiState.value.translations.pinFooterRemainingAttempts} (${uiState.value.remainingAttempts})"
     }
-
 
 }

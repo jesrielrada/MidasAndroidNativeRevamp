@@ -9,6 +9,7 @@ import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -25,7 +26,7 @@ class DefaultBiometricsRepository @Inject constructor(
     override suspend fun getCipherTextWrapper(username: String): Flow<CipherTextWrapper?> {
         return localDataSource.biometricsModel.map { model ->
             model.cipherList?.find { it.first == username }?.second
-        }.distinctUntilChanged()
+        }.distinctUntilChanged().flowOn(dispatcherProvider.io)
     }
 
     override suspend fun persistCipherTextWrapper(

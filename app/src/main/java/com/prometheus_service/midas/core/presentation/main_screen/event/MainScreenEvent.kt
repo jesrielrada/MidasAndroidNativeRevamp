@@ -56,4 +56,9 @@ sealed class MainScreenEvent {
     ) : MainScreenEvent()
 
     data class HandlePinCodeToggled(val enabled: Boolean) : MainScreenEvent()
+    object HandlePinCodeToggleOff: MainScreenEvent()
+
+    object HandleOnResume : MainScreenEvent()
+
+
 }

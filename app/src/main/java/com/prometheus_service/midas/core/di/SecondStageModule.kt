@@ -11,6 +11,7 @@ import com.prometheus_service.midas.core.data.features.second_stage.util.seriali
 import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
 import com.prometheus_service.midas.core.domain.features.second_stage.repository.SecondStageRepository
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CanDisplayPinlock
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.DecryptPin
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.EncryptPin
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.GetSecondStageConfig
@@ -28,6 +29,16 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object SecondStageModule {
+
+    @Provides
+    @Singleton
+    fun provideCanDisplayPinlock(
+        repository: SecondStageRepository
+    ): CanDisplayPinlock {
+        return CanDisplayPinlock(
+            secondStageRepository = repository
+        )
+    }
 
     @Provides
     @Singleton

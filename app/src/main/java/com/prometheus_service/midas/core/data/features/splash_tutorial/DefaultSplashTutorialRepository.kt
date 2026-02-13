@@ -8,6 +8,7 @@ import com.prometheus_service.midas.core.domain.features.splash_tutorial.SplashT
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.model.SplashTutorialModel
 import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -20,7 +21,7 @@ class DefaultSplashTutorialRepository @Inject constructor(
 ) : SplashTutorialRepository {
 
     override val splashTutorialModel: Flow<SplashTutorialModel>
-        get() = localDataSource.getSplashTutorialModel()
+        get() = localDataSource.getSplashTutorialModel().flowOn(dispatcherProvider.io)
 
     override suspend fun syncSplashTutorialData(
         operatorId: String,

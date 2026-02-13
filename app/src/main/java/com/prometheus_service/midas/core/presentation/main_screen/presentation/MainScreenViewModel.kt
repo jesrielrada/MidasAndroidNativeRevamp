@@ -6,7 +6,9 @@ import com.prometheus_service.midas.BuildConfig
 import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CanDisplayPinlock
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
+import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
@@ -97,6 +99,8 @@ class MainScreenViewModel @Inject constructor(
     private val handleBiometricAuthError: HandleBiometricAuthError,
     private val handleBiometricAuthCancelled: HandleBiometricAuthCancelled,
     private val cacheSecondStageConfig: CacheSecondStageConfig,
+    private val cookieProvider: CookieProvider,
+    private val canDisplayPinlock: CanDisplayPinlock,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -178,6 +182,37 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HandleOnResume -> {
+                viewModelScope.launch {
+                    val canDisplayPinlock = canDisplayPinlock.invoke()
+                    val baseUrl = uiState.value.webViewScreenUiState.webviewUrl
+                    val isPwaReady = uiState.value.webViewScreenUiState.isPwaReady
+                    val isLoggedIn = baseUrl != null && cookieProvider.isLoggedIn(baseUrl)
+
+                    Timber.d("Handling on resume ... canDisplayPinlock: $canDisplayPinlock, baseUrl: $baseUrl, isPwaReady: $isPwaReady ... isLoggedIn: $isLoggedIn")
+
+                    if (isLoggedIn && isPwaReady && canDisplayPinlock) {
+                        _uiState.update {
+                            it.copy(
+                                shouldDisplaySecondStage = true
+                            )
+                        }
+                    }
+                }
+            }
+
+            MainScreenEvent.HandlePinCodeToggleOff -> {
+                val script = togglePinCodeStorageScript(false)
+                _uiState.update {
+                    it.copy(
+                        shouldDisplaySecondStage = false,
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            customScript = script
+                        )
+                    )
+                }
+            }
+
             is MainScreenEvent.HandlePinCodeToggled -> {
                 viewModelScope.launch {
                     val script = togglePinCodeStorageScript(event.enabled)
@@ -198,6 +233,7 @@ class MainScreenViewModel @Inject constructor(
                             )
                         )
                     } else {
+                        Timber.d("Handling pin code toggled ... disabling")
                         cacheSecondStageConfig.invoke(
                             SecondStageModel(
                                 isUserEnabled = false,

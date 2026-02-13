@@ -7,18 +7,19 @@ import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvide
 import com.prometheus_service.midas.core.domain.shared.remote_domains.RemoteDomainsRepository
 import com.prometheus_service.midas.core.domain.shared.remote_domains.model.RemoteDomainsModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
-class  DefaultRemoteDomainsRepository @Inject constructor(
+class DefaultRemoteDomainsRepository @Inject constructor(
     private val localDataSource: RemoteDomainsLocalDataSource,
     private val remoteDataSource: RemoteDomainsRemoteDataSource,
     private val dispatcherProvider: DefaultDispatcherProvider
 ) : RemoteDomainsRepository {
 
     override val remoteDomainsModel: Flow<RemoteDomainsModel>
-        get() = localDataSource.getRemoteDomainsModel()
+        get() = localDataSource.getRemoteDomainsModel().flowOn(dispatcherProvider.io)
 
     override suspend fun syncRemoteDomainsData(
         operatorId: String,

@@ -6,6 +6,7 @@ import com.prometheus_service.midas.core.data.shared.app_config.local.AppConfigL
 import com.prometheus_service.midas.core.domain.shared.app_config.AppConfigRepository
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -24,7 +25,7 @@ class DefaultAppConfigRepository @Inject constructor(
 ) : AppConfigRepository {
 
     override val appConfigModel: Flow<AppConfigModel>
-        get() = localDataSource.getAppConfigModel()
+        get() = localDataSource.getAppConfigModel().flowOn(dispatcherProvider.io)
 
     override suspend fun cacheAppConfigModel(model: AppConfigModel): Result<Unit> {
         return withContext(dispatcherProvider.io) {
