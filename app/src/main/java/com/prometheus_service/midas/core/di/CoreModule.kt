@@ -1,6 +1,8 @@
 package com.prometheus_service.midas.core.di
 
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
+import com.prometheus_service.midas.core.domain.features.biometrics.manager.BiometricsManager
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.SyncMultiLanguageData
 import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.GetRemoteConfig
 import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.SyncRemoteDomains
@@ -18,6 +20,7 @@ import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNati
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
+import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -118,14 +121,20 @@ object CoreModule {
         getAppConfig: GetAppConfigModel,
         syncRemoteDomains: SyncRemoteDomains,
         syncSplashTutorialImages: SyncSplashTutorialImages,
-        syncMultiLanguageData: SyncMultiLanguageData
+        syncMultiLanguageData: SyncMultiLanguageData,
+        cacheSecondStageConfig: CacheSecondStageConfig,
+        biometricsManager: BiometricsManager,
+        getMultiLanguageData: GetMultiLanguageData
     ): SyncRemoteData {
         return SyncRemoteData(
             dispatcherProvider = dispatcherProvider,
             getAppConfig = getAppConfig,
             syncRemoteDomains = syncRemoteDomains,
             syncSplashTutorialImages = syncSplashTutorialImages,
-            syncMultiLanguageData = syncMultiLanguageData
+            syncMultiLanguageData = syncMultiLanguageData,
+            cacheSecondStageConfig = cacheSecondStageConfig,
+            biometricsManager = biometricsManager,
+            getMultiLanguageData = getMultiLanguageData
         )
     }
 }

@@ -56,6 +56,10 @@ class DefaultBiometricManager @Inject constructor(
         return repository.setBiometricsEnabled(true, cmsboEnabled)
     }
 
+    override suspend fun setBiometricsCmsboEnabled(cmsboEnabled: Boolean) {
+        repository.setBiometricsCmsboEnabled(cmsboEnabled)
+    }
+
     override suspend fun setCurrentAccount(data: String): Result<Unit> {
         return runCatching {
             _currentAccount = repository.parseRemoteData(data)

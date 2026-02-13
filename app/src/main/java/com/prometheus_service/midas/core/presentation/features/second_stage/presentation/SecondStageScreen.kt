@@ -40,7 +40,6 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.prometheus_service.midas.R
 import com.prometheus_service.midas.SecondStagePrimaryColor
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
-import timber.log.Timber
 
 @Composable
 fun SecondStageScreen(
@@ -68,7 +67,6 @@ fun SecondStageScreen(
         }
 
         if (translations != null) {
-            Timber.d("Setting up translations ...")
             viewModel.updateState {
                 it.copy(
                     translations = translations
@@ -89,7 +87,6 @@ fun SecondStageScreen(
             }
         },
         onCompleteText = { value ->
-            Timber.d("On Complete.. entered value: $value")
             viewModel.onCompleteText(value)
         },
         onCancel = {
@@ -221,7 +218,6 @@ fun CustomCirclePinField(
     modifier: Modifier = Modifier,
     value: String
 ) {
-    Timber.d("CustomPinField, value: $value")
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,

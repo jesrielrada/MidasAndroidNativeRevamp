@@ -35,7 +35,8 @@ fun WebviewScreen(
     onNativeAuthenticateGoogle: (String) -> Unit,
     onNativeLaunchGoogle: (String) -> Unit,
     onShouldDisplayBiometricsLogin: () -> Unit,
-    onLoginLauncher: (String?) -> Unit
+    onLoginLauncher: (String?) -> Unit,
+    onPincodeToggled: (Boolean) -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
@@ -51,7 +52,8 @@ fun WebviewScreen(
         onNativeLaunchGoogle = { onNativeLaunchGoogle(it) },
         onCustomUrlLoaded = onCustomUrlLoaded,
         onShouldDisplayBiometricsLogin = onShouldDisplayBiometricsLogin,
-        onLoginLauncher = { onLoginLauncher(it) }
+        onLoginLauncher = { onLoginLauncher(it) },
+        onPincodeToggled = { onPincodeToggled(it) }
     )
 }
 
@@ -72,7 +74,8 @@ fun WebviewScreenContent(
     onNativeAuthenticateGoogle: (String) -> Unit,
     onNativeLaunchGoogle: (String) -> Unit,
     onShouldDisplayBiometricsLogin: () -> Unit,
-    onLoginLauncher: (String?) -> Unit
+    onLoginLauncher: (String?) -> Unit,
+    onPincodeToggled: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -98,7 +101,8 @@ fun WebviewScreenContent(
                 onStoreCredentials = { onStoreCredentials(it) },
                 onPwaNavigate = { onPwaNavigate(it) },
                 onShouldDisplayBiometricsLogin = { onShouldDisplayBiometricsLogin() },
-                onLoginLauncher = { onLoginLauncher(it) }
+                onLoginLauncher = { onLoginLauncher(it) },
+                onPincodeToggled = { onPincodeToggled(it) }
             )
 
             this.webViewClient = DefaultWebviewClient()
@@ -166,8 +170,8 @@ fun webviewJavascriptSetup(
     onStoreCredentials: (data: String?) -> Unit,
     onPwaNavigate: (route: String?) -> Unit,
     onShouldDisplayBiometricsLogin: () -> Unit,
-    onLoginLauncher: (data: String?) -> Unit
-
+    onLoginLauncher: (data: String?) -> Unit,
+    onPincodeToggled: (isEnabled: Boolean) -> Unit
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -206,6 +210,10 @@ fun webviewJavascriptSetup(
 
                 override fun onLoginLauncher(data: String?) {
                     onLoginLauncher(data)
+                }
+
+                override fun onPinCodeToggle(isEnabled: Boolean) {
+                    onPincodeToggled(isEnabled)
                 }
             }
         ),

@@ -2,10 +2,14 @@ package com.prometheus_service.midas.core.domain.shared.core.use_case
 
 import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
-import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.SyncMultiLanguageData
-import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.SyncRemoteDomains
+import com.prometheus_service.midas.core.domain.features.biometrics.manager.BiometricsManager
+import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
+import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.SyncMultiLanguageData
+import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.SyncRemoteDomains
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -16,7 +20,10 @@ class SyncRemoteData @Inject constructor(
     private val getAppConfig: GetAppConfigModel,
     private val syncRemoteDomains: SyncRemoteDomains,
     private val syncSplashTutorialImages: SyncSplashTutorialImages,
-    private val syncMultiLanguageData: SyncMultiLanguageData
+    private val syncMultiLanguageData: SyncMultiLanguageData,
+    private val getMultiLanguageData: GetMultiLanguageData,
+    private val cacheSecondStageConfig: CacheSecondStageConfig,
+    private val biometricsManager: BiometricsManager
 ) {
     //TODO(Check currency, check should fetch remote data, check force fetch data)
     suspend operator fun invoke(locale: String) {
@@ -52,6 +59,23 @@ class SyncRemoteData @Inject constructor(
                 acceptLanguage = locale,
                 currency = currency
             )
+
+            val featureSettings = getMultiLanguageData.invoke(locale).first().featureSettings
+            val secondStageCmsboEnabled = featureSettings.pinlockEnabled
+            val biometricsEnabled = featureSettings.biometricsEnabled
+
+            Timber.d("Syncing second stage config, " +
+                    "second stage cmsbo enabled: $secondStageCmsboEnabled, " +
+                    "biometrics cmsbo enabled: $biometricsEnabled")
+
+            cacheSecondStageConfig.invoke(
+                SecondStageModel(
+                    isCmsboEnabled = secondStageCmsboEnabled
+                )
+            )
+
+            biometricsManager.setBiometricsCmsboEnabled(biometricsEnabled)
+
         }
     }
 }

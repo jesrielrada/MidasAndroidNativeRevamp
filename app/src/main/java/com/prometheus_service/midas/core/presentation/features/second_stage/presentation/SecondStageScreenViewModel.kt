@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,7 +54,6 @@ class SecondStageScreenViewModel @Inject constructor(
                     )
                 }
             } else {
-                Timber.d("init, user not enabled ... create lock screen")
                 _uiState.update {
                     it.copy(
                         currentState = SecondStageState.DisplayCreatePin,
@@ -68,8 +66,6 @@ class SecondStageScreenViewModel @Inject constructor(
     }
 
     fun onCompleteText(value: String) {
-        Timber.d("on complete called, value: ${uiState.value.currentState}")
-
         when (uiState.value.currentState) {
             SecondStageState.DisplayConfirmPin -> {
                 if (uiState.value.pinEnteredValue == uiState.value.pinValue) {
@@ -111,7 +107,6 @@ class SecondStageScreenViewModel @Inject constructor(
             }
 
             SecondStageState.DisplayCreatePin -> {
-                Timber.d("On complete.. display create pin ... display confirm pin")
                 _uiState.update {
                     it.copy(
                         pinEnteredValue = "",
@@ -142,9 +137,6 @@ class SecondStageScreenViewModel @Inject constructor(
                             remainingAttempts = remainingAttempts,
                         )
                     }
-
-
-                    Timber.d("On complete.. display incorrect pin ... try count ${uiState.value.tryCount}")
 
                     if (uiState.value.tryCount > 2) {
                         _uiState.update {
@@ -201,7 +193,6 @@ class SecondStageScreenViewModel @Inject constructor(
                     }
                 }
             }
-
         }
     }
 

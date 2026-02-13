@@ -10,5 +10,6 @@ interface JavascriptListener {
     fun onResetCredentials(data: String?)
     fun onShouldDisplayBiometricsLogin(enabled: Boolean)
     fun onLoginLauncher(data: String?)
+    fun onPinCodeToggle(isEnabled: Boolean)
 }
 

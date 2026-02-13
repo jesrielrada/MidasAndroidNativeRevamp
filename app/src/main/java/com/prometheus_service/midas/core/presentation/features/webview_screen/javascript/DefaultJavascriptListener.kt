@@ -50,4 +50,9 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
         callback.onLoginLauncher(data)
     }
 
+    @JavascriptInterface
+    fun pincodeToggled(isEnabled: Boolean) {
+        callback.onPinCodeToggle(isEnabled)
+    }
+
 }

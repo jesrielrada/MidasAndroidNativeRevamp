@@ -128,8 +128,10 @@ fun MainScreen(
                 viewModel.onEvent(DisplayBiometricAccountSelection)
             },
             onLoginLauncher = {
-                Timber.d("Login launcher called")
                 viewModel.onEvent(HandleBiometricsLogin)
+            },
+            onPincodeToggled = {
+                viewModel.onEvent(HandlePinCodeToggled(it))
             }
         )
 
@@ -210,7 +212,11 @@ fun MainScreen(
             SecondStageScreen(
                 translations = uiState.viewTranslations.secondStageTranslations,
                 onCancel = {
-
+                    viewModel.updateMainState {
+                        it.copy(
+                            shouldDisplaySecondStage = false
+                        )
+                    }
                 },
                 onHideScreen = {
                     viewModel.updateMainState {

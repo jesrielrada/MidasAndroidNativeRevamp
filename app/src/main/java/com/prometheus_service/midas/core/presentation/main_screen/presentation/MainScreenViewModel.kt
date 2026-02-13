@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.BuildConfig
 import com.prometheus_service.midas.FlavorConfig
+import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
@@ -48,6 +50,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.u
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.HIDE_BIOMETRICS_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_LAUNCHER_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_ROUTE
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.togglePinCodeStorageScript
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -93,6 +96,7 @@ class MainScreenViewModel @Inject constructor(
     private val getBiometricCurrentAccount: GetBiometricCurrentAccount,
     private val handleBiometricAuthError: HandleBiometricAuthError,
     private val handleBiometricAuthCancelled: HandleBiometricAuthCancelled,
+    private val cacheSecondStageConfig: CacheSecondStageConfig,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -174,6 +178,36 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandlePinCodeToggled -> {
+                viewModelScope.launch {
+                    val script = togglePinCodeStorageScript(event.enabled)
+                    _uiState.update {
+                        it.copy(
+                            shouldDisplaySecondStage = event.enabled,
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customScript = script
+                            )
+                        )
+                    }
+
+                    Timber.d("Handling pin code toggled ... ${event.enabled}")
+                    if (event.enabled) {
+                        cacheSecondStageConfig.invoke(
+                            SecondStageModel(
+                                isUserEnabled = true
+                            )
+                        )
+                    } else {
+                        cacheSecondStageConfig.invoke(
+                            SecondStageModel(
+                                isUserEnabled = false,
+                                pin = null
+                            )
+                        )
+                    }
+                }
+            }
+
             MainScreenEvent.HandleAccountSelectionAuthCancelled -> {
                 viewModelScope.launch {
                     val locale = uiState.value.currentLocale
