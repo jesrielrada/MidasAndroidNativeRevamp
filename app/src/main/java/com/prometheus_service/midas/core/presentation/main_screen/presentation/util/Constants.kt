@@ -9,6 +9,8 @@ class Constants {
             "javascript: window.app._events['native-biometrics-is-enabled'][0](true)"
         val LOGIN_ROUTE = "javascript: window.pwa.navigate({ name: 'login-route'})"
 
+        val PIN_CODE_STATE_SCRIPT = "javascript: window.Store.state.operator.secondStagePassword"
+
         fun togglePinCodeStorageScript(isEnabled: Boolean): String =
             "javascript: window.app._events['pin-code-storage-toggle'][0]($isEnabled)"
 

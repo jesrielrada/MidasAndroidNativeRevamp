@@ -24,15 +24,7 @@ class DefaultMultiLanguageRepository @Inject constructor(
     override fun getLocalizedLanguageModel(locale: String): Flow<LocalizedModels> {
         return localDataSource.getLocalizedLanguageModel(locale)
             .map { cachedModel ->
-
-                if (cachedModel != null) {
-                    Timber.d("Cached model found: $cachedModel")
-                    cachedModel
-                } else {
-                    Timber.d("Cached model not found")
-                    DefaultLocalizedModels().toDomain()
-                }
-
+                cachedModel ?: DefaultLocalizedModels().toDomain()
             }.flowOn(dispatcherProvider.io)
     }
 

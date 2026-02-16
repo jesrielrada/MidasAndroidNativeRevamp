@@ -36,7 +36,8 @@ fun WebviewScreen(
     onNativeLaunchGoogle: (String) -> Unit,
     onShouldDisplayBiometricsLogin: () -> Unit,
     onLoginLauncher: (String?) -> Unit,
-    onPincodeToggled: (Boolean) -> Unit
+    onPincodeToggled: (Boolean) -> Unit,
+    onCustomCallbackScriptLoaded: (String) -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
@@ -53,7 +54,8 @@ fun WebviewScreen(
         onCustomUrlLoaded = onCustomUrlLoaded,
         onShouldDisplayBiometricsLogin = onShouldDisplayBiometricsLogin,
         onLoginLauncher = { onLoginLauncher(it) },
-        onPincodeToggled = { onPincodeToggled(it) }
+        onPincodeToggled = { onPincodeToggled(it) },
+        onCustomCallbackScriptLoaded = { onCustomCallbackScriptLoaded(it) }
     )
 }
 
@@ -75,7 +77,8 @@ fun WebviewScreenContent(
     onNativeLaunchGoogle: (String) -> Unit,
     onShouldDisplayBiometricsLogin: () -> Unit,
     onLoginLauncher: (String?) -> Unit,
-    onPincodeToggled: (Boolean) -> Unit
+    onPincodeToggled: (Boolean) -> Unit,
+    onCustomCallbackScriptLoaded: (String) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -152,6 +155,13 @@ fun WebviewScreenContent(
                     Timber.d("Loading custom script ... ${uiState.customScript}")
                     view.loadUrl(uiState.customScript)
                     onCustomUrlLoaded()
+                }
+
+                if (uiState.customCallbackScript != null) {
+                    Timber.d("Loading custom callback script ... ${uiState.customCallbackScript}")
+                    view.evaluateJavascript(uiState.customCallbackScript) {
+                        onCustomCallbackScriptLoaded(it)
+                    }
                 }
             },
             modifier = modifier

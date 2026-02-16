@@ -124,6 +124,9 @@ fun MainScreen(
             },
             onPincodeToggled = {
                 viewModel.onEvent(HandlePinCodeToggled(it))
+            },
+            onCustomCallbackScriptLoaded = {
+                viewModel.onEvent(HandleCustomScriptCallback(it))
             }
         )
 
@@ -177,7 +180,6 @@ fun MainScreen(
                     }
                 },
                 onScrollFinished = {
-                    Timber.d("Scroll finished called")
                     if (uiState.webViewScreenUiState.isPwaReady && uiState.isAppInitialized) {
                         viewModel.onEvent(HideSplashScreen)
                     }
@@ -201,7 +203,6 @@ fun MainScreen(
         }
 
         if (uiState.shouldDisplaySecondStage) {
-            Timber.d("Should display second stage .. ")
             SecondStageScreen(
                 translations = uiState.viewTranslations.secondStageTranslations,
                 onCancel = {

@@ -37,8 +37,7 @@ class SecondStageScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val config = getSecondStageConfig.invoke().firstOrNull()
             val userEnabled = config != null && config.isUserEnabled != null
-                    && config.isUserEnabled
-                    && config.pin != null
+                    && config.isUserEnabled && config.pin != null && config.pin != ""
 
             Timber.d("On init second stage viewmodel, userEnabled: $userEnabled")
 

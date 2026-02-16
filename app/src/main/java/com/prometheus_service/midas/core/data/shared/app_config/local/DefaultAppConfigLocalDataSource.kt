@@ -40,7 +40,6 @@ class DefaultAppConfigLocalDataSource @Inject constructor(
                     domain = data.domain ?: currentData.domain
                 )
             }
-            Timber.d("Successfully cached app config model")
         } catch (e: Exception) {
             Timber.e(e, "Failed to cache app config model")
         }

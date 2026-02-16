@@ -87,9 +87,6 @@ class DefaultBiometricManager @Inject constructor(
             repository.isBiometricsEnabled(),
             repository.isCmsboEnabled()
         ) { isUserEnabled, isCmsboEnabled ->
-
-            Timber.d("is biometrics enabled: $isUserEnabled, is cmsbo enabled: $isCmsboEnabled")
-
             val hasHardwareCapability = checkHardwareCapability()
             isUserEnabled && isCmsboEnabled && hasHardwareCapability
         }
@@ -102,9 +99,6 @@ class DefaultBiometricManager @Inject constructor(
         ) { canAuthenticate, usernames ->
             val hasEnrolledBiometrics = checkHardwareCapability()
             val hasSavedAccounts = usernames != null
-
-            Timber.d("Can authenticate: $canAuthenticate, has enrolled biometrics: $hasEnrolledBiometrics, has saved accounts: $hasSavedAccounts")
-
             canAuthenticate && hasEnrolledBiometrics && hasSavedAccounts
         }.distinctUntilChanged()
     }

@@ -37,7 +37,6 @@ class DefaultSecondStageDataSource @Inject constructor(
                     credentials = data.credentials ?: currentData.credentials
                 )
             }
-            Timber.d("Successfully cached second stage model")
         } catch (e: Exception) {
             Timber.e(e, "Failed to cache second stage model")
         }

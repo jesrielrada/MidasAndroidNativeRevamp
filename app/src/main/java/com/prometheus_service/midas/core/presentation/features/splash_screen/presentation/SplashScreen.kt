@@ -300,8 +300,6 @@ fun SplashViewPager(
     onScrollFinished: () -> Unit
 ) {
     val pagerState = rememberPagerState { images.size }
-    Timber.d("SplashViewPager: Images: $images")
-
     LaunchedEffect(key1 = images) {
         if (images.isEmpty()) return@LaunchedEffect
 

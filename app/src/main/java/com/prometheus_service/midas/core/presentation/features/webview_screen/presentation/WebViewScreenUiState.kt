@@ -8,6 +8,8 @@ data class WebViewScreenUiState(
     val customUrl: String? = null,
     val customRoute: String? = null,
     val customScript: String? = null,
+    val customCallbackScript: String? = null,
+    val storeCredentialsData: String? = null,
     val webviewUserAgent: String = "",
     val customUserAgent: String = ""
 )

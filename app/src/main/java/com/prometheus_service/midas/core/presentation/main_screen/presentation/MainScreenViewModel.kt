@@ -7,6 +7,7 @@ import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CanDisplayPinlock
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.GetSecondStageConfig
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
@@ -52,6 +53,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.u
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.HIDE_BIOMETRICS_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_LAUNCHER_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_ROUTE
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.PIN_CODE_STATE_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.togglePinCodeStorageScript
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -101,6 +103,7 @@ class MainScreenViewModel @Inject constructor(
     private val cacheSecondStageConfig: CacheSecondStageConfig,
     private val cookieProvider: CookieProvider,
     private val canDisplayPinlock: CanDisplayPinlock,
+    private val getSecondStageConfig: GetSecondStageConfig,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -182,16 +185,72 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleCustomScriptCallback -> {
+                viewModelScope.launch {
+                    // Assume this is for pin code only, on future, will be adding when statement
+                    val isPincodeEnabled = event.data.removeSurrounding("\"").toBoolean()
+                    cacheSecondStageConfig.invoke(
+                        SecondStageModel(
+                            isCmsboEnabled = isPincodeEnabled
+                        )
+                    )
+
+                    val cachedCredentials = getSecondStageConfig.invoke().firstOrNull()?.credentials
+                    val isCredentialsUpdated =
+                        cachedCredentials.isNullOrEmpty().not() && cachedCredentials != event.data
+
+                    if (!isPincodeEnabled || isCredentialsUpdated) {
+                        Timber.d("Handling custom script callback, pin is disabled: $isPincodeEnabled... disabling pin code")
+                        val script = togglePinCodeStorageScript(false)
+                        _uiState.update {
+                            it.copy(
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customScript = script,
+                                    customCallbackScript = null
+                                )
+                            )
+                        }
+                        cacheSecondStageConfig.invoke(
+                            SecondStageModel(
+                                isUserEnabled = false,
+                                pin = ""
+                            )
+                        )
+                    }
+
+                    cacheSecondStageConfig.invoke(
+                        SecondStageModel(
+                            credentials = event.data
+                        )
+                    )
+
+                    val canDisplayPinlock = canDisplayPinlock.invoke(
+                        baseUrl = uiState.value.webViewScreenUiState.webviewUrl,
+                        pwaReady = uiState.value.webViewScreenUiState.isPwaReady
+                    )
+                    Timber.d("Handling custom script callback ... canDisplayPinlock: $canDisplayPinlock")
+
+
+                    if (canDisplayPinlock) {
+                        _uiState.update {
+                            it.copy(
+                                shouldDisplaySecondStage = true
+                            )
+                        }
+                    }
+                }
+            }
+
             MainScreenEvent.HandleOnResume -> {
                 viewModelScope.launch {
-                    val canDisplayPinlock = canDisplayPinlock.invoke()
-                    val baseUrl = uiState.value.webViewScreenUiState.webviewUrl
-                    val isPwaReady = uiState.value.webViewScreenUiState.isPwaReady
-                    val isLoggedIn = baseUrl != null && cookieProvider.isLoggedIn(baseUrl)
+                    val canDisplayPinlock = canDisplayPinlock.invoke(
+                        baseUrl = uiState.value.webViewScreenUiState.webviewUrl,
+                        pwaReady = uiState.value.webViewScreenUiState.isPwaReady
+                    )
 
-                    Timber.d("Handling on resume ... canDisplayPinlock: $canDisplayPinlock, baseUrl: $baseUrl, isPwaReady: $isPwaReady ... isLoggedIn: $isLoggedIn")
+                    Timber.d("Handling on resume ... $canDisplayPinlock")
 
-                    if (isLoggedIn && isPwaReady && canDisplayPinlock) {
+                    if (canDisplayPinlock) {
                         _uiState.update {
                             it.copy(
                                 shouldDisplaySecondStage = true
@@ -237,7 +296,7 @@ class MainScreenViewModel @Inject constructor(
                         cacheSecondStageConfig.invoke(
                             SecondStageModel(
                                 isUserEnabled = false,
-                                pin = null
+                                pin = ""
                             )
                         )
                     }
@@ -451,6 +510,16 @@ class MainScreenViewModel @Inject constructor(
             is MainScreenEvent.HandleStoreCredentials -> {
                 viewModelScope.launch {
                     Timber.d("Handling store credentials ... ${event.data}")
+
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customCallbackScript = PIN_CODE_STATE_SCRIPT
+                            )
+                        )
+                    }
+
+
                     syncRemoteData.invoke(uiState.value.currentLocale)
 
                     val remoteData = event.data
@@ -499,11 +568,13 @@ class MainScreenViewModel @Inject constructor(
 
             is MainScreenEvent.HandlePwaReady -> {
                 viewModelScope.launch {
-                    Timber.d("Handling pwa ready ... ${event.data}, locale ${uiState.value.currentLocale}")
+
+                    Timber.d("Handling pwa ready ...")
+
                     _uiState.update {
                         it.copy(
                             webViewScreenUiState = it.webViewScreenUiState.copy(
-                                isPwaReady = true
+                                isPwaReady = true,
                             )
                         )
                     }
@@ -523,6 +594,14 @@ class MainScreenViewModel @Inject constructor(
                                         "button display, ${it.localizedMessage}"
                             )
                         }
+
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customCallbackScript = PIN_CODE_STATE_SCRIPT
+                            )
+                        )
+                    }
 
                     persistNativeCookies.invoke()
                     cacheAppCurrency.invoke(event.data)

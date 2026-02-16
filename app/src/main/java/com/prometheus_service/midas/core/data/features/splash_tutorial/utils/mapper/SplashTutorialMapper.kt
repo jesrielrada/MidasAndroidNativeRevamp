@@ -9,7 +9,6 @@ import timber.log.Timber
 fun SplashTutorialDto.toDomain(interceptor: HostInterceptor): SplashTutorialModel {
     val baseUrl = interceptor.getBaseUrl()?.trim()?.removeSuffix("/")
     val data = this.data.data
-    Timber.d("Mapping splash dto, base url is: $baseUrl")
     return SplashTutorialModel(
         splashImages = data.android.androidSplashImages.map { path ->
             buildImageUrl(baseUrl, path)

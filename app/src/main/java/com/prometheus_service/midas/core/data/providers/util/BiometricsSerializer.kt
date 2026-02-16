@@ -18,7 +18,6 @@ object BiometricsSerializer : Serializer<BiometricsModel> {
 
     override suspend fun readFrom(input: InputStream): BiometricsModel {
         return try {
-            Timber.d("Reading BiometricsModel ...")
             json.decodeFromString(
                 deserializer = BiometricsModel.serializer(),
                 string = input.readBytes().decodeToString()
@@ -43,7 +42,6 @@ object BiometricsSerializer : Serializer<BiometricsModel> {
                     value = t
                 ).encodeToByteArray()
             )
-            Timber.d("Successfully wrote BiometricsModel")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write BiometricsModel")
             throw e

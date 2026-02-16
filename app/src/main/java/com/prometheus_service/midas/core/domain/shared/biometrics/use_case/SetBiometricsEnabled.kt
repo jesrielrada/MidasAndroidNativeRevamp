@@ -13,14 +13,8 @@ class SetBiometricsEnabled @Inject constructor(
     suspend fun invoke(locale: String, userEnabled: Boolean) {
         try {
             val translations = getMultiLanguageData.invoke(locale)
-
-            Timber.d("Getting translations for locale $locale, $translations")
-
             val featureSettings = translations.first().featureSettings
             val isCmsboEnabled = featureSettings.biometricsEnabled
-
-            Timber.d("Setting biometrics enabled to $isCmsboEnabled")
-
             repository.setBiometricsEnabled(userEnabled, isCmsboEnabled)
         } catch (e: Exception) {
             Timber.e("Setting biometrics enabled failed, $e")

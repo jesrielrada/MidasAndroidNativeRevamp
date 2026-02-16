@@ -60,5 +60,7 @@ sealed class MainScreenEvent {
 
     object HandleOnResume : MainScreenEvent()
 
+    data class HandleCustomScriptCallback(val data: String) : MainScreenEvent()
+
 
 }

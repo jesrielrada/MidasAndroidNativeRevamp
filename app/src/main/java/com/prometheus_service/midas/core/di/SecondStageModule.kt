@@ -17,6 +17,7 @@ import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.GetSecondStageConfig
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.InitializeKey
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.InitializeVector
+import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import dagger.Binds
 import dagger.Module
@@ -33,10 +34,12 @@ object SecondStageModule {
     @Provides
     @Singleton
     fun provideCanDisplayPinlock(
-        repository: SecondStageRepository
+        repository: SecondStageRepository,
+        cookieProvider: CookieProvider
     ): CanDisplayPinlock {
         return CanDisplayPinlock(
-            secondStageRepository = repository
+            secondStageRepository = repository,
+            cookieProvider = cookieProvider
         )
     }
 

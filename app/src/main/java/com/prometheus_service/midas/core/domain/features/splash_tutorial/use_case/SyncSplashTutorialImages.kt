@@ -13,12 +13,11 @@ class SyncSplashTutorialImages @Inject constructor(
         acceptLanguage: String,
         currency: String?
     ) {
-        val result = repository.syncSplashTutorialData(
+        repository.syncSplashTutorialData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,
             currency = currency
         )
-        Timber.d("Splash tutorial images: $result")
     }
 }
