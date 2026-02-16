@@ -55,4 +55,9 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
         callback.onPinCodeToggle(isEnabled)
     }
 
+    @JavascriptInterface
+    fun memberLoggedOut(data: String) {
+        callback.onMemberLoggedOut(data)
+    }
+
 }

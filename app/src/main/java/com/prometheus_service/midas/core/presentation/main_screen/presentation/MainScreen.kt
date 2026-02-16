@@ -127,6 +127,9 @@ fun MainScreen(
             },
             onCustomCallbackScriptLoaded = {
                 viewModel.onEvent(HandleCustomScriptCallback(it))
+            },
+            onMemberLoggedOut = {
+                viewModel.onEvent(HandleMemberLoggedOut)
             }
         )
 

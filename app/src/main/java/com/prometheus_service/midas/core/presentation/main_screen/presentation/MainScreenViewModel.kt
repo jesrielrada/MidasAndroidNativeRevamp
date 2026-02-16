@@ -185,6 +185,27 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HandleMemberLoggedOut -> {
+                //reset pincode on logout
+                viewModelScope.launch {
+                    val script = togglePinCodeStorageScript(false)
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customScript = script
+                            )
+                        )
+                    }
+                    cacheSecondStageConfig.invoke(
+                        SecondStageModel(
+                            isUserEnabled = false,
+                            pin = "",
+                            credentials = ""
+                        )
+                    )
+                }
+            }
+
             is MainScreenEvent.HandleCustomScriptCallback -> {
                 viewModelScope.launch {
                     // Assume this is for pin code only, on future, will be adding when statement

@@ -37,7 +37,8 @@ fun WebviewScreen(
     onShouldDisplayBiometricsLogin: () -> Unit,
     onLoginLauncher: (String?) -> Unit,
     onPincodeToggled: (Boolean) -> Unit,
-    onCustomCallbackScriptLoaded: (String) -> Unit
+    onCustomCallbackScriptLoaded: (String) -> Unit,
+    onMemberLoggedOut: (String) -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
@@ -55,7 +56,8 @@ fun WebviewScreen(
         onShouldDisplayBiometricsLogin = onShouldDisplayBiometricsLogin,
         onLoginLauncher = { onLoginLauncher(it) },
         onPincodeToggled = { onPincodeToggled(it) },
-        onCustomCallbackScriptLoaded = { onCustomCallbackScriptLoaded(it) }
+        onCustomCallbackScriptLoaded = { onCustomCallbackScriptLoaded(it) },
+        onMemberLoggedOut = { onMemberLoggedOut(it) }
     )
 }
 
@@ -78,7 +80,8 @@ fun WebviewScreenContent(
     onShouldDisplayBiometricsLogin: () -> Unit,
     onLoginLauncher: (String?) -> Unit,
     onPincodeToggled: (Boolean) -> Unit,
-    onCustomCallbackScriptLoaded: (String) -> Unit
+    onCustomCallbackScriptLoaded: (String) -> Unit,
+    onMemberLoggedOut: (String) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -105,7 +108,8 @@ fun WebviewScreenContent(
                 onPwaNavigate = { onPwaNavigate(it) },
                 onShouldDisplayBiometricsLogin = { onShouldDisplayBiometricsLogin() },
                 onLoginLauncher = { onLoginLauncher(it) },
-                onPincodeToggled = { onPincodeToggled(it) }
+                onPincodeToggled = { onPincodeToggled(it) },
+                onMemberLoggedOut = { onMemberLoggedOut(it) }
             )
 
             this.webViewClient = DefaultWebviewClient()
@@ -181,7 +185,8 @@ fun webviewJavascriptSetup(
     onPwaNavigate: (route: String?) -> Unit,
     onShouldDisplayBiometricsLogin: () -> Unit,
     onLoginLauncher: (data: String?) -> Unit,
-    onPincodeToggled: (isEnabled: Boolean) -> Unit
+    onPincodeToggled: (isEnabled: Boolean) -> Unit,
+    onMemberLoggedOut: (data: String) -> Unit,
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -224,6 +229,10 @@ fun webviewJavascriptSetup(
 
                 override fun onPinCodeToggle(isEnabled: Boolean) {
                     onPincodeToggled(isEnabled)
+                }
+
+                override fun onMemberLoggedOut(data: String) {
+                    onMemberLoggedOut(data)
                 }
             }
         ),
