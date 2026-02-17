@@ -67,6 +67,18 @@ fun MainScreen(
 
     val shouldRestartSplash by remember { derivedStateOf { uiState.isErrorDialogVisible } }
 
+    LaunchedEffect(uiState.onDataSync) {
+        if (uiState.onDataSync) {
+            Timber.d("Data sync complete, initializing translations ...")
+            viewModel.onEvent(InitializeTranslations)
+            viewModel.updateMainState {
+                it.copy(
+                    onDataSync = false
+                )
+            }
+        }
+    }
+
     MainScreenEffectHandler(
         viewModel = viewModel,
         uiState = uiState,
@@ -141,7 +153,6 @@ fun MainScreen(
                     )
                 }
             }
-
         )
 
         if (shouldDisplayGameView) {

@@ -606,8 +606,13 @@ class MainScreenViewModel @Inject constructor(
                         )
                     }
 
-
                     syncRemoteData.invoke(uiState.value.currentLocale)
+
+                    _uiState.update {
+                        it.copy(
+                            onDataSync = true
+                        )
+                    }
 
                     val remoteData = event.data
                     val key = FlavorConfig.OPERATOR_ID
@@ -706,6 +711,12 @@ class MainScreenViewModel @Inject constructor(
                     persistNativeCookies.invoke()
                     cacheAppCurrency.invoke(event.data)
                     syncRemoteData.invoke(uiState.value.currentLocale)
+
+                    _uiState.update {
+                        it.copy(
+                            onDataSync = true
+                        )
+                    }
                 }
             }
 

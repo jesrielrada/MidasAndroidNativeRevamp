@@ -64,9 +64,6 @@ class SyncRemoteData @Inject constructor(
             val secondStageCmsboEnabled = featureSettings.pinlockEnabled
             val biometricsEnabled = featureSettings.biometricsEnabled
 
-            Timber.d("Syncing second stage config, " +
-                    "second stage cmsbo enabled: $secondStageCmsboEnabled, " +
-                    "biometrics cmsbo enabled: $biometricsEnabled")
 
             cacheSecondStageConfig.invoke(
                 SecondStageModel(
