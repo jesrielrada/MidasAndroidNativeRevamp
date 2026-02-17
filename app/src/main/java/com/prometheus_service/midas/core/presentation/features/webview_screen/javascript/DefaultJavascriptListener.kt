@@ -60,4 +60,9 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
         callback.onMemberLoggedOut(data)
     }
 
+    @JavascriptInterface
+    fun switchLanguage(language: String) {
+        callback.onSwitchLanguage(language)
+    }
+
 }

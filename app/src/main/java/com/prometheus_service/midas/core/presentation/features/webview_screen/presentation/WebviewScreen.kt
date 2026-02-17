@@ -40,7 +40,8 @@ fun WebviewScreen(
     onPincodeToggled: (Boolean) -> Unit,
     onCustomCallbackScriptLoaded: (String) -> Unit,
     onMemberLoggedOut: (String) -> Unit,
-    onWebviewReloaded: () -> Unit
+    onWebviewReloaded: () -> Unit,
+    onSwitchLanguage: (String) -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
@@ -60,7 +61,8 @@ fun WebviewScreen(
         onPincodeToggled = { onPincodeToggled(it) },
         onCustomCallbackScriptLoaded = { onCustomCallbackScriptLoaded(it) },
         onMemberLoggedOut = { onMemberLoggedOut(it) },
-        onWebviewReloaded = { onWebviewReloaded() }
+        onWebviewReloaded = { onWebviewReloaded() },
+        onSwitchLanguage = { onSwitchLanguage(it) }
     )
 }
 
@@ -85,7 +87,8 @@ fun WebviewScreenContent(
     onPincodeToggled: (Boolean) -> Unit,
     onCustomCallbackScriptLoaded: (String) -> Unit,
     onMemberLoggedOut: (String) -> Unit,
-    onWebviewReloaded: () -> Unit
+    onWebviewReloaded: () -> Unit,
+    onSwitchLanguage: (String) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -113,7 +116,8 @@ fun WebviewScreenContent(
                 onShouldDisplayBiometricsLogin = { onShouldDisplayBiometricsLogin() },
                 onLoginLauncher = { onLoginLauncher(it) },
                 onPincodeToggled = { onPincodeToggled(it) },
-                onMemberLoggedOut = { onMemberLoggedOut(it) }
+                onMemberLoggedOut = { onMemberLoggedOut(it) },
+                onSwitchLanguage = { onSwitchLanguage(it) }
             )
 
             this.webViewClient = DefaultWebviewClient()
@@ -208,6 +212,7 @@ fun webviewJavascriptSetup(
     onLoginLauncher: (data: String?) -> Unit,
     onPincodeToggled: (isEnabled: Boolean) -> Unit,
     onMemberLoggedOut: (data: String) -> Unit,
+    onSwitchLanguage: (language: String) -> Unit
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -254,6 +259,10 @@ fun webviewJavascriptSetup(
 
                 override fun onMemberLoggedOut(data: String) {
                     onMemberLoggedOut(data)
+                }
+
+                override fun onSwitchLanguage(language: String) {
+                    onSwitchLanguage(language)
                 }
             }
         ),

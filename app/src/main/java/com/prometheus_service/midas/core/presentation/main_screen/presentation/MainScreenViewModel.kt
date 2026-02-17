@@ -185,6 +185,16 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleSwitchLanguage -> {
+                viewModelScope.launch {
+                    val locale = event.language.removeSurrounding("\"")
+                    Timber.d("Handling switch language ..., $locale")
+                    cacheAppConfig.invoke(AppConfigModel(locale = locale))
+                    syncRemoteData.invoke(locale)
+                    _uiState.update { it.copy(onDataSync = true) }
+                }
+            }
+
             MainScreenEvent.HandleSecondStageMaxAttempt -> {
                 viewModelScope.launch {
 

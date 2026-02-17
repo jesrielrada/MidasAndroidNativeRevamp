@@ -152,6 +152,9 @@ fun MainScreen(
                         )
                     )
                 }
+            },
+            onSwitchLanguage = {
+                viewModel.onEvent(HandleSwitchLanguage(it))
             }
         )
 
