@@ -4,6 +4,7 @@ data class WebViewScreenUiState(
     val isPwaReady: Boolean = false,
     val isUserAgentReady: Boolean = false,
     val isWebViewUrlLoaded: Boolean = false,
+    val shouldReloadWebview: Boolean = false,
     val webviewUrl: String? = null,
     val customUrl: String? = null,
     val customRoute: String? = null,

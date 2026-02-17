@@ -6,4 +6,6 @@ interface CookieProvider {
     suspend fun isLoggedIn(baseUrl: String): Boolean
 
     suspend fun persistCookies()
+
+    suspend fun deleteSessionCookies(domain: String)
 }

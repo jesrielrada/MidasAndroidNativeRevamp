@@ -101,9 +101,9 @@ class MainScreenViewModel @Inject constructor(
     private val handleBiometricAuthError: HandleBiometricAuthError,
     private val handleBiometricAuthCancelled: HandleBiometricAuthCancelled,
     private val cacheSecondStageConfig: CacheSecondStageConfig,
-    private val cookieProvider: CookieProvider,
     private val canDisplayPinlock: CanDisplayPinlock,
     private val getSecondStageConfig: GetSecondStageConfig,
+    private val cookieProvider: CookieProvider,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -185,7 +185,63 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HandleSecondStageMaxAttempt -> {
+                viewModelScope.launch {
+
+                    Timber.d("Handling max attempt ... ")
+                    //val script = togglePinCodeStorageScript(false)
+
+                    _uiState.update {
+                        it.copy(
+                            shouldDisplaySecondStage = false,
+                            shouldDisplayTutorial = false,
+                            canDisplayTutorialScreen = false
+                        )
+                    }
+                    cacheSecondStageConfig.invoke(
+                        SecondStageModel(
+                            isUserEnabled = false,
+                            pin = "",
+                            credentials = ""
+                        )
+                    )
+
+                    val domain = getAppConfigModel.invoke().first().domain
+                    val logoutScript = """
+                        javascript:(function() {
+                        var expiry = "; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=$domain";
+                        document.cookie = "s=" + expiry;
+                        document.cookie = "pt_token=" + expiry;
+                         })();
+                        """.trimIndent()
+
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customScript = logoutScript
+                            )
+                        )
+                    }
+
+                    Timber.d("Loading logout script  ...")
+
+                    delay(2000L)
+
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                shouldReloadWebview = true
+                            )
+                        )
+                    }
+
+                    Timber.d("Reloading webview ... ")
+
+                }
+            }
+
             MainScreenEvent.HandleMemberLoggedOut -> {
+                Timber.d("Handling member logged out... ")
                 //reset pincode on logout
                 viewModelScope.launch {
                     val script = togglePinCodeStorageScript(false)
@@ -207,7 +263,17 @@ class MainScreenViewModel @Inject constructor(
             }
 
             is MainScreenEvent.HandleCustomScriptCallback -> {
+                Timber.d("Handling custom script callback ... ${event.data}")
                 viewModelScope.launch {
+                    // Used on for force logout
+                    _uiState.update {
+                        it.copy(
+                            shouldDisplaySplash = false,
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customCallbackScript = null
+                            )
+                        )
+                    }
                     // Assume this is for pin code only, on future, will be adding when statement
                     val isPincodeEnabled = event.data.removeSurrounding("\"").toBoolean()
                     cacheSecondStageConfig.invoke(
@@ -220,9 +286,11 @@ class MainScreenViewModel @Inject constructor(
                     val isCredentialsUpdated =
                         cachedCredentials.isNullOrEmpty().not() && cachedCredentials != event.data
 
+                    Timber.d("CustomCallback Scrip, pincode enabled? $isPincodeEnabled")
+
                     if (!isPincodeEnabled || isCredentialsUpdated) {
-                        Timber.d("Handling custom script callback, pin is disabled: $isPincodeEnabled... disabling pin code")
                         val script = togglePinCodeStorageScript(false)
+                        Timber.d("Pincode disabled, setting to false ... $script")
                         _uiState.update {
                             it.copy(
                                 webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -249,8 +317,6 @@ class MainScreenViewModel @Inject constructor(
                         baseUrl = uiState.value.webViewScreenUiState.webviewUrl,
                         pwaReady = uiState.value.webViewScreenUiState.isPwaReady
                     )
-                    Timber.d("Handling custom script callback ... canDisplayPinlock: $canDisplayPinlock")
-
 
                     if (canDisplayPinlock) {
                         _uiState.update {
@@ -592,6 +658,19 @@ class MainScreenViewModel @Inject constructor(
 
                     Timber.d("Handling pwa ready ...")
 
+                    val isPinCodeEnabled = getSecondStageConfig.invoke().first().isUserEnabled
+                    if (isPinCodeEnabled != null && !isPinCodeEnabled) {
+                        val script = togglePinCodeStorageScript(false)
+                        _uiState.update {
+                            it.copy(
+                                shouldDisplaySecondStage = false,
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customScript = script
+                                )
+                            )
+                        }
+                    }
+
                     _uiState.update {
                         it.copy(
                             webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -661,6 +740,7 @@ class MainScreenViewModel @Inject constructor(
             }
 
             is MainScreenEvent.ResetCustomUrl -> {
+                Timber.d("Resetting custom url, script, scrip with callback  ...")
                 _uiState.update {
                     it.copy(
                         webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -870,12 +950,9 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.InitializeTranslations -> {
                 viewModelScope.launch {
-
                     val config = getAppConfigModel.invoke()
                     val locale = config.first().locale ?: FlavorConfig.DEFAULT_LOCALE
-                    Timber.d("Initializing translations ... $locale")
                     val data = getMultiLanguageData.invoke(locale).first()
-                    Timber.d("Initializing translations ... $data")
                     val errorMessage = "(Error Code: E001) ${data.errorMessages.fetchDomain}"
                     _uiState.update {
                         it.copy(
@@ -944,9 +1021,18 @@ class MainScreenViewModel @Inject constructor(
             }
 
             MainScreenEvent.HideTutorialScreen -> {
-                _uiState.update {
-                    it.copy(
-                        shouldDisplayTutorial = false
+                viewModelScope.launch {
+                    _uiState.update {
+                        it.copy(
+                            shouldDisplayTutorial = false,
+                            canDisplayTutorialScreen = false
+                        )
+                    }
+
+                    cacheAppConfig.invoke(
+                        AppConfigModel(
+                            isTutorialDisplayed = true
+                        )
                     )
                 }
             }

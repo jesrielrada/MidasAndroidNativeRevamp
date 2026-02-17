@@ -24,7 +24,7 @@ class DefaultCookieProvider @Inject constructor(
         version: String,
         language: String
     ) {
-        withContext(dispatcherProvider.io) {
+        withContext(dispatcherProvider.main) {
             val languageCookie = "lang=$language; $PATH"
             val versionCookie = "appVersion=$version; $PATH $MAX_AGE $PRIORITY"
             val nativeCookie = "is-native=2; $PATH $MAX_AGE $PRIORITY"
@@ -47,7 +47,27 @@ class DefaultCookieProvider @Inject constructor(
     }
 
     override suspend fun persistCookies() {
-        withContext(dispatcherProvider.io) {
+        withContext(dispatcherProvider.main) {
+            CookieManager.getInstance().flush()
+        }
+    }
+
+    override suspend fun deleteSessionCookies(domain: String) {
+        withContext(dispatcherProvider.main) {
+            CookieManager.getInstance()
+                .setCookie(
+                    domain,
+                    "s=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; Max-Age=0"
+                ) { success ->
+                    Timber.d("Cookie deleted successfully: $success")
+                }
+            CookieManager.getInstance()
+                .setCookie(
+                    domain,
+                    "pt_token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; Max-Age=0"
+                ) { success ->
+                    Timber.d("Cookie deleted successfully: $success")
+                }
             CookieManager.getInstance().flush()
         }
     }

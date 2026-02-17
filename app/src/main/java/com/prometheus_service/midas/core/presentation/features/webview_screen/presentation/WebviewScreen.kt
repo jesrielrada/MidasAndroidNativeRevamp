@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,7 +39,8 @@ fun WebviewScreen(
     onLoginLauncher: (String?) -> Unit,
     onPincodeToggled: (Boolean) -> Unit,
     onCustomCallbackScriptLoaded: (String) -> Unit,
-    onMemberLoggedOut: (String) -> Unit
+    onMemberLoggedOut: (String) -> Unit,
+    onWebviewReloaded: () -> Unit
 ) {
     WebviewScreenContent(
         modifier = modifier,
@@ -57,7 +59,8 @@ fun WebviewScreen(
         onLoginLauncher = { onLoginLauncher(it) },
         onPincodeToggled = { onPincodeToggled(it) },
         onCustomCallbackScriptLoaded = { onCustomCallbackScriptLoaded(it) },
-        onMemberLoggedOut = { onMemberLoggedOut(it) }
+        onMemberLoggedOut = { onMemberLoggedOut(it) },
+        onWebviewReloaded = { onWebviewReloaded() }
     )
 }
 
@@ -81,7 +84,8 @@ fun WebviewScreenContent(
     onLoginLauncher: (String?) -> Unit,
     onPincodeToggled: (Boolean) -> Unit,
     onCustomCallbackScriptLoaded: (String) -> Unit,
-    onMemberLoggedOut: (String) -> Unit
+    onMemberLoggedOut: (String) -> Unit,
+    onWebviewReloaded: () -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -122,6 +126,57 @@ fun WebviewScreenContent(
         }
     }
 
+    LaunchedEffect(uiState.webviewUrl) {
+        val targetUrl = uiState.webviewUrl
+        if (targetUrl != null && !uiState.isWebViewUrlLoaded) {
+            Timber.d("Loading webview url ... $targetUrl")
+            webView.loadUrl(targetUrl)
+            onUrlLoaded()
+        }
+    }
+
+    LaunchedEffect(uiState.customRoute) {
+        val targetRoute = uiState.customRoute
+        if (targetRoute != null) {
+            Timber.d("Loading custom route ... $targetRoute")
+            webView.loadUrl(targetRoute)
+            onRouteLoaded()
+        }
+
+    }
+    LaunchedEffect(uiState.customUrl) {
+        if (uiState.customUrl != null) {
+            Timber.d("Loading custom url ... ${uiState.customUrl}")
+            webView.loadUrl(uiState.customUrl)
+            onCustomUrlLoaded()
+        }
+    }
+
+    LaunchedEffect(uiState.customScript) {
+        if (uiState.customScript != null) {
+            Timber.d("Loading custom script ... ${uiState.customScript}")
+            webView.loadUrl(uiState.customScript)
+            onCustomUrlLoaded()
+        }
+    }
+
+    LaunchedEffect(uiState.customCallbackScript) {
+        if (uiState.customCallbackScript != null) {
+            Timber.d("Loading custom callback script ... ${uiState.customCallbackScript}")
+            webView.evaluateJavascript(uiState.customCallbackScript) {
+                onCustomCallbackScriptLoaded(it)
+            }
+        }
+    }
+
+    LaunchedEffect(uiState.shouldReloadWebview) {
+        if (uiState.shouldReloadWebview) {
+            Timber.d("Reloading webview ... ${uiState.webviewUrl}")
+            webView.loadUrl(uiState.webviewUrl!!)
+            onWebviewReloaded()
+        }
+    }
+
     DisposableEffect(webView) {
         onDispose {
             webView.stopLoading()
@@ -133,40 +188,6 @@ fun WebviewScreenContent(
         AndroidView(
             factory = {
                 webView
-            },
-            update = { view ->
-                val targetUrl = uiState.webviewUrl
-                if (targetUrl != null && !uiState.isWebViewUrlLoaded) {
-                    Timber.d("Loading webview url ... $targetUrl")
-                    view.loadUrl(targetUrl)
-                    onUrlLoaded()
-                }
-
-                val targetRoute = uiState.customRoute
-                if (targetRoute != null) {
-                    Timber.d("Loading custom route ... $targetRoute")
-                    view.loadUrl(targetRoute)
-                    onRouteLoaded()
-                }
-
-                if (uiState.customUrl != null) {
-                    Timber.d("Loading custom url ... ${uiState.customUrl}")
-                    view.loadUrl(uiState.customUrl)
-                    onCustomUrlLoaded()
-                }
-
-                if (uiState.customScript != null) {
-                    Timber.d("Loading custom script ... ${uiState.customScript}")
-                    view.loadUrl(uiState.customScript)
-                    onCustomUrlLoaded()
-                }
-
-                if (uiState.customCallbackScript != null) {
-                    Timber.d("Loading custom callback script ... ${uiState.customCallbackScript}")
-                    view.evaluateJavascript(uiState.customCallbackScript) {
-                        onCustomCallbackScriptLoaded(it)
-                    }
-                }
             },
             modifier = modifier
                 .fillMaxSize()

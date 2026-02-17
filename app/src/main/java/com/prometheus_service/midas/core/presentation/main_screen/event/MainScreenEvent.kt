@@ -62,6 +62,7 @@ sealed class MainScreenEvent {
 
     data class HandleCustomScriptCallback(val data: String) : MainScreenEvent()
     object HandleMemberLoggedOut : MainScreenEvent()
+    object HandleSecondStageMaxAttempt: MainScreenEvent()
 }
 
 

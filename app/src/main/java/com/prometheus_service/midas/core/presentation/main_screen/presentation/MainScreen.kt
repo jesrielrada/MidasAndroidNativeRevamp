@@ -130,7 +130,18 @@ fun MainScreen(
             },
             onMemberLoggedOut = {
                 viewModel.onEvent(HandleMemberLoggedOut)
+            },
+            onWebviewReloaded = {
+                Timber.d("Webview reloaded, setting to false..")
+                viewModel.updateMainState {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            shouldReloadWebview = false
+                        )
+                    )
+                }
             }
+
         )
 
         if (shouldDisplayGameView) {
@@ -220,11 +231,7 @@ fun MainScreen(
                 },
                 onMaxAttempt = {
                     Timber.d("Max attempt called")
-                    viewModel.updateMainState {
-                        it.copy(
-                            shouldDisplaySecondStage = false
-                        )
-                    }
+                    viewModel.onEvent(HandleSecondStageMaxAttempt)
                 }
             )
         }

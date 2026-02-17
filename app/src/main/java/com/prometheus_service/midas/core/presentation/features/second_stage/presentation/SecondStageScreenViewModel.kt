@@ -162,6 +162,10 @@ class SecondStageScreenViewModel @Inject constructor(
                     if (uiState.value.tryCount > 2) {
                         _uiState.update {
                             it.copy(
+                                tryCount = 0,
+                                remainingAttempts = 3,
+                                pinEnteredValue = "",
+                                pinValue = "",
                                 onMaxAttempt = true
                             )
                         }
