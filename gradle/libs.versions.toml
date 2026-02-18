@@ -40,6 +40,10 @@ room = "2.8.3"
 appcompat = "1.5.1"
 github_glide = "5.0.5"
 
+firebase_crashlytics = "3.0.4"
+firebase_perf = "1.4.2"
+
+
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 android-spinkit = { module = "com.github.ybq:Android-SpinKit", version.ref = "androidSpinkit" }
@@ -89,6 +93,8 @@ chibatching-kotpref-initializer = { module = "com.chibatching.kotpref:initialize
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase_bom" }
 firebase-messsaging = { module = "com.google.firebase:firebase-messaging" }
+firebase-perf = { module = "com.google.firebase:firebase-perf" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 github-glide = { module = "com.github.bumptech.glide:glide", version.ref = "github_glide" }
 github-glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "github_glide" }
@@ -101,5 +107,7 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin_serialization" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+
 google-services = { id = "com.google.gms.google-services", version.ref = "google_services" }
+google-firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebase_perf" }
+google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase_crashlytics" }

@@ -8,6 +8,9 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
+    alias(libs.plugins.google.firebase.perf)
 }
 
 val secretsPropertiesFile = rootProject.file("secrets.properties")
@@ -173,6 +176,11 @@ dependencies {
     implementation(libs.github.glide.compiler)
 
     implementation(project(":CMSPushyLib"))
+
+    //firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.perf)
+    implementation(libs.firebase.crashlytics)
 
 
     testImplementation(libs.junit)
