@@ -17,6 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MidasAndroidNativeRevamp">
 
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+
         <receiver
             android:name=".core.presentation.features.pushy.PushyReceiver"
             android:enabled="true"

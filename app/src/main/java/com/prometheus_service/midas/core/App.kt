@@ -11,6 +11,8 @@ import com.prometheus_service.midas.cmspushylib.PushModule
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import com.prometheus_service.midas.shared.timber.DefaultLoggingTree
 import dagger.hilt.android.HiltAndroidApp
+import io.sentry.SentryLevel
+import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -39,6 +41,7 @@ class App : Application() {
         }
 
         initializePushNotification()
+        initializeSentry()
     }
 
     override fun onTerminate() {
@@ -68,6 +71,40 @@ class App : Application() {
             if (BuildConfig.DEBUG) {
                 handleDebugTokenCopy()
             }
+        }
+    }
+
+    private fun initializeSentry() {
+        SentryAndroid.init(this@App) { options ->
+            options.dsn = BuildConfig.SentryDSN
+            options.environment = getSentryEnvironment()
+            options.isAnrEnabled = true
+            options.isEnableUserInteractionTracing = true
+            options.isAttachScreenshot = true
+            options.isAttachViewHierarchy = true
+            options.isEnableAppStartProfiling = true
+            options.logs.isEnabled = true
+
+            @Suppress("KotlinConstantConditions")
+            if (BuildConfig.BuildEnv == "P" && BuildConfig.DEBUG.not()) {
+                options.tracesSampleRate = 0.2
+                options.profilesSampleRate = 0.2
+                Timber.i("Sentry initialized with production environment")
+            } else {
+                options.isDebug = true
+                options.setDiagnosticLevel(SentryLevel.ERROR)
+                options.tracesSampleRate = 1.0
+                options.profilesSampleRate = 1.0
+                Timber.d("Sentry initialized with non production / non release environment")
+            }
+        }
+    }
+
+    private fun getSentryEnvironment(): String {
+        return when (BuildConfig.BUILD_TYPE) {
+            "uat" -> "${BuildConfig.FLAVOR.uppercase()}-UAT"
+            "preproduction" -> "${BuildConfig.FLAVOR.uppercase()}-PREPROD"
+            else -> "${BuildConfig.FLAVOR.uppercase()}-PROD"
         }
     }
 

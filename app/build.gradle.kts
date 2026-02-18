@@ -105,6 +105,7 @@ android {
                 "GoogleClientIdPROD",
                 secretsProperties["VN88_WEB_CLIENT_ID_PROD"] as String? ?: "\"\""
             )
+            buildConfigField("String", "SentryDSN", secretsProperties["DSN"] as String? ?: "\"\"")
         }
     }
 
@@ -182,6 +183,8 @@ dependencies {
     implementation(libs.firebase.perf)
     implementation(libs.firebase.crashlytics)
 
+    //sentry
+    implementation(libs.sentry.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

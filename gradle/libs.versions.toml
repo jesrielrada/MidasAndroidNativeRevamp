@@ -43,6 +43,7 @@ github_glide = "5.0.5"
 firebase_crashlytics = "3.0.4"
 firebase_perf = "1.4.2"
 
+sentryAndroid = "8.25.0"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -98,6 +99,8 @@ firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 github-glide = { module = "com.github.bumptech.glide:glide", version.ref = "github_glide" }
 github-glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "github_glide" }
+
+sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentryAndroid" }
 
 
 [plugins]
