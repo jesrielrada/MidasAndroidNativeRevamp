@@ -8,6 +8,8 @@ import com.prometheus_service.midas.cmspushylib.data.models.PushNotif
 import com.prometheus_service.midas.cmspushylib.receivers.PushReceiver
 import com.prometheus_service.midas.core.presentation.features.pushy.utils.getDeviceLanguage
 import com.prometheus_service.midas.core.presentation.features.pushy.utils.getPushyLanguage
+import com.prometheus_service.midas.core.presentation.features.pushy.utils.isLanguageEqual
+import com.prometheus_service.midas.core.presentation.features.pushy.utils.isLanguageNotEmpty
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -51,20 +53,4 @@ class PushyReceiver : PushReceiver() {
 
     }
 
-    private fun isLanguageNotEmpty(deviceLang: String, countryLang: String): Boolean {
-        return deviceLang.isNotEmpty() && countryLang.isNotEmpty()
-    }
-
-    private fun isLanguageEqual(deviceLang: String, countryLang: String): Boolean {
-        return (deviceLang.contains("en") && countryLang.contains("en") ||
-                deviceLang.contains("km") && countryLang.contains("km") ||
-                deviceLang.contains("zh") && countryLang.contains("zh") ||
-                deviceLang.contains("id") && countryLang.contains("id") ||
-                deviceLang.contains("ja") && countryLang.contains("ja") ||
-                deviceLang.contains("ko") && countryLang.contains("ko") ||
-                deviceLang.contains("th") && countryLang.contains("th") ||
-                deviceLang.contains("vi") && countryLang.contains("vi") ||
-                deviceLang.contains("in") && countryLang.contains("in")
-                )
-    }
 }

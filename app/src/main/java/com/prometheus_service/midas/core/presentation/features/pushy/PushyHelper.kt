@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -80,11 +81,11 @@ class PushyHelper(private val context: Context) {
             }
 
             // Setup Intent
-            val intent =
-                context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
-                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    push.deepLink?.let { data = it.toUri() }
-                }
+            val intent = Intent(context, Push::class.java).apply {
+                this.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                this.flags = Intent.FLAG_ACTIVITY_NO_ANIMATION
+                push.deepLink?.let { this.data = it.toUri() }
+            }
 
             val pendingIntent = PendingIntent.getActivity(
                 context,

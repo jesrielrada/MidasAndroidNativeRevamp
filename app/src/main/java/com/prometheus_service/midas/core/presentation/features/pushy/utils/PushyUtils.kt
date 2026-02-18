@@ -24,3 +24,44 @@ fun isLanguageEqual(deviceLang: String, countryLang: String): Boolean {
             deviceLang.contains("in") && countryLang.contains("in")
             )
 }
+
+fun isLanguageNotEmpty(deviceLang: String, countryLang: String): Boolean {
+    return deviceLang.isNotEmpty() && countryLang.isNotEmpty()
+}
+
+fun convertUrlToRoute(url: String): String? {
+    val url = when {
+        url.isEmpty() -> return null
+        url.contains("funds") -> {
+            val lastSegment = url.removeSuffix("/").substringAfterLast('/')
+            val routeName =
+                if (lastSegment.contains("deposit-withdrawal")) "history" else lastSegment
+            "javascript: window.pwa.navigate({name:'$routeName-route'})"
+        }
+        url.contains("/promotions/") -> {
+            val lastSegment = url.removeSuffix("/").substringAfterLast('/')
+            if (lastSegment.isEmpty() || lastSegment.contains("promotions")) {
+                "javascript: window.pwa.navigate({name:'$lastSegment-route'})"
+            }
+            val hasLetters = lastSegment.contains(Regex("[A-Za-z]"))
+            val hasDigits = lastSegment.contains(Regex("\\d"))
+
+            if (hasLetters && hasDigits) {
+                val category = lastSegment.substringBefore('?')
+                val id = lastSegment.substringAfter('=')
+                "javascript: window.pwa.navigate({ name : 'promotions-route', params : { category : '$category', id : '$id'}})"
+            } else {
+                "javascript: window.pwa.navigate({ name : 'promotions-route', params : { category : '$lastSegment'}})"
+            }
+        }
+        url.contains("slots") -> {
+            val vendor = url.substringAfterLast('/')
+            "javascript: window.pwa.navigate({name: 'slot-vendor-route', 'params' : { 'vendor' : '$vendor'}})"
+        }
+        else -> {
+            val route = url.substringAfterLast('/')
+            "javascript: window.pwa.navigate({ name: '$route-route'})"
+        }
+    }
+    return url
+}
