@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.2"
+google_services = "4.4.1"
 androidSpinkit = "1.4.0"
 compose = "1.0.0-beta08"
 constraintlayoutCompose = "1.1.1"
@@ -31,8 +32,16 @@ jetbrains_serialization_json = "1.7.3"
 biometric_ktx = "1.2.0-alpha05"
 material = "1.13.0"
 
+work_runtime = "2.7.1"
+pushy = "1.0.125"
+kotpref = "2.13.2"
+firebase_bom = "32.3.0"
+room = "2.8.3"
+appcompat = "1.5.1"
+github_glide = "5.0.5"
 
 [libraries]
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 android-spinkit = { module = "com.github.ybq:Android-SpinKit", version.ref = "androidSpinkit" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
@@ -41,7 +50,6 @@ androidx-credentials = { module = "androidx.credentials:credentials", version.re
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 compose = { module = "com.github.bumptech.glide:compose", version.ref = "compose" }
-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -69,6 +77,22 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "jetbrains_serialization_json" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
+androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "work_runtime" }
+pushy-sdk = { module = "me.pushy:sdk", version.ref = "pushy" }
+squareup-retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+chibatching-kotpref = { module = "com.chibatching.kotpref:kotpref", version.ref = "kotpref" }
+chibatching-kotpref-initializer = { module = "com.chibatching.kotpref:initializer", version.ref = "kotpref" }
+
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase_bom" }
+firebase-messsaging = { module = "com.google.firebase:firebase-messaging" }
+
+github-glide = { module = "com.github.bumptech.glide:glide", version.ref = "github_glide" }
+github-glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "github_glide" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -77,3 +101,5 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin_serialization" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google_services" }

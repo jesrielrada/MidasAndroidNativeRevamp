@@ -148,7 +148,6 @@ dependencies {
 
     // Retrofit
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
 
     // Datastore
@@ -165,6 +164,16 @@ dependencies {
 
     //biometrics
     implementation(libs.androidx.biometric.ktx)
+
+    //pushy lib
+    implementation(libs.pushy.sdk)
+    implementation(libs.squareup.retrofit.converter.gson)
+
+    implementation(libs.github.glide)
+    implementation(libs.github.glide.compiler)
+
+    implementation(project(":CMSPushyLib"))
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

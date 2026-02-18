@@ -16,6 +16,22 @@
         android:hardwareAccelerated="true"
         android:theme="@style/Theme.MidasAndroidNativeRevamp">
 
+        <receiver
+            android:name=".core.presentation.features.pushy.PushyReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="pushy.me" />
+            </intent-filter>
+        </receiver>
+
+
+        <activity
+            android:name=".core.presentation.features.pushy.Push"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="" />
+
         <activity
             android:name=".core.presentation.activity.MainActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation|uiMode"

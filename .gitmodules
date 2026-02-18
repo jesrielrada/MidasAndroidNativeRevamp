@@ -1,0 +1,3 @@
+[submodule "CMSPushyLib"]
+	path = CMSPushyLib
+	url = git@github.com:jesrielrada/CMSPushyLib.git

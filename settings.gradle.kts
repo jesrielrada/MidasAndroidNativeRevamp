@@ -19,7 +19,7 @@ dependencyResolutionManagement {
         maven { url = uri("https://jitpack.io") }
     }
 }
-
+include(":CMSPushyLib")
 rootProject.name = "MidasAndroidNativeRevamp"
 include(":app")
  
