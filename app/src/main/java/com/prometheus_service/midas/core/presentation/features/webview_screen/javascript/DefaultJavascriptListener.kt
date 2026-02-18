@@ -2,6 +2,7 @@ package com.prometheus_service.midas.core.presentation.features.webview_screen.j
 
 import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
+import androidx.annotation.Nullable
 
 @Keep
 class DefaultJavascriptListener(val callback: JavascriptListener) {
@@ -64,5 +65,36 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
     fun switchLanguage(language: String) {
         callback.onSwitchLanguage(language)
     }
+
+    @JavascriptInterface
+    fun openInBrowser(url: String) {
+       callback.onOpenInBrowser(url)
+    }
+
+    @JavascriptInterface
+    fun launchNewWindow(url: String) {
+       callback.onLaunchNewWindow(url)
+    }
+
+    @JavascriptInterface
+    fun maintenanceMode(data: String?) {
+        callback.onMaintenanceMode(data)
+    }
+
+    @JavascriptInterface
+    fun geoBlockMode(data: String?) {
+        callback.onGeoBlockMode(data)
+    }
+
+    @JavascriptInterface
+    fun themeSetting(data: String) {
+       callback.onThemeSetting(data)
+    }
+
+    @JavascriptInterface
+    fun refreshCookie(data: String) {
+        callback.onRefreshCookie(data)
+    }
+
 
 }

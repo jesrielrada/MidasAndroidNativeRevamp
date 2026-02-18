@@ -1,6 +1,7 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation.handler
 
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt.CryptoObject
 import androidx.biometric.BiometricPrompt.ERROR_CANCELED
@@ -11,6 +12,7 @@ import androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt.PromptInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.net.toUri
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.prometheus_service.midas.core.presentation.features.biometrics.BiometricAuthenticator
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleAccountSelected
@@ -38,6 +40,14 @@ fun MainScreenEffectHandler(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+
+
+                is MainScreenSideEffect.StartActionView -> {
+                    Timber.d("Starting action view ...")
+                    val intent = Intent(Intent.ACTION_VIEW, effect.url.toUri())
+                    context.startActivity(intent)
+                }
+
                 is MainScreenSideEffect.DisplayBiometricAuthError -> {
 
                     val negative =

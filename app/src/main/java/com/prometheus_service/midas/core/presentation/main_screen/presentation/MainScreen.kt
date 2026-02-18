@@ -95,67 +95,7 @@ fun MainScreen(
         WebviewScreen(
             modifier = Modifier.alpha(webviewVisibility),
             uiState = uiState.webViewScreenUiState,
-            onWebviewInitialized = {
-                viewModel.onEvent(SetUserAgentReady(it))
-            },
-            onRouteLoaded = {
-                viewModel.onEvent(ResetCustomRoute)
-                viewModel.onEvent(HideGameViewScreen)
-            },
-            onUrlLoaded = {
-                viewModel.onEvent(SetWebviewUrlLoaded)
-            },
-            onCustomUrlLoaded = {
-                viewModel.onEvent(ResetCustomUrl)
-            },
-            onPwaReady = { data ->
-                viewModel.emitSideEffect(MainScreenSideEffect.OnPwaReady(data))
-            },
-            onPwaNavigate = { route ->
-                route?.let {
-                    viewModel.onEvent(UpdateCurrentRoute(it))
-                }
-            },
-            onStoreCredentials = { data ->
-                viewModel.emitSideEffect(MainScreenSideEffect.OnStoreCredentials(data))
-            },
-            onNewGameLauncher = { path ->
-                viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = path))
-            },
-            onNativeAuthenticateGoogle = {
-                viewModel.emitSideEffect(MainScreenSideEffect.ClearGoogleCredential)
-            },
-            onNativeLaunchGoogle = {
-                viewModel.emitSideEffect(MainScreenSideEffect.RequestGoogleLogin(it))
-            },
-            onShouldDisplayBiometricsLogin = {
-                viewModel.onEvent(DisplayBiometricAccountSelection)
-            },
-            onLoginLauncher = {
-                viewModel.onEvent(HandleBiometricsLogin)
-            },
-            onPincodeToggled = {
-                viewModel.onEvent(HandlePinCodeToggled(it))
-            },
-            onCustomCallbackScriptLoaded = {
-                viewModel.onEvent(HandleCustomScriptCallback(it))
-            },
-            onMemberLoggedOut = {
-                viewModel.onEvent(HandleMemberLoggedOut)
-            },
-            onWebviewReloaded = {
-                Timber.d("Webview reloaded, setting to false..")
-                viewModel.updateMainState {
-                    it.copy(
-                        webViewScreenUiState = it.webViewScreenUiState.copy(
-                            shouldReloadWebview = false
-                        )
-                    )
-                }
-            },
-            onSwitchLanguage = {
-                viewModel.onEvent(HandleSwitchLanguage(it))
-            }
+            viewModel = viewModel
         )
 
         if (shouldDisplayGameView) {

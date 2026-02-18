@@ -19,51 +19,103 @@ import com.prometheus_service.midas.core.presentation.features.webview_screen.cl
 import com.prometheus_service.midas.core.presentation.features.webview_screen.clients.webview.DefaultWebviewClient
 import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.DefaultJavascriptListener
 import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.JavascriptListener
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.DisplayBiometricAccountSelection
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleBiometricsLogin
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleCustomScriptCallback
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleMemberLoggedOut
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandlePinCodeToggled
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleSwitchLanguage
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HideGameViewScreen
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.ResetCustomRoute
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.ResetCustomUrl
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.SetUserAgentReady
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.SetWebviewUrlLoaded
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.UpdateCurrentRoute
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
 import timber.log.Timber
 
 @Composable
 fun WebviewScreen(
     modifier: Modifier = Modifier,
     uiState: WebViewScreenUiState,
-    onWebviewInitialized: (String) -> Unit,
-    onRouteLoaded: () -> Unit,
-    onUrlLoaded: () -> Unit,
-    onCustomUrlLoaded: () -> Unit,
-    onPwaReady: (String) -> Unit,
-    onPwaNavigate: (String?) -> Unit,
-    onStoreCredentials: (String?) -> Unit,
-    onNewGameLauncher: (String) -> Unit,
-    onNativeAuthenticateGoogle: (String) -> Unit,
-    onNativeLaunchGoogle: (String) -> Unit,
-    onShouldDisplayBiometricsLogin: () -> Unit,
-    onLoginLauncher: (String?) -> Unit,
-    onPincodeToggled: (Boolean) -> Unit,
-    onCustomCallbackScriptLoaded: (String) -> Unit,
-    onMemberLoggedOut: (String) -> Unit,
-    onWebviewReloaded: () -> Unit,
-    onSwitchLanguage: (String) -> Unit
+    viewModel: MainScreenViewModel
 ) {
     WebviewScreenContent(
         modifier = modifier,
         uiState = uiState,
-        onInitialized = { onWebviewInitialized(it) },
-        onPwaReady = { onPwaReady(it) },
-        onPwaNavigate = { onPwaNavigate(it) },
-        onStoreCredentials = { onStoreCredentials(it) },
-        onNewGameLauncher = { onNewGameLauncher(it) },
-        onRouteLoaded = { onRouteLoaded() },
-        onUrlLoaded = onUrlLoaded,
-        onNativeAuthenticateGoogle = { onNativeAuthenticateGoogle(it) },
-        onNativeLaunchGoogle = { onNativeLaunchGoogle(it) },
-        onCustomUrlLoaded = onCustomUrlLoaded,
-        onShouldDisplayBiometricsLogin = onShouldDisplayBiometricsLogin,
-        onLoginLauncher = { onLoginLauncher(it) },
-        onPincodeToggled = { onPincodeToggled(it) },
-        onCustomCallbackScriptLoaded = { onCustomCallbackScriptLoaded(it) },
-        onMemberLoggedOut = { onMemberLoggedOut(it) },
-        onWebviewReloaded = { onWebviewReloaded() },
-        onSwitchLanguage = { onSwitchLanguage(it) }
+        onInitialized = { viewModel.onEvent(SetUserAgentReady(it)) },
+        onPwaReady = {
+            viewModel.emitSideEffect(MainScreenSideEffect.OnPwaReady(it))
+        },
+        onPwaNavigate = {
+            it?.let {
+                viewModel.onEvent(UpdateCurrentRoute(it))
+            }
+        },
+        onStoreCredentials = {
+            viewModel.emitSideEffect(MainScreenSideEffect.OnStoreCredentials(it))
+        },
+        onNewGameLauncher = {
+            viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = it))
+        },
+        onRouteLoaded = {
+            viewModel.onEvent(ResetCustomRoute)
+            viewModel.onEvent(HideGameViewScreen)
+        },
+        onUrlLoaded = {
+            viewModel.onEvent(SetWebviewUrlLoaded)
+        },
+        onNativeAuthenticateGoogle = {
+            viewModel.emitSideEffect(MainScreenSideEffect.ClearGoogleCredential)
+        },
+        onNativeLaunchGoogle = {
+            viewModel.emitSideEffect(MainScreenSideEffect.RequestGoogleLogin(it))
+        },
+        onCustomUrlLoaded = {
+            viewModel.onEvent(ResetCustomUrl)
+        },
+        onShouldDisplayBiometricsLogin = {
+            viewModel.onEvent(DisplayBiometricAccountSelection)
+        },
+        onLoginLauncher = {
+            viewModel.onEvent(HandleBiometricsLogin)
+        },
+        onPincodeToggled = {
+            viewModel.onEvent(HandlePinCodeToggled(it))
+        },
+        onCustomCallbackScriptLoaded = {
+            viewModel.onEvent(HandleCustomScriptCallback(it))
+        },
+        onMemberLoggedOut = {
+            viewModel.onEvent(HandleMemberLoggedOut)
+        },
+        onWebviewReloaded = {
+            Timber.d("Webview reloaded, setting to false..")
+            viewModel.updateMainState {
+                it.copy(
+                    webViewScreenUiState = it.webViewScreenUiState.copy(
+                        shouldReloadWebview = false
+                    )
+                )
+            }
+        },
+        onSwitchLanguage = {
+            viewModel.onEvent(HandleSwitchLanguage(it))
+        },
+        onOpenInBrowser = {
+            viewModel.onEvent(MainScreenEvent.HandleOpenInBrowser(it))
+        },
+        onLaunchNewWindow = {
+            viewModel.onEvent(MainScreenEvent.HandleLaunchNewWindow(it))
+        },
+        onMaintenanceMode = { },
+        onGeoBlockMode = { },
+        onThemeSetting = { },
+        onRefreshCookie = { }
     )
+
 }
 
 
@@ -88,7 +140,13 @@ fun WebviewScreenContent(
     onCustomCallbackScriptLoaded: (String) -> Unit,
     onMemberLoggedOut: (String) -> Unit,
     onWebviewReloaded: () -> Unit,
-    onSwitchLanguage: (String) -> Unit
+    onSwitchLanguage: (String) -> Unit,
+    onOpenInBrowser: (String) -> Unit,
+    onLaunchNewWindow: (String) -> Unit,
+    onMaintenanceMode: (String?) -> Unit,
+    onGeoBlockMode: (String?) -> Unit,
+    onThemeSetting: (String) -> Unit,
+    onRefreshCookie: (String) -> Unit
 ) {
     val context = LocalContext.current
     val webView = remember {
@@ -117,8 +175,15 @@ fun WebviewScreenContent(
                 onLoginLauncher = { onLoginLauncher(it) },
                 onPincodeToggled = { onPincodeToggled(it) },
                 onMemberLoggedOut = { onMemberLoggedOut(it) },
-                onSwitchLanguage = { onSwitchLanguage(it) }
+                onSwitchLanguage = { onSwitchLanguage(it) },
+                onOpenInBrowser = { onOpenInBrowser(it) },
+                onLaunchNewWindow = { onLaunchNewWindow(it) },
+                onMaintenanceMode = { onMaintenanceMode(it) },
+                onGeoBlockMode = { onGeoBlockMode(it) },
+                onThemeSetting = { onThemeSetting(it) },
+                onRefreshCookie = { onRefreshCookie(it) }
             )
+            webviewDownloadSetup(webView = this)
 
             this.webViewClient = DefaultWebviewClient()
             this.webChromeClient = DefaultWebChromeClient(context)
@@ -200,6 +265,14 @@ fun WebviewScreenContent(
     }
 }
 
+fun webviewDownloadSetup(
+    webView: WebView
+) {
+    webView.setDownloadListener { url, _, _, _, _ ->
+        Timber.d("Downloading url: $url")
+    }
+}
+
 fun webviewJavascriptSetup(
     webView: WebView,
     onPwaReady: (data: String) -> Unit,
@@ -212,7 +285,13 @@ fun webviewJavascriptSetup(
     onLoginLauncher: (data: String?) -> Unit,
     onPincodeToggled: (isEnabled: Boolean) -> Unit,
     onMemberLoggedOut: (data: String) -> Unit,
-    onSwitchLanguage: (language: String) -> Unit
+    onSwitchLanguage: (language: String) -> Unit,
+    onOpenInBrowser: (url: String) -> Unit,
+    onLaunchNewWindow: (url: String) -> Unit,
+    onMaintenanceMode: (data: String?) -> Unit,
+    onGeoBlockMode: (data: String?) -> Unit,
+    onThemeSetting: (data: String) -> Unit,
+    onRefreshCookie: (data: String) -> Unit
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -263,6 +342,30 @@ fun webviewJavascriptSetup(
 
                 override fun onSwitchLanguage(language: String) {
                     onSwitchLanguage(language)
+                }
+
+                override fun onOpenInBrowser(url: String) {
+                    onOpenInBrowser(url)
+                }
+
+                override fun onLaunchNewWindow(url: String) {
+                    onLaunchNewWindow(url)
+                }
+
+                override fun onMaintenanceMode(data: String?) {
+                    onMaintenanceMode(data)
+                }
+
+                override fun onGeoBlockMode(data: String?) {
+                    onGeoBlockMode(data)
+                }
+
+                override fun onThemeSetting(data: String) {
+                    onThemeSetting(data)
+                }
+
+                override fun onRefreshCookie(data: String) {
+                    onRefreshCookie(data)
                 }
             }
         ),

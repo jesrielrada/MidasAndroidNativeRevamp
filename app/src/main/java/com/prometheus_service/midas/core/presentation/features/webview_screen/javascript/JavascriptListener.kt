@@ -12,7 +12,13 @@ interface JavascriptListener {
     fun onLoginLauncher(data: String?)
     fun onPinCodeToggle(isEnabled: Boolean)
     fun onMemberLoggedOut(data: String)
-
     fun onSwitchLanguage(language: String)
+    fun onOpenInBrowser(url: String)
+    fun onLaunchNewWindow(url: String)
+    fun onMaintenanceMode(data: String?)
+    fun onGeoBlockMode(data: String?)
+    fun onThemeSetting(data: String)
+    fun onRefreshCookie(data: String)
+
 }
 

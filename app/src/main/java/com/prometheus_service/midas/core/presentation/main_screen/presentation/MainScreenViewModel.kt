@@ -185,6 +185,28 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleLaunchNewWindow -> {
+                val downloadUrl = initDownloadUrl(url = event.url)
+                Timber.d("Handling launch new window, callback url ... $downloadUrl")
+                _uiState.update {
+                    it.copy(
+                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                            customUrl = downloadUrl
+                        )
+                    )
+                }
+
+            }
+
+            is MainScreenEvent.HandleOpenInBrowser -> {
+                val callbackUrl = initCallbackUrl(url = event.url)
+                if (isHttpOrSocial(event.url.lowercase())) {
+                    emitSideEffect(MainScreenSideEffect.StartActionView(event.url))
+                } else {
+                    emitSideEffect(MainScreenSideEffect.StartActionView(callbackUrl))
+                }
+            }
+
             is MainScreenEvent.HandleSwitchLanguage -> {
                 viewModelScope.launch {
                     val locale = event.language.removeSurrounding("\"")
@@ -292,9 +314,11 @@ class MainScreenViewModel @Inject constructor(
                         )
                     )
 
-                    val cachedCredentials = getSecondStageConfig.invoke().firstOrNull()?.credentials
+                    val cachedCredentials =
+                        getSecondStageConfig.invoke().firstOrNull()?.credentials
                     val isCredentialsUpdated =
-                        cachedCredentials.isNullOrEmpty().not() && cachedCredentials != event.data
+                        cachedCredentials.isNullOrEmpty()
+                            .not() && cachedCredentials != event.data
 
                     Timber.d("CustomCallback Scrip, pincode enabled? $isPincodeEnabled")
 
@@ -422,7 +446,10 @@ class MainScreenViewModel @Inject constructor(
                             event.message
                         )
                     )
-                    handleBiometricAuthError.invoke(currentRoute = currentRoute, locale = locale)
+                    handleBiometricAuthError.invoke(
+                        currentRoute = currentRoute,
+                        locale = locale
+                    )
                 }
             }
 
@@ -902,7 +929,12 @@ class MainScreenViewModel @Inject constructor(
                         //val tempBaseUrl = "https://epm.vn88uat.com"
                         val domain = getDomainFromUrl.invoke(baseUrl)
                         setHostInterceptorUrl.invoke(baseUrl)
-                        cacheAppConfig.invoke(AppConfigModel(baseUrl = baseUrl, domain = domain))
+                        cacheAppConfig.invoke(
+                            AppConfigModel(
+                                baseUrl = baseUrl,
+                                domain = domain
+                            )
+                        )
                         _uiState.update {
                             it.copy(
                                 isAppInitialized = true
@@ -940,9 +972,10 @@ class MainScreenViewModel @Inject constructor(
 
             is MainScreenEvent.BuildUserAgent -> {
                 Timber.d("Building user agent ... ")
-                val customUserAgent = ("${uiState.value.webViewScreenUiState.webviewUserAgent} " +
-                        "${FlavorConfig.INITIAL_USER_AGENT} " +
-                        uiState.value.networkType).trimEnd()
+                val customUserAgent =
+                    ("${uiState.value.webViewScreenUiState.webviewUserAgent} " +
+                            "${FlavorConfig.INITIAL_USER_AGENT} " +
+                            uiState.value.networkType).trimEnd()
                 _uiState.update {
                     it.copy(
                         webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -1110,5 +1143,24 @@ class MainScreenViewModel @Inject constructor(
                 )
             )
         }
+    }
+
+    private fun initDownloadUrl(url: String): String {
+        val baseUrl = uiState.value.webViewScreenUiState.webviewUrl?.removeSuffix("/")
+        val endpoint = url.removeSurrounding("\"")
+        Timber.d("Base url: $baseUrl, endpoint: $endpoint")
+        return if (endpoint.contains("http")) endpoint else "$baseUrl$endpoint"
+    }
+
+    private fun initCallbackUrl(url: String): String {
+        val baseUrl = uiState.value.webViewScreenUiState.webviewUrl
+        val endpoint = if (url.startsWith("/").not()) "/$url" else url
+        return "$baseUrl$endpoint"
+    }
+
+    private fun isHttpOrSocial(url: String): Boolean {
+        return (url.startsWith("http") || (url.contains("viber:") ||
+                url.contains("tel::") ||
+                url.contains("mailto:")))
     }
 }
