@@ -1,10 +1,6 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
-import android.app.Activity
-import android.content.Context
 import android.content.pm.ActivityInfo
-import android.widget.Toast
-import androidx.biometric.BiometricPrompt.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -16,7 +12,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -28,10 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.prometheus_service.midas.core.presentation.features.biometrics.BiometricAuthenticator
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.GameScreen
 import com.prometheus_service.midas.core.presentation.features.language_selection.presentation.LanguageSelectionScreen
@@ -39,9 +34,7 @@ import com.prometheus_service.midas.core.presentation.features.second_stage.pres
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
-import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
-import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenEffectHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenLifecycleHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenOrientationHandler
@@ -65,7 +58,7 @@ fun MainScreen(
     val shouldDisplayGameView = uiState.shouldDisplayGameView
     val webviewVisibility = if (shouldDisplayWebview) 1f else 0f
 
-    val shouldRestartSplash by remember { derivedStateOf { uiState.isErrorDialogVisible } }
+    val shouldRestartSplash by remember { derivedStateOf { uiState.isInitializeErrorDialogVisible } }
 
     LaunchedEffect(uiState.onDataSync) {
         if (uiState.onDataSync) {
@@ -190,7 +183,7 @@ fun MainScreen(
             )
         }
 
-        if (uiState.isErrorDialogVisible) {
+        if (uiState.isInitializeErrorDialogVisible) {
             AlertDialog(
                 onDismissRequest = {
                     //do nothing
@@ -248,6 +241,20 @@ fun MainScreen(
                 translations = uiState.viewTranslations.biometricsTranslations
             )
         }
+
+        if (uiState.isDefaultErrorDialogVisible) {
+            DefaultErrorDialog(
+                onConfirm = {
+                    viewModel.updateMainState {
+                        it.copy(
+                            isDefaultErrorDialogVisible = false
+                        )
+                    }
+                },
+                dialogMessage = uiState.viewTranslations.defaultErrorTranslations.dialogMessage,
+                dialogBtn = uiState.viewTranslations.defaultErrorTranslations.dialogBtn
+            )
+        }
     }
 }
 
@@ -270,6 +277,35 @@ fun BiometricsErrorDialog(
             TextButton(onClick = onConfirm) {
                 Text(
                     text = translations.currentDialogButtonLabel,
+                    color = Color.White
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun DefaultErrorDialog(
+    onConfirm: () -> Unit,
+    dialogMessage: String,
+    dialogBtn: String
+) {
+    AlertDialog(
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        ),
+        onDismissRequest = {},
+        text = {
+            Text(
+                text = dialogMessage,
+                color = Color.White
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = dialogBtn,
                     color = Color.White
                 )
             }

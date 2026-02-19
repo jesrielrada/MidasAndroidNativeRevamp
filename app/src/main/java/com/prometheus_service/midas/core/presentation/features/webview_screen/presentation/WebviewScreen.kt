@@ -110,10 +110,18 @@ fun WebviewScreen(
         onLaunchNewWindow = {
             viewModel.onEvent(MainScreenEvent.HandleLaunchNewWindow(it))
         },
-        onMaintenanceMode = { },
-        onGeoBlockMode = { },
-        onThemeSetting = { },
-        onRefreshCookie = { }
+        onMaintenanceMode = {
+            viewModel.onEvent(MainScreenEvent.HandleMaintenanceMode)
+        },
+        onGeoBlockMode = {
+            viewModel.onEvent(MainScreenEvent.HandleGeoBlockMode)
+        },
+        onThemeSetting = {
+
+        },
+        onRefreshCookie = {
+
+        }
     )
 
 }

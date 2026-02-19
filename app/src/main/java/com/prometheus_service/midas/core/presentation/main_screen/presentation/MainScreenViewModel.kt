@@ -42,6 +42,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadCustomRoute
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DefaultErrorTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
@@ -185,6 +186,44 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HandleGeoBlockMode -> {
+                viewModelScope.launch {
+                    val config = getAppConfigModel.invoke()
+                    val locale = config.first().locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val translations = getMultiLanguageData.invoke(locale).first()
+                    updateMainState {
+                        it.copy(
+                            isDefaultErrorDialogVisible = true,
+                            viewTranslations = it.viewTranslations.copy(
+                                defaultErrorTranslations = it.viewTranslations.defaultErrorTranslations.copy(
+                                    dialogMessage = translations.generalMessages.geoblockedDialog,
+                                    dialogBtn = translations.generalMessages.ok
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+
+            MainScreenEvent.HandleMaintenanceMode -> {
+                viewModelScope.launch {
+                    val config = getAppConfigModel.invoke()
+                    val locale = config.first().locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val translations = getMultiLanguageData.invoke(locale).first()
+                    updateMainState {
+                        it.copy(
+                            isDefaultErrorDialogVisible = true,
+                            viewTranslations = it.viewTranslations.copy(
+                                defaultErrorTranslations = it.viewTranslations.defaultErrorTranslations.copy(
+                                    dialogMessage = translations.generalMessages.maintenanceDialog,
+                                    dialogBtn = translations.generalMessages.ok
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+
             is MainScreenEvent.HandleLaunchNewWindow -> {
                 val downloadUrl = initDownloadUrl(url = event.url)
                 Timber.d("Handling launch new window, callback url ... $downloadUrl")
@@ -944,7 +983,7 @@ class MainScreenViewModel @Inject constructor(
                         Timber.d("Fetching base url failed, display retry")
                         _uiState.update {
                             it.copy(
-                                isErrorDialogVisible = true
+                                isInitializeErrorDialogVisible = true
                             )
                         }
                     }
@@ -1011,6 +1050,10 @@ class MainScreenViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             viewTranslations = ViewTranslations(
+                                defaultErrorTranslations = DefaultErrorTranslations(
+                                    dialogMessage = "",
+                                    dialogBtn = ""
+                                ),
                                 mainScreenTranslations = MainScreenTranslations(
                                     initializeErrorMessage = errorMessage,
                                     retryButtonLabel = data.generalMessages.retry
@@ -1102,7 +1145,7 @@ class MainScreenViewModel @Inject constructor(
             MainScreenEvent.DismissErrorDialog -> {
                 _uiState.update {
                     it.copy(
-                        isErrorDialogVisible = false
+                        isInitializeErrorDialogVisible = false
                     )
                 }
             }

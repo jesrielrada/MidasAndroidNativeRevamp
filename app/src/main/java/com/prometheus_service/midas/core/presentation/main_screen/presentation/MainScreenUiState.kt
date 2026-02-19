@@ -3,6 +3,7 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebViewScreenUiState
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DefaultErrorTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
@@ -26,10 +27,11 @@ data class MainScreenUiState(
     val currentLocale: String = "",
     val currentRoute: String = "",
     val biometricCurrentAccount: CurrentAccount? = null,
-    val isErrorDialogVisible: Boolean = false,
+    val isInitializeErrorDialogVisible: Boolean = false,
     val isBiometricsLoadingDialogVisible: Boolean = false,
     val isBiometricsEnableDialogVisible: Boolean = false,
     val isBiometricsErrorDialogVisible: Boolean = false,
+    val isDefaultErrorDialogVisible: Boolean = false,
     val gameUrl: String? = null,
     val webViewScreenUiState: WebViewScreenUiState = WebViewScreenUiState(),
     val viewTranslations: ViewTranslations = ViewTranslations(
@@ -38,7 +40,8 @@ data class MainScreenUiState(
         splashScreenTranslations = SplashScreenTranslations(),
         gameScreenTranslations = GameScreenTranslations(),
         biometricsTranslations = BiometricsTranslations(),
-        secondStageTranslations = SecondStageTranslations()
+        secondStageTranslations = SecondStageTranslations(),
+        defaultErrorTranslations = DefaultErrorTranslations()
     )
 )
 

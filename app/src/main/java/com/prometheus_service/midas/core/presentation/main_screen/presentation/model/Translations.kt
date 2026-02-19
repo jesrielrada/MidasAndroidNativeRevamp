@@ -7,7 +7,13 @@ data class ViewTranslations(
     val splashScreenTranslations: SplashScreenTranslations,
     val gameScreenTranslations: GameScreenTranslations,
     val biometricsTranslations: BiometricsTranslations,
-    val secondStageTranslations: SecondStageTranslations
+    val secondStageTranslations: SecondStageTranslations,
+    val defaultErrorTranslations: DefaultErrorTranslations
+)
+
+data class DefaultErrorTranslations(
+    val dialogMessage: String = "",
+    val dialogBtn: String = ""
 )
 
 data class SecondStageTranslations(

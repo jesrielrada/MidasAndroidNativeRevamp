@@ -66,6 +66,8 @@ sealed class MainScreenEvent {
     data class HandleSwitchLanguage(val language: String) : MainScreenEvent()
     data class HandleOpenInBrowser(val url: String) : MainScreenEvent()
     data class HandleLaunchNewWindow(val url: String) : MainScreenEvent()
+    object HandleMaintenanceMode : MainScreenEvent()
+    object HandleGeoBlockMode : MainScreenEvent()
 
 }
 
