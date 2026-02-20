@@ -205,8 +205,6 @@ fun WebviewScreenContent(
                 onThemeSetting = { onThemeSetting(it) },
                 onRefreshCookie = { onRefreshCookie(it) }
             )
-            webviewDownloadSetup(webView = this)
-
             onInitialized(this.settings.userAgentString)
         }
     }
@@ -281,13 +279,6 @@ fun WebviewScreenContent(
     }
 }
 
-fun webviewDownloadSetup(
-    webView: WebView
-) {
-    webView.setDownloadListener { url, _, _, _, _ ->
-        Timber.d("Downloading url: $url")
-    }
-}
 
 fun webviewJavascriptSetup(
     webView: WebView,

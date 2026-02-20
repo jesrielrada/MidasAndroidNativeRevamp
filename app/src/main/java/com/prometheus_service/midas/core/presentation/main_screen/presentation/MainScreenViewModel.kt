@@ -243,15 +243,16 @@ class MainScreenViewModel @Inject constructor(
 
             is MainScreenEvent.HandleLaunchNewWindow -> {
                 val downloadUrl = initDownloadUrl(url = event.url)
-                Timber.d("Handling launch new window, callback url ... $downloadUrl")
+
+                Timber.d("Handling launch new window, callback url ... ${event.url}")
                 _uiState.update {
                     it.copy(
-                        webViewScreenUiState = it.webViewScreenUiState.copy(
-                            customUrl = downloadUrl
+                        shouldDisplayHelperScreen = true,
+                        helperUiState = it.helperUiState.copy(
+                            url = event.url
                         )
                     )
                 }
-
             }
 
             is MainScreenEvent.HandleOpenInBrowser -> {
@@ -1210,7 +1211,6 @@ class MainScreenViewModel @Inject constructor(
     private fun initDownloadUrl(url: String): String {
         val baseUrl = uiState.value.webViewScreenUiState.webviewUrl?.removeSuffix("/")
         val endpoint = url.removeSurrounding("\"")
-        Timber.d("Base url: $baseUrl, endpoint: $endpoint")
         return if (endpoint.contains("http")) endpoint else "$baseUrl$endpoint"
     }
 

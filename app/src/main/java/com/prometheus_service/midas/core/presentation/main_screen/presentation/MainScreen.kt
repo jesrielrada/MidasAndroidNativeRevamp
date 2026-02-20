@@ -29,6 +29,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prometheus_service.midas.core.presentation.features.biometrics.BiometricAuthenticator
 import com.prometheus_service.midas.core.presentation.features.game_screen.presentation.GameScreen
+import com.prometheus_service.midas.core.presentation.features.helper_screen.presentation.HelperScreen
 import com.prometheus_service.midas.core.presentation.features.language_selection.presentation.LanguageSelectionScreen
 import com.prometheus_service.midas.core.presentation.features.second_stage.presentation.SecondStageScreen
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
@@ -180,6 +181,17 @@ fun MainScreen(
                     viewModel.onEvent(HandleSecondStageMaxAttempt)
                 }
             )
+        }
+
+        if (uiState.shouldDisplayHelperScreen) {
+            HelperScreen(uiState = uiState.helperUiState) {
+                viewModel.updateMainState {
+                    it.copy(
+                        shouldDisplayHelperScreen = false,
+                        helperUiState = it.helperUiState.copy(url = null)
+                    )
+                }
+            }
         }
 
         if (uiState.isInitializeErrorDialogVisible) {

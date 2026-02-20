@@ -1,6 +1,5 @@
 package com.prometheus_service.midas.core.presentation.activity
 
-import android.app.ComponentCaller
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent

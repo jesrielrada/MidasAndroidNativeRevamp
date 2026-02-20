@@ -26,7 +26,6 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleStoreCredentials
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.ProcessGoogleLogin
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenUiState
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber

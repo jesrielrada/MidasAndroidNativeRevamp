@@ -1,6 +1,7 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
+import com.prometheus_service.midas.core.presentation.features.helper_screen.presentation.HelperUiState
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebViewScreenUiState
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DefaultErrorTranslations
@@ -19,6 +20,7 @@ data class MainScreenUiState(
     val shouldDisplayWebview: Boolean = true,
     val shouldDisplayGameView: Boolean = false,
     val shouldDisplaySecondStage: Boolean = false,
+    val shouldDisplayHelperScreen: Boolean = false,
     val canDisplayTutorialScreen: Boolean = false,
     val isAppInitialized: Boolean = false,
     val isNetworkReady: Boolean = false,
@@ -33,6 +35,7 @@ data class MainScreenUiState(
     val isBiometricsErrorDialogVisible: Boolean = false,
     val isDefaultErrorDialogVisible: Boolean = false,
     val gameUrl: String? = null,
+    val helperUiState: HelperUiState = HelperUiState(),
     val webViewScreenUiState: WebViewScreenUiState = WebViewScreenUiState(),
     val viewTranslations: ViewTranslations = ViewTranslations(
         mainScreenTranslations = MainScreenTranslations(),
