@@ -4,6 +4,9 @@ import javax.inject.Inject
 
 class GetDomainFromUrl @Inject constructor() {
     operator fun invoke(url: String) : String {
-        return url.replace("https://m.", ".")
+        return url.removePrefix("https://")
+            .substringAfter("pwa.")
+            .substringAfter("m.")
+            .let { ".$it" }
     }
 }

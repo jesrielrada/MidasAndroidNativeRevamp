@@ -45,7 +45,9 @@ fun WebviewScreen(
     WebviewScreenContent(
         modifier = modifier,
         uiState = uiState,
-        onInitialized = { viewModel.onEvent(SetUserAgentReady(it)) },
+        onInitialized = {
+            viewModel.onEvent(SetUserAgentReady(it))
+        },
         onPwaReady = {
             viewModel.emitSideEffect(MainScreenSideEffect.OnPwaReady(it))
         },
@@ -171,6 +173,14 @@ fun WebviewScreenContent(
             this.settings.javaScriptCanOpenWindowsAutomatically = true
             this.settings.setSupportMultipleWindows(true)
 
+            this.settings.userAgentString = this.settings.userAgentString + " VN88MobileA/4.0.0"
+
+            this.webViewClient = DefaultWebviewClient()
+            this.webChromeClient = DefaultWebChromeClient(context)
+
+            CookieManager.getInstance().setAcceptCookie(true)
+            CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+
             webviewJavascriptSetup(
                 webView = this,
                 onPwaReady = { onPwaReady(it) },
@@ -193,11 +203,6 @@ fun WebviewScreenContent(
             )
             webviewDownloadSetup(webView = this)
 
-            this.webViewClient = DefaultWebviewClient()
-            this.webChromeClient = DefaultWebChromeClient(context)
-
-            CookieManager.getInstance().setAcceptCookie(true)
-            CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
 
             onInitialized(this.settings.userAgentString)
         }
@@ -329,7 +334,7 @@ fun webviewJavascriptSetup(
                 }
 
                 override fun onResetCredentials(data: String?) {
-                    TODO("Not yet implemented")
+                    //
                 }
 
                 override fun onShouldDisplayBiometricsLogin(enabled: Boolean) {
