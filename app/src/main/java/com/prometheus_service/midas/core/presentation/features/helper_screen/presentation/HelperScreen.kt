@@ -1,11 +1,13 @@
 package com.prometheus_service.midas.core.presentation.features.helper_screen.presentation
 
 import android.annotation.SuppressLint
+import android.app.DownloadManager
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -30,8 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.prometheus_service.midas.R
-import com.prometheus_service.midas.core.presentation.features.webview_screen.clients.chrome.DefaultWebChromeClient
-import com.prometheus_service.midas.core.presentation.features.webview_screen.clients.webview.DefaultWebviewClient
+import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.webviewDownloadInitializer
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import timber.log.Timber
 
@@ -39,13 +40,15 @@ import timber.log.Timber
 fun HelperScreen(
     modifier: Modifier = Modifier,
     uiState: HelperUiState,
-    onHideScreen: () -> Unit
+    onHideScreen: () -> Unit,
+    onDownloadProcessed: (String) -> Unit
 ) {
 
     HelperScreenContent(
         modifier = modifier,
         uiState = uiState,
-        hideScreen = onHideScreen
+        hideScreen = onHideScreen,
+        onDownloadProcessed = onDownloadProcessed
     )
 }
 
@@ -56,8 +59,11 @@ fun HelperScreenContent(
     modifier: Modifier,
     uiState: HelperUiState,
     hideScreen: () -> Unit,
+    onDownloadProcessed: (String) -> Unit
 ) {
     val context = LocalContext.current
+    val downloadManager = remember { context.getSystemService(DownloadManager::class.java) }
+
     val webView = remember {
         WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -76,8 +82,21 @@ fun HelperScreenContent(
 
             this.webViewClient = WebViewClient()
 
+            webviewDownloadInitializer(
+                view = this,
+                downloadManager = downloadManager,
+                onDownloadProcessed = onDownloadProcessed
+            )
+
             CookieManager.getInstance().setAcceptCookie(true)
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+        }
+    }
+
+    LaunchedEffect(uiState.displayMessage) {
+        if(uiState.displayMessage != null) {
+            Toast.makeText(context, uiState.displayMessage, Toast.LENGTH_LONG).show()
+            hideScreen()
         }
     }
 
@@ -144,7 +163,8 @@ fun HelperScreenPreview() {
         HelperScreenContent(
             modifier = Modifier,
             uiState = HelperUiState(),
-            hideScreen = {}
+            hideScreen = {},
+            onDownloadProcessed = {}
         )
     }
 }

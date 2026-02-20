@@ -8,7 +8,12 @@ data class ViewTranslations(
     val gameScreenTranslations: GameScreenTranslations,
     val biometricsTranslations: BiometricsTranslations,
     val secondStageTranslations: SecondStageTranslations,
-    val defaultErrorTranslations: DefaultErrorTranslations
+    val defaultErrorTranslations: DefaultErrorTranslations,
+    val downloadTranslations: DownloadTranslations
+)
+
+data class DownloadTranslations(
+    val displayMessage: String = "",
 )
 
 data class DefaultErrorTranslations(

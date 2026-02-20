@@ -5,6 +5,7 @@ import com.prometheus_service.midas.core.presentation.features.helper_screen.pre
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebViewScreenUiState
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DefaultErrorTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DownloadTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
@@ -44,7 +45,8 @@ data class MainScreenUiState(
         gameScreenTranslations = GameScreenTranslations(),
         biometricsTranslations = BiometricsTranslations(),
         secondStageTranslations = SecondStageTranslations(),
-        defaultErrorTranslations = DefaultErrorTranslations()
+        defaultErrorTranslations = DefaultErrorTranslations(),
+        downloadTranslations = DownloadTranslations()
     )
 )
 

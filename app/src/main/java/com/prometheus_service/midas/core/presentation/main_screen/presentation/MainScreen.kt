@@ -184,90 +184,111 @@ fun MainScreen(
         }
 
         if (uiState.shouldDisplayHelperScreen) {
-            HelperScreen(uiState = uiState.helperUiState) {
-                viewModel.updateMainState {
-                    it.copy(
-                        shouldDisplayHelperScreen = false,
-                        helperUiState = it.helperUiState.copy(url = null)
-                    )
-                }
-            }
-        }
-
-        if (uiState.isInitializeErrorDialogVisible) {
-            AlertDialog(
-                onDismissRequest = {
-                    //do nothing
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        viewModel.onEvent(DismissErrorDialog)
-                        viewModel.onEvent(InitializeApplication)
-                    }) {
-                        Text(
-                            color = Color.White,
-                            text = uiState.viewTranslations.mainScreenTranslations.retryButtonLabel
-                        )
-                    }
-                },
-                text = {
-                    Text(
-                        color = Color.White,
-                        text = uiState.viewTranslations.mainScreenTranslations.initializeErrorMessage
-                    )
-                }
-            )
-        }
-
-        if (uiState.isBiometricsLoadingDialogVisible) {
-            BiometricsLoadingDialog()
-        }
-
-        if (uiState.isBiometricsEnableDialogVisible) {
-            BiometricsEnableDialog(
-                translations = uiState.viewTranslations.biometricsTranslations,
-                onConfirm = {
-                    viewModel.onEvent(InitializeBiometricPrompt)
-                    viewModel.onEvent(HideBiometricEnableDialog)
-                },
-                onDismiss = {
-                    viewModel.onEvent(HideBiometricEnableDialog)
-                },
-                onDontShowAgain = {
-                    viewModel.onEvent(SetBiometricsDisabled)
-                    viewModel.onEvent(HideBiometricEnableDialog)
-                }
-            )
-        }
-
-        if (uiState.isBiometricsErrorDialogVisible) {
-            BiometricsErrorDialog(
-                onConfirm = {
-                    viewModel.onEvent(SetBiometricsDisabled)
-                    viewModel.onEvent(HideBiometricErrorDialog)
-                },
-                onDismiss = {
-                    viewModel.onEvent(HideBiometricErrorDialog)
-                },
-                translations = uiState.viewTranslations.biometricsTranslations
-            )
-        }
-
-        if (uiState.isDefaultErrorDialogVisible) {
-            DefaultErrorDialog(
-                onConfirm = {
+            HelperScreen(
+                uiState = uiState.helperUiState,
+                onHideScreen = {
                     viewModel.updateMainState {
                         it.copy(
-                            isDefaultErrorDialogVisible = false
+                            shouldDisplayHelperScreen = false,
+                            helperUiState = it.helperUiState.copy(
+                                url = null,
+                                displayMessage = null
+                            )
                         )
                     }
-                },
-                dialogMessage = uiState.viewTranslations.defaultErrorTranslations.dialogMessage,
-                dialogBtn = uiState.viewTranslations.defaultErrorTranslations.dialogBtn
+                }, onDownloadProcessed = {
+                    val message = uiState.viewTranslations
+                        .downloadTranslations
+                        .displayMessage + " $it"
+
+                    Timber.d("Download processed ... $message")
+
+                    viewModel.updateMainState { state ->
+                        state.copy(
+                            helperUiState = state.helperUiState.copy(
+                                displayMessage = message
+                            )
+                        )
+                    }
+                }
             )
         }
     }
+
+    if (uiState.isInitializeErrorDialogVisible) {
+        AlertDialog(
+            onDismissRequest = {
+                //do nothing
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onEvent(DismissErrorDialog)
+                    viewModel.onEvent(InitializeApplication)
+                }) {
+                    Text(
+                        color = Color.White,
+                        text = uiState.viewTranslations.mainScreenTranslations.retryButtonLabel
+                    )
+                }
+            },
+            text = {
+                Text(
+                    color = Color.White,
+                    text = uiState.viewTranslations.mainScreenTranslations.initializeErrorMessage
+                )
+            }
+        )
+    }
+
+    if (uiState.isBiometricsLoadingDialogVisible) {
+        BiometricsLoadingDialog()
+    }
+
+    if (uiState.isBiometricsEnableDialogVisible) {
+        BiometricsEnableDialog(
+            translations = uiState.viewTranslations.biometricsTranslations,
+            onConfirm = {
+                viewModel.onEvent(InitializeBiometricPrompt)
+                viewModel.onEvent(HideBiometricEnableDialog)
+            },
+            onDismiss = {
+                viewModel.onEvent(HideBiometricEnableDialog)
+            },
+            onDontShowAgain = {
+                viewModel.onEvent(SetBiometricsDisabled)
+                viewModel.onEvent(HideBiometricEnableDialog)
+            }
+        )
+    }
+
+    if (uiState.isBiometricsErrorDialogVisible) {
+        BiometricsErrorDialog(
+            onConfirm = {
+                viewModel.onEvent(SetBiometricsDisabled)
+                viewModel.onEvent(HideBiometricErrorDialog)
+            },
+            onDismiss = {
+                viewModel.onEvent(HideBiometricErrorDialog)
+            },
+            translations = uiState.viewTranslations.biometricsTranslations
+        )
+    }
+
+    if (uiState.isDefaultErrorDialogVisible) {
+        DefaultErrorDialog(
+            onConfirm = {
+                viewModel.updateMainState {
+                    it.copy(
+                        isDefaultErrorDialogVisible = false
+                    )
+                }
+            },
+            dialogMessage = uiState.viewTranslations.defaultErrorTranslations.dialogMessage,
+            dialogBtn = uiState.viewTranslations.defaultErrorTranslations.dialogBtn
+        )
+    }
 }
+
 
 @Composable
 fun BiometricsErrorDialog(

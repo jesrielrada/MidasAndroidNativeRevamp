@@ -44,6 +44,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DefaultErrorTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DownloadTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
@@ -242,14 +243,13 @@ class MainScreenViewModel @Inject constructor(
             }
 
             is MainScreenEvent.HandleLaunchNewWindow -> {
-                val downloadUrl = initDownloadUrl(url = event.url)
-
-                Timber.d("Handling launch new window, callback url ... ${event.url}")
+                val helperUrl = initHelperScreenUrl(url = event.url)
+                Timber.d("Handling launch new window, callback url ... $helperUrl")
                 _uiState.update {
                     it.copy(
                         shouldDisplayHelperScreen = true,
                         helperUiState = it.helperUiState.copy(
-                            url = event.url
+                            url = helperUrl
                         )
                     )
                 }
@@ -1114,6 +1114,9 @@ class MainScreenViewModel @Inject constructor(
                                     pinHeaderIncorrectPinCreateNew = data.pinLockTranslations.pinIncorrectNew,
                                     pinFooterCancelSettings = data.pinLockTranslations.pinForgotButtonCancel,
                                     pinFooterRemainingAttempts = data.pinLockTranslations.pinAttemptsText
+                                ),
+                                downloadTranslations = DownloadTranslations(
+                                    displayMessage = data.generalMessages.download,
                                 )
                             )
                         )
@@ -1208,7 +1211,7 @@ class MainScreenViewModel @Inject constructor(
         }
     }
 
-    private fun initDownloadUrl(url: String): String {
+    private fun initHelperScreenUrl(url: String): String {
         val baseUrl = uiState.value.webViewScreenUiState.webviewUrl?.removeSuffix("/")
         val endpoint = url.removeSurrounding("\"")
         return if (endpoint.contains("http")) endpoint else "$baseUrl$endpoint"
