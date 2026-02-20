@@ -74,7 +74,6 @@ fun MainScreen(
 
     MainScreenEffectHandler(
         viewModel = viewModel,
-        uiState = uiState,
         context = context,
         authenticator = authenticator,
         googleAuthManager = googleAuthManager

@@ -692,13 +692,13 @@ class MainScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     Timber.d("Handling store credentials ... ${event.data}")
 
-                    _uiState.update {
-                        it.copy(
-                            webViewScreenUiState = it.webViewScreenUiState.copy(
-                                customCallbackScript = PIN_CODE_STATE_SCRIPT
-                            )
-                        )
-                    }
+//                    _uiState.update {
+//                        it.copy(
+//                            webViewScreenUiState = it.webViewScreenUiState.copy(
+//                                customCallbackScript = PIN_CODE_STATE_SCRIPT
+//                            )
+//                        )
+//                    }
 
                     syncRemoteData.invoke(uiState.value.currentLocale)
 
@@ -778,21 +778,21 @@ class MainScreenViewModel @Inject constructor(
                         )
                     }
 
-//                    handleBiometricButtonDisplay.invoke()
-//                        .onSuccess {
-//                            _uiState.update {
-//                                it.copy(
-//                                    webViewScreenUiState = it.webViewScreenUiState.copy(
-//                                        customScript = DISPLAY_BIOMETRICS_SCRIPT
-//                                    )
-//                                )
-//                            }
-//                        }.onFailure {
-//                            Timber.e(
-//                                "Failure handling biometric " +
-//                                        "button display, ${it.localizedMessage}"
-//                            )
-//                        }
+                    handleBiometricButtonDisplay.invoke()
+                        .onSuccess {
+                            _uiState.update {
+                                it.copy(
+                                    webViewScreenUiState = it.webViewScreenUiState.copy(
+                                        customScript = DISPLAY_BIOMETRICS_SCRIPT
+                                    )
+                                )
+                            }
+                        }.onFailure {
+                            Timber.e(
+                                "Failure handling biometric " +
+                                        "button display, ${it.localizedMessage}"
+                            )
+                        }
 
 //                    _uiState.update {
 //                        it.copy(

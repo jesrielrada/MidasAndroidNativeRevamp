@@ -12,7 +12,9 @@ import androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED
 import androidx.biometric.BiometricPrompt.PromptInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.prometheus_service.midas.core.presentation.features.biometrics.BiometricAuthenticator
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleAccountSelected
@@ -32,16 +34,16 @@ import timber.log.Timber
 @Composable
 fun MainScreenEffectHandler(
     viewModel: MainScreenViewModel,
-    uiState: MainScreenUiState,
     context: Context,
     authenticator: BiometricAuthenticator,
     googleAuthManager: GoogleAuthManager
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
+
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-
-
                 is MainScreenSideEffect.StartActionView -> {
                     Timber.d("Starting action view ...")
                     val intent = Intent(Intent.ACTION_VIEW, effect.url.toUri())
