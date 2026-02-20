@@ -3,6 +3,7 @@ package com.prometheus_service.midas.core.domain.shared.biometrics.use_case
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.BiometricsManager
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.CipherManager
 import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
+import timber.log.Timber
 import javax.crypto.Cipher
 import javax.inject.Inject
 
@@ -21,7 +22,7 @@ class HandleBiometricAccountSelected @Inject constructor(
         username: String,
         locale: String
     ): Result<AccountSelectedResult> {
-        try {
+        return try {
             val encryptedPassword = biometricsManager.getEncryptedPassword(username)
             if (encryptedPassword != null) {
                 val vector = encryptedPassword.initializationVector
@@ -42,11 +43,14 @@ class HandleBiometricAccountSelected @Inject constructor(
                     biometricsManager.setCurrentAccount(CurrentAccount()) //to clear account
                     biometricsManager.deleteAllAccounts()
                     setBiometricsEnabled.invoke(locale, false)
+                    throw Exception("Cipher is null")
                 }
+            }else {
+                throw Exception("Encrypted password is null")
             }
         } catch (e: Exception) {
-            return Result.failure(e)
+            Timber.d("Failure handling biometric account selected ${e.localizedMessage}")
+            Result.failure(e)
         }
-        return Result.failure(Exception("Biometrics not enabled"))
     }
 }

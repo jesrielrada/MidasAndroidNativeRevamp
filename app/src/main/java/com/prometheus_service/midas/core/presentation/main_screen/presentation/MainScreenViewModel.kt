@@ -676,6 +676,7 @@ class MainScreenViewModel @Inject constructor(
                     initializeBiometricsPrompt.invoke(key)
                         .onSuccess { cipher ->
                             cipher?.let {
+                                Timber.d("Success initializing biometric prompt")
                                 _sideEffect.emit(
                                     MainScreenSideEffect.DisplayBiometricPrompt(cipher)
                                 )
@@ -757,18 +758,18 @@ class MainScreenViewModel @Inject constructor(
 
                     Timber.d("Handling pwa ready ...")
 
-//                    val isPinCodeEnabled = getSecondStageConfig.invoke().first().isUserEnabled
-//                    if (isPinCodeEnabled != null && !isPinCodeEnabled) {
-//                        val script = togglePinCodeStorageScript(false)
-//                        _uiState.update {
-//                            it.copy(
-//                                shouldDisplaySecondStage = false,
-//                                webViewScreenUiState = it.webViewScreenUiState.copy(
-//                                    customScript = script
-//                                )
-//                            )
-//                        }
-//                    }
+                    val isPinCodeEnabled = getSecondStageConfig.invoke().first().isUserEnabled
+                    if (isPinCodeEnabled != null && !isPinCodeEnabled) {
+                        val script = togglePinCodeStorageScript(false)
+                        _uiState.update {
+                            it.copy(
+                                shouldDisplaySecondStage = false,
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customScript = script
+                                )
+                            )
+                        }
+                    }
 
                     _uiState.update {
                         it.copy(
@@ -794,13 +795,13 @@ class MainScreenViewModel @Inject constructor(
                             )
                         }
 
-//                    _uiState.update {
-//                        it.copy(
-//                            webViewScreenUiState = it.webViewScreenUiState.copy(
-//                                customCallbackScript = PIN_CODE_STATE_SCRIPT
-//                            )
-//                        )
-//                    }
+                    _uiState.update {
+                        it.copy(
+                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                customCallbackScript = PIN_CODE_STATE_SCRIPT
+                            )
+                        )
+                    }
 
                     persistNativeCookies.invoke()
                     cacheAppCurrency.invoke(event.data)
