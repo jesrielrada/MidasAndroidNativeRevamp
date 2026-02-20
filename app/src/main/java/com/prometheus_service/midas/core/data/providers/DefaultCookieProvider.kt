@@ -3,6 +3,7 @@ package com.prometheus_service.midas.core.data.providers
 import android.webkit.CookieManager
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -69,6 +70,32 @@ class DefaultCookieProvider @Inject constructor(
                     Timber.d("Cookie deleted successfully: $success")
                 }
             CookieManager.getInstance().flush()
+        }
+    }
+
+    override suspend fun getCurrentCookies(domain: String): String? {
+        return withContext(dispatcherProvider.main) {
+            CookieManager.getInstance().getCookie(domain)
+        }
+    }
+
+    override suspend fun removeAllCookies(): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            CookieManager.getInstance().removeAllCookies { success ->
+                continuation.resume(success) { cause, _, _ ->
+                    Timber.e(cause, "Error removing cookies")
+                }
+            }
+        }
+
+    override suspend fun initializeSessionCookies(domain: String, cookies: String?) {
+        return withContext(dispatcherProvider.main) {
+            cookies?.split(";")?.forEach { cookie ->
+                val cleanCookie = cookie.trim()
+                if (cleanCookie.isNotEmpty()) {
+                    CookieManager.getInstance().setCookie(domain, cleanCookie)
+                }
+            }
         }
     }
 }

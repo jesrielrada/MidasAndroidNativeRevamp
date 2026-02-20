@@ -8,4 +8,9 @@ interface CookieProvider {
     suspend fun persistCookies()
 
     suspend fun deleteSessionCookies(domain: String)
+    suspend fun getCurrentCookies(domain: String) : String?
+
+    suspend fun removeAllCookies() : Boolean
+
+    suspend fun initializeSessionCookies(domain: String, cookies: String?)
 }

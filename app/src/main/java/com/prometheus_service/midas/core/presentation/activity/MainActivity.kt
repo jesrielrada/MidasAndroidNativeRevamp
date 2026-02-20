@@ -32,6 +32,11 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         Timber.d("onNewIntent called with intent: $intent")

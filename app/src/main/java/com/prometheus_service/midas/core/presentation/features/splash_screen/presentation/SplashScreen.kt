@@ -72,7 +72,6 @@ fun SplashScreen(
 
     LaunchedEffect(shouldDisplaySkipButton, shouldRestartSplash) {
         if (shouldDisplaySkipButton) {
-            Timber.d("Condition met, displaying skip button")
             viewModel.onEvent(SplashScreenEvent.DisplaySkipButton)
         }
 

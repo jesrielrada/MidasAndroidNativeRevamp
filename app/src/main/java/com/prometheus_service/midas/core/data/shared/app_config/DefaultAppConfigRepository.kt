@@ -50,7 +50,7 @@ class DefaultAppConfigRepository @Inject constructor(
                         ?.jsonPrimitive
                         ?.contentOrNull
 
-                    val memberCurrency = json["member"]
+                    val memberCurrency = json["user"]
                         ?.takeIf { it is JsonObject }
                         ?.jsonObject
                         ?.get("currency")
@@ -76,6 +76,16 @@ class DefaultAppConfigRepository @Inject constructor(
                 Timber.d(it, "Failed to cache app currency ...")
             }
 
+        }
+    }
+
+    override suspend fun deleteCookies() {
+        withContext(dispatcherProvider.io) {
+            runCatching {
+                localDataSource.deleteSessionCookies()
+            }.onFailure { exception ->
+                Timber.e(exception, "Failed to delete session cookies")
+            }
         }
     }
 }

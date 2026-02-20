@@ -7,6 +7,7 @@ class GetDomainFromUrl @Inject constructor() {
         return url.removePrefix("https://")
             .substringAfter("pwa.")
             .substringAfter("m.")
+            .substringAfter("epm.")
             .let { ".$it" }
     }
 }

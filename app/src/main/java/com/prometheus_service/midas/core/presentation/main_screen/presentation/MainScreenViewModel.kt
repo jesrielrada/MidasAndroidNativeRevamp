@@ -12,6 +12,7 @@ import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_cas
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteCookies
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountSelectedResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountDisplayResult
@@ -105,6 +106,7 @@ class MainScreenViewModel @Inject constructor(
     private val canDisplayPinlock: CanDisplayPinlock,
     private val getSecondStageConfig: GetSecondStageConfig,
     private val cookieProvider: CookieProvider,
+    private val deleteCookies: DeleteCookies,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -186,6 +188,21 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.CacheSessionCookies -> {
+                viewModelScope.launch {
+                    uiState.value.webViewScreenUiState.webviewUrl
+                        ?.let {
+                            val cookies = cookieProvider.getCurrentCookies(it)
+                            Timber.d("Current cookies are: $cookies")
+                            cookies
+                        }
+                        ?.let { it ->
+                            Timber.d("Caching session cookies ... $it")
+                            cacheAppConfig(AppConfigModel(sessionCookies = it))
+                        }
+                }
+            }
+
             MainScreenEvent.HandleGeoBlockMode -> {
                 viewModelScope.launch {
                     val config = getAppConfigModel.invoke()
@@ -313,8 +330,9 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.HandleMemberLoggedOut -> {
                 Timber.d("Handling member logged out... ")
-                //reset pincode on logout
                 viewModelScope.launch {
+                    deleteCookies.invoke()
+
                     val script = togglePinCodeStorageScript(false)
                     _uiState.update {
                         it.copy(
@@ -739,18 +757,18 @@ class MainScreenViewModel @Inject constructor(
 
                     Timber.d("Handling pwa ready ...")
 
-                    val isPinCodeEnabled = getSecondStageConfig.invoke().first().isUserEnabled
-                    if (isPinCodeEnabled != null && !isPinCodeEnabled) {
-                        val script = togglePinCodeStorageScript(false)
-                        _uiState.update {
-                            it.copy(
-                                shouldDisplaySecondStage = false,
-                                webViewScreenUiState = it.webViewScreenUiState.copy(
-                                    customScript = script
-                                )
-                            )
-                        }
-                    }
+//                    val isPinCodeEnabled = getSecondStageConfig.invoke().first().isUserEnabled
+//                    if (isPinCodeEnabled != null && !isPinCodeEnabled) {
+//                        val script = togglePinCodeStorageScript(false)
+//                        _uiState.update {
+//                            it.copy(
+//                                shouldDisplaySecondStage = false,
+//                                webViewScreenUiState = it.webViewScreenUiState.copy(
+//                                    customScript = script
+//                                )
+//                            )
+//                        }
+//                    }
 
                     _uiState.update {
                         it.copy(
@@ -760,29 +778,29 @@ class MainScreenViewModel @Inject constructor(
                         )
                     }
 
-                    handleBiometricButtonDisplay.invoke()
-                        .onSuccess {
-                            _uiState.update {
-                                it.copy(
-                                    webViewScreenUiState = it.webViewScreenUiState.copy(
-                                        customScript = DISPLAY_BIOMETRICS_SCRIPT
-                                    )
-                                )
-                            }
-                        }.onFailure {
-                            Timber.e(
-                                "Failure handling biometric " +
-                                        "button display, ${it.localizedMessage}"
-                            )
-                        }
+//                    handleBiometricButtonDisplay.invoke()
+//                        .onSuccess {
+//                            _uiState.update {
+//                                it.copy(
+//                                    webViewScreenUiState = it.webViewScreenUiState.copy(
+//                                        customScript = DISPLAY_BIOMETRICS_SCRIPT
+//                                    )
+//                                )
+//                            }
+//                        }.onFailure {
+//                            Timber.e(
+//                                "Failure handling biometric " +
+//                                        "button display, ${it.localizedMessage}"
+//                            )
+//                        }
 
-                    _uiState.update {
-                        it.copy(
-                            webViewScreenUiState = it.webViewScreenUiState.copy(
-                                customCallbackScript = PIN_CODE_STATE_SCRIPT
-                            )
-                        )
-                    }
+//                    _uiState.update {
+//                        it.copy(
+//                            webViewScreenUiState = it.webViewScreenUiState.copy(
+//                                customCallbackScript = PIN_CODE_STATE_SCRIPT
+//                            )
+//                        )
+//                    }
 
                     persistNativeCookies.invoke()
                     cacheAppCurrency.invoke(event.data)
@@ -965,12 +983,12 @@ class MainScreenViewModel @Inject constructor(
                     //Fetch and cache base url
                     val baseUrl = fetchAppBaseUrl.invoke()
                     if (baseUrl != null) {
-                        //val tempBaseUrl = "https://epm.vn88uat.com"
-                        val domain = getDomainFromUrl.invoke(baseUrl)
-                        setHostInterceptorUrl.invoke(baseUrl)
+                        val tempBaseUrl = "https://epm.vn88uat.com"
+                        val domain = getDomainFromUrl.invoke(tempBaseUrl)
+                        setHostInterceptorUrl.invoke(tempBaseUrl)
                         cacheAppConfig.invoke(
                             AppConfigModel(
-                                baseUrl = baseUrl,
+                                baseUrl = tempBaseUrl,
                                 domain = domain
                             )
                         )

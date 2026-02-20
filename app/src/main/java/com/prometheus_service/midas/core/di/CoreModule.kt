@@ -109,9 +109,13 @@ object CoreModule {
     @Provides
     @Singleton
     fun provideInitializeNativeCookies(
-        cookieProvider: CookieProvider
+        cookieProvider: CookieProvider,
+        getAppConfigModel: GetAppConfigModel
     ): InitializeNativeCookies {
-        return InitializeNativeCookies(cookieProvider)
+        return InitializeNativeCookies(
+            cookieProvider,
+            getAppConfigModel
+        )
     }
 
     @Provides

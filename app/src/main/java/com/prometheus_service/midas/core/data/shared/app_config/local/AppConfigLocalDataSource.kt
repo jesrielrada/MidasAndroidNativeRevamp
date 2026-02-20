@@ -8,4 +8,6 @@ interface AppConfigLocalDataSource {
     fun getAppConfigModel(): Flow<AppConfigModel>
     suspend fun cacheAppConfigModel(data: AppConfigModel)
 
+    suspend fun deleteSessionCookies()
+
 }

@@ -13,6 +13,7 @@ data class AppConfigModel(
     val baseUrl: String? = null,
     val domain: String? = null,
     val currency: String? = null,
+    val sessionCookies: String? = null,
     val isTutorialDisplayed: Boolean? = null,
     val isLanguageSelectionDisplayed: Boolean? = null
 )

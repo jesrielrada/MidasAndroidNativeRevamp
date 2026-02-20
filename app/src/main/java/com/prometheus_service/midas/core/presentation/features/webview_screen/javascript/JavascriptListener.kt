@@ -11,6 +11,7 @@ interface JavascriptListener {
     fun onShouldDisplayBiometricsLogin(enabled: Boolean)
     fun onLoginLauncher(data: String?)
     fun onPinCodeToggle(isEnabled: Boolean)
+    fun onMemberLoggedIn(data: String)
     fun onMemberLoggedOut(data: String)
     fun onSwitchLanguage(language: String)
     fun onOpenInBrowser(url: String)

@@ -27,21 +27,27 @@ class DefaultAppConfigLocalDataSource @Inject constructor(
     }
 
     override suspend fun cacheAppConfigModel(data: AppConfigModel) {
-        try {
-            dataStore.updateData { currentData ->
-                currentData.copy(
-                    locale = data.locale ?: currentData.locale,
-                    currency = data.currency ?: currentData.currency,
-                    baseUrl = data.baseUrl ?: currentData.baseUrl,
-                    isTutorialDisplayed = data.isTutorialDisplayed
-                        ?: currentData.isTutorialDisplayed,
-                    isLanguageSelectionDisplayed = data.isLanguageSelectionDisplayed
-                        ?: currentData.isLanguageSelectionDisplayed,
-                    domain = data.domain ?: currentData.domain
-                )
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to cache app config model")
+        dataStore.updateData { currentData ->
+            currentData.copy(
+                locale = data.locale ?: currentData.locale,
+                currency = data.currency ?: currentData.currency,
+                baseUrl = data.baseUrl ?: currentData.baseUrl,
+                isTutorialDisplayed = data.isTutorialDisplayed
+                    ?: currentData.isTutorialDisplayed,
+                isLanguageSelectionDisplayed = data.isLanguageSelectionDisplayed
+                    ?: currentData.isLanguageSelectionDisplayed,
+                domain = data.domain ?: currentData.domain,
+                sessionCookies = data.sessionCookies ?: currentData.sessionCookies
+
+            )
+        }
+    }
+
+    override suspend fun deleteSessionCookies() {
+        dataStore.updateData {
+            it.copy(
+                sessionCookies = null
+            )
         }
     }
 }

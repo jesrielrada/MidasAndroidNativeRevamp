@@ -3,6 +3,7 @@ package com.prometheus_service.midas.core.presentation.features.webview_screen.j
 import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
 import androidx.annotation.Nullable
+import timber.log.Timber
 
 @Keep
 class DefaultJavascriptListener(val callback: JavascriptListener) {
@@ -57,6 +58,11 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
     }
 
     @JavascriptInterface
+    fun memberLoggedIn(data: String) {
+        callback.onMemberLoggedIn(data)
+    }
+
+    @JavascriptInterface
     fun memberLoggedOut(data: String) {
         callback.onMemberLoggedOut(data)
     }
@@ -68,12 +74,12 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
 
     @JavascriptInterface
     fun openInBrowser(url: String) {
-       callback.onOpenInBrowser(url)
+        callback.onOpenInBrowser(url)
     }
 
     @JavascriptInterface
     fun launchNewWindow(url: String) {
-       callback.onLaunchNewWindow(url)
+        callback.onLaunchNewWindow(url)
     }
 
     @JavascriptInterface
@@ -88,13 +94,14 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
 
     @JavascriptInterface
     fun themeSetting(data: String) {
-       callback.onThemeSetting(data)
+        Timber.d("JavascriptListener: themeSetting: $data")
+        callback.onThemeSetting(data)
     }
 
     @JavascriptInterface
     fun refreshCookie(data: String) {
+        Timber.d("JavascriptListener: refreshCookie: $data")
         callback.onRefreshCookie(data)
     }
-
 
 }

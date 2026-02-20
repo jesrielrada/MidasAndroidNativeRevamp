@@ -68,6 +68,7 @@ sealed class MainScreenEvent {
     data class HandleLaunchNewWindow(val url: String) : MainScreenEvent()
     object HandleMaintenanceMode : MainScreenEvent()
     object HandleGeoBlockMode : MainScreenEvent()
+    object CacheSessionCookies: MainScreenEvent()
 
 }
 

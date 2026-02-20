@@ -90,11 +90,13 @@ fun WebviewScreen(
         onCustomCallbackScriptLoaded = {
             viewModel.onEvent(HandleCustomScriptCallback(it))
         },
+        onMemberLoggedIn = {
+            viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
+        },
         onMemberLoggedOut = {
             viewModel.onEvent(HandleMemberLoggedOut)
         },
         onWebviewReloaded = {
-            Timber.d("Webview reloaded, setting to false..")
             viewModel.updateMainState {
                 it.copy(
                     webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -104,6 +106,7 @@ fun WebviewScreen(
             }
         },
         onSwitchLanguage = {
+            viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
             viewModel.onEvent(HandleSwitchLanguage(it))
         },
         onOpenInBrowser = {
@@ -122,10 +125,9 @@ fun WebviewScreen(
 
         },
         onRefreshCookie = {
-
+            viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
         }
     )
-
 }
 
 
@@ -148,6 +150,7 @@ fun WebviewScreenContent(
     onLoginLauncher: (String?) -> Unit,
     onPincodeToggled: (Boolean) -> Unit,
     onCustomCallbackScriptLoaded: (String) -> Unit,
+    onMemberLoggedIn: (String) -> Unit,
     onMemberLoggedOut: (String) -> Unit,
     onWebviewReloaded: () -> Unit,
     onSwitchLanguage: (String) -> Unit,
@@ -192,6 +195,7 @@ fun WebviewScreenContent(
                 onShouldDisplayBiometricsLogin = { onShouldDisplayBiometricsLogin() },
                 onLoginLauncher = { onLoginLauncher(it) },
                 onPincodeToggled = { onPincodeToggled(it) },
+                onMemberLoggedIn = { onMemberLoggedIn(it) },
                 onMemberLoggedOut = { onMemberLoggedOut(it) },
                 onSwitchLanguage = { onSwitchLanguage(it) },
                 onOpenInBrowser = { onOpenInBrowser(it) },
@@ -202,7 +206,6 @@ fun WebviewScreenContent(
                 onRefreshCookie = { onRefreshCookie(it) }
             )
             webviewDownloadSetup(webView = this)
-
 
             onInitialized(this.settings.userAgentString)
         }
@@ -297,6 +300,7 @@ fun webviewJavascriptSetup(
     onShouldDisplayBiometricsLogin: () -> Unit,
     onLoginLauncher: (data: String?) -> Unit,
     onPincodeToggled: (isEnabled: Boolean) -> Unit,
+    onMemberLoggedIn: (data: String) -> Unit,
     onMemberLoggedOut: (data: String) -> Unit,
     onSwitchLanguage: (language: String) -> Unit,
     onOpenInBrowser: (url: String) -> Unit,
@@ -347,6 +351,10 @@ fun webviewJavascriptSetup(
 
                 override fun onPinCodeToggle(isEnabled: Boolean) {
                     onPincodeToggled(isEnabled)
+                }
+
+                override fun onMemberLoggedIn(data: String) {
+                    onMemberLoggedIn(data)
                 }
 
                 override fun onMemberLoggedOut(data: String) {
