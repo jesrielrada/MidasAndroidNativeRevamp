@@ -34,7 +34,7 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Pink40,
 
     tertiaryContainer = Color.Black,
-    onTertiaryContainer = Color.White,
+    onTertiaryContainer = Color.DarkGray,
     surface = Color.DarkGray,
 
     // Language Selection

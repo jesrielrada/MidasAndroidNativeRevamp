@@ -226,14 +226,14 @@ fun MainScreen(
                     viewModel.onEvent(InitializeApplication)
                 }) {
                     Text(
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                         text = uiState.viewTranslations.mainScreenTranslations.retryButtonLabel
                     )
                 }
             },
             text = {
                 Text(
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
                     text = uiState.viewTranslations.mainScreenTranslations.initializeErrorMessage
                 )
             }
@@ -302,14 +302,14 @@ fun BiometricsErrorDialog(
         text = {
             Text(
                 text = translations.currentDialogMessage,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onTertiaryContainer
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
                     text = translations.currentDialogButtonLabel,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
@@ -331,14 +331,14 @@ fun DefaultErrorDialog(
         text = {
             Text(
                 text = dialogMessage,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onTertiaryContainer
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
                     text = dialogBtn,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
@@ -359,14 +359,14 @@ fun BiometricsEnableDialog(
         text = {
             Text(
                 text = translations.dialogEnableMessage,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onTertiaryContainer
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
                     text = translations.dialogPositiveBtnLabel,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         },
@@ -374,7 +374,7 @@ fun BiometricsEnableDialog(
             TextButton(onClick = onDontShowAgain) {
                 Text(
                     text = translations.dialogNeutralBtnLabel,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
