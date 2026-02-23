@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -957,6 +958,30 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.LoadBaseUrl -> {
                 viewModelScope.launch {
+                    uiState
+                        .map { it.webViewScreenUiState.isPwaReady }
+                        .distinctUntilChanged()
+                        .collectLatest { isReady ->
+                            if (!isReady) {
+                                while (true) {
+                                    delay(45000L)
+                                    val homepageError = uiState.value.viewTranslations
+                                        .mainScreenTranslations
+                                        .homepageErrorMessage
+                                    _uiState.update {
+                                        it.copy(
+                                            snackBarMessage = homepageError,
+                                            webViewScreenUiState = it.webViewScreenUiState.copy(
+                                                shouldReloadWebview = true
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                }
+
+                viewModelScope.launch {
                     val config = getAppConfigModel.invoke().firstOrNull()
                     val domain = config?.domain
                     val version = BuildConfig.VERSION_NAME
@@ -1074,6 +1099,7 @@ class MainScreenViewModel @Inject constructor(
                                     dialogBtn = ""
                                 ),
                                 mainScreenTranslations = MainScreenTranslations(
+                                    homepageErrorMessage = data.errorMessages.homepage,
                                     initializeErrorMessage = errorMessage,
                                     retryButtonLabel = data.generalMessages.retry
                                 ),

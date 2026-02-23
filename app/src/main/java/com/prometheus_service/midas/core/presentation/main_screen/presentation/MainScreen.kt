@@ -3,11 +3,14 @@ package com.prometheus_service.midas.core.presentation.main_screen.presentation
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -35,7 +37,23 @@ import com.prometheus_service.midas.core.presentation.features.second_stage.pres
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
-import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.*
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.DismissErrorDialog
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.DisplayTutorialScreen
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandlePinCodeToggleOff
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleSecondStageMaxAttempt
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HideBiometricEnableDialog
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HideBiometricErrorDialog
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HideGameViewScreen
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HideLanguageSelectionScreen
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HideSplashScreen
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HideTutorialScreen
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.InitializeApplication
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.InitializeBiometricPrompt
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.InitializeTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadBaseUrl
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadCustomRoute
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.SetBiometricsDisabled
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.SetLocaleSelected
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenEffectHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenLifecycleHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenOrientationHandler
@@ -60,6 +78,7 @@ fun MainScreen(
     val webviewVisibility = if (shouldDisplayWebview) 1f else 0f
 
     val shouldRestartSplash by remember { derivedStateOf { uiState.isInitializeErrorDialogVisible } }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.onDataSync) {
         if (uiState.onDataSync) {
@@ -68,6 +87,17 @@ fun MainScreen(
             viewModel.updateMainState {
                 it.copy(
                     onDataSync = false
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(uiState.snackBarMessage) {
+        uiState.snackBarMessage?.let { message ->
+            snackBarHostState.showSnackbar(message)
+            viewModel.updateMainState {
+                it.copy(
+                    snackBarMessage = null
                 )
             }
         }
@@ -213,6 +243,13 @@ fun MainScreen(
                 }
             )
         }
+
+        SnackbarHost(
+            hostState = snackBarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+        )
     }
 
     if (uiState.isInitializeErrorDialogVisible) {
@@ -287,6 +324,8 @@ fun MainScreen(
             dialogBtn = uiState.viewTranslations.defaultErrorTranslations.dialogBtn
         )
     }
+
+
 }
 
 
