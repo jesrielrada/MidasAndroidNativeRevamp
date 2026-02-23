@@ -985,12 +985,11 @@ class MainScreenViewModel @Inject constructor(
                     //Fetch and cache base url
                     val baseUrl = fetchAppBaseUrl.invoke()
                     if (baseUrl != null) {
-                        val tempBaseUrl = "https://epm.vn88uat.com"
-                        val domain = getDomainFromUrl.invoke(tempBaseUrl)
-                        setHostInterceptorUrl.invoke(tempBaseUrl)
+                        val domain = getDomainFromUrl.invoke(baseUrl)
+                        setHostInterceptorUrl.invoke(baseUrl)
                         cacheAppConfig.invoke(
                             AppConfigModel(
-                                baseUrl = tempBaseUrl,
+                                baseUrl = baseUrl,
                                 domain = domain
                             )
                         )
