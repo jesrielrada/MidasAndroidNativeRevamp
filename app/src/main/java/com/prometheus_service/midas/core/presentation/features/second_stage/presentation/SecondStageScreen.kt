@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -123,7 +125,7 @@ fun SecondStageScreenContent(
     ConstraintLayout(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0XFF0E0E0E))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
     ) {
 
         val logoGuideline = createGuidelineFromTop(.1f)
@@ -217,7 +219,7 @@ fun PinFieldView(
             text = headerValue,
             textAlign = TextAlign.Center,
             fontSize = 16.sp,
-            color = Color(0XFFC5CBD3)
+            color = MaterialTheme.colorScheme.onSecondary
         )
     }
 }
@@ -273,7 +275,7 @@ fun CancelAttemptText(modifier: Modifier = Modifier, footerValue: String) {
     Text(
         modifier = modifier,
         text = footerValue,
-        color = SecondStagePrimaryColor,
+        color = MaterialTheme.colorScheme.onSecondaryContainer,
         fontSize = 16.sp
     )
 }
@@ -297,13 +299,14 @@ fun PinNumberView(
                 .padding(start = 20.dp, end = 20.dp)
                 .size(75.dp),
             model = R.drawable.vector_circle_border,
-            contentDescription = null
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer)
         )
         Text(
             modifier = Modifier.align(Alignment.Center),
             text = digit,
             fontSize = 36.sp,
-            color = SecondStagePrimaryColor
+            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
     }
 }
@@ -421,13 +424,15 @@ fun PinDeleteView(
                 .padding(start = 20.dp, end = 20.dp)
                 .size(75.dp),
             model = R.drawable.vector_circle_border,
-            contentDescription = null
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer)
         )
 
         GlideImage(
             modifier = Modifier.size(30.dp),
             model = R.drawable.vector_backspace,
-            contentDescription = null
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer)
         )
     }
 }
