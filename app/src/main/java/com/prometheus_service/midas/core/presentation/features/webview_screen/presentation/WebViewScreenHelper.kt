@@ -58,7 +58,6 @@ fun webviewJavascriptSetup(
     onLaunchNewWindow: (url: String) -> Unit,
     onMaintenanceMode: (data: String?) -> Unit,
     onGeoBlockMode: (data: String?) -> Unit,
-    onThemeSetting: (data: String) -> Unit,
     onRefreshCookie: (data: String) -> Unit
 ) {
     webView.addJavascriptInterface(
@@ -130,10 +129,6 @@ fun webviewJavascriptSetup(
 
                 override fun onGeoBlockMode(data: String?) {
                     onGeoBlockMode(data)
-                }
-
-                override fun onThemeSetting(data: String) {
-                    onThemeSetting(data)
                 }
 
                 override fun onRefreshCookie(data: String) {

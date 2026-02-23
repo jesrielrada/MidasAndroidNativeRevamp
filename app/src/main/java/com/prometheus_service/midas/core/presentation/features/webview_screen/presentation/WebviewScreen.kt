@@ -1,7 +1,6 @@
 package com.prometheus_service.midas.core.presentation.features.webview_screen.presentation
 
 import android.annotation.SuppressLint
-import android.app.DownloadManager
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -21,8 +20,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.prometheus_service.midas.core.presentation.features.webview_screen.clients.chrome.DefaultWebChromeClient
 import com.prometheus_service.midas.core.presentation.features.webview_screen.clients.webview.DefaultWebviewClient
-import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.DefaultJavascriptListener
-import com.prometheus_service.midas.core.presentation.features.webview_screen.javascript.JavascriptListener
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.DisplayBiometricAccountSelection
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleBiometricsLogin
@@ -98,8 +95,6 @@ fun WebviewScreen(
         viewModel.onEvent(MainScreenEvent.HandleMaintenanceMode)
     }, onGeoBlockMode = {
         viewModel.onEvent(MainScreenEvent.HandleGeoBlockMode)
-    }, onThemeSetting = {
-
     }, onRefreshCookie = {
         viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
     })
@@ -133,7 +128,6 @@ fun WebviewScreenContent(
     onLaunchNewWindow: (String) -> Unit,
     onMaintenanceMode: (String?) -> Unit,
     onGeoBlockMode: (String?) -> Unit,
-    onThemeSetting: (String) -> Unit,
     onRefreshCookie: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -178,7 +172,6 @@ fun WebviewScreenContent(
                 onLaunchNewWindow = onLaunchNewWindow,
                 onMaintenanceMode = onMaintenanceMode,
                 onGeoBlockMode = onGeoBlockMode,
-                onThemeSetting = onThemeSetting,
                 onRefreshCookie = onRefreshCookie
             )
 

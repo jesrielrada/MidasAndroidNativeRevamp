@@ -18,7 +18,6 @@ interface JavascriptListener {
     fun onLaunchNewWindow(url: String)
     fun onMaintenanceMode(data: String?)
     fun onGeoBlockMode(data: String?)
-    fun onThemeSetting(data: String)
     fun onRefreshCookie(data: String)
 
 }

@@ -93,12 +93,6 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
     }
 
     @JavascriptInterface
-    fun themeSetting(data: String) {
-        Timber.d("JavascriptListener: themeSetting: $data")
-        callback.onThemeSetting(data)
-    }
-
-    @JavascriptInterface
     fun refreshCookie(data: String) {
         Timber.d("JavascriptListener: refreshCookie: $data")
         callback.onRefreshCookie(data)
