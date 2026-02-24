@@ -12,7 +12,11 @@ object FlavorConfig {
 
     val DEFAULT_COLOR = Color(0XFF901B11)
 
-    val DOMAINS_UAT = listOf("https://epm.vn88uat.com")
+    val DOMAINS_UAT = listOf(
+        "https://epm1.vn88uat.com",
+        "https://epm2.vn88uat.com",
+        "https://m.vn88uat.com"
+    )
     val DOMAINS_PREPROD = listOf("https://vn88m.gpintdemo.com")
     val DOMAINS_PROD = listOf(
         "https://m.88vnsicbo.com",

@@ -2,39 +2,50 @@ package com.prometheus_service.midas.core.domain.shared.core.use_case
 
 import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
-import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.GetRemoteConfig
+import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.SyncRemoteConfig
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 class FetchAppBaseUrl @Inject constructor(
     private val getAppConfig: GetAppConfigModel,
-    private val getRemoteConfig: GetRemoteConfig,
+    private val syncRemoteConfig: SyncRemoteConfig,
+    private val setHostInterceptorUrl: SetHostInterceptorUrl,
     private val dispatcherProvider: DefaultDispatcherProvider
 ) {
-    suspend operator fun invoke(): String? {
+    suspend operator fun invoke(
+        operatorId: String = FlavorConfig.OPERATOR_ID,
+        userAgent: String = FlavorConfig.INITIAL_USER_AGENT,
+        defaultLocale: String = FlavorConfig.DEFAULT_LOCALE,
+        domains: List<String>
+    ): Pair<String, String>? {
         return withContext(dispatcherProvider.io) {
-            try {
-                Timber.d("Retrieving app config...")
+            domains.firstNotNullOfOrNull { domain ->
+                try {
+                    Timber.d("Trying domain... $domain")
+                    setHostInterceptorUrl(domain)
+                    // 2. Inline variables that are only used once
+                    val locale = getAppConfig().first().locale ?: defaultLocale
+                    // 3. Chain the result cleanly. If this yields a String, the loop stops!
+                    val appDomain = syncRemoteConfig(
+                        operatorId = operatorId,
+                        userAgent = userAgent,
+                        acceptLanguage = locale
+                    ).getOrNull()?.domainPwa?.firstOrNull()
 
-                val config = getAppConfig.invoke().first()
-                val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
-                val userAgent = FlavorConfig.INITIAL_USER_AGENT
-                val operatorId = FlavorConfig.OPERATOR_ID
-
-                Timber.d("Building initial user agent.. $userAgent")
-
-                val result = getRemoteConfig.invoke(
-                    operatorId = operatorId,
-                    userAgent = userAgent,
-                    acceptLanguage = locale,
-                )
-                result.getOrNull()?.domainPwa?.firstOrNull()
-            } catch (e: Exception) {
-                Timber.e("Failed to fetch app base url.. exception=${e.localizedMessage}")
-                null
+                    appDomain?.let { domain to it }
+                } catch (e: CancellationException) {
+                    // 4. CRITICAL MODERN STANDARD: Always rethrow CancellationException
+                    // so parent coroutines (like ViewModels) can cancel properly.
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to fetch app base url for $domain")
+                    // 5. Return null for this iteration so it moves to the next domain
+                    null
+                }
             }
         }
     }

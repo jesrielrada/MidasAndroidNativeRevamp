@@ -12,6 +12,7 @@ import com.prometheus_service.midas.core.data.shared.remote_domains.remote.Remot
 import com.prometheus_service.midas.core.data.shared.remote_domains.util.serializer.RemoteDomainsSerializer
 import com.prometheus_service.midas.core.domain.shared.remote_domains.RemoteDomainsRepository
 import com.prometheus_service.midas.core.domain.shared.remote_domains.model.RemoteDomainsModel
+import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.GetRemoteDomains
 import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.SyncRemoteDomains
 import dagger.Binds
 import dagger.Module
@@ -39,17 +40,25 @@ object RemoteDomainsModule {
 
     @Provides
     @Singleton
-    fun provideGetRemoteDomainsFromRemote(
+    fun provideSyncRemoteDomainsFromRemote(
         repository: RemoteDomainsRepository
     ): SyncRemoteDomains {
         return SyncRemoteDomains(repository)
     }
+
+    @Provides
+    @Singleton
+    fun provideGetRemoteDomains(
+        repository: RemoteDomainsRepository
+    ): GetRemoteDomains {
+        return GetRemoteDomains(repository)
+    }
+
 }
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RemoteDomainsBindModule {
-
     @Binds
     @Singleton
     abstract fun bindRemoteDomainsRepository(

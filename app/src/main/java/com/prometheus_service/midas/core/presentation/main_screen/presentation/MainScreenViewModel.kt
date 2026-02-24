@@ -12,6 +12,7 @@ import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_cas
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteBestDomain
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteCookies
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountSelectedResult
@@ -33,6 +34,7 @@ import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.Obs
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetConfigDomains
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNativeCookies
@@ -111,6 +113,8 @@ class MainScreenViewModel @Inject constructor(
     private val cookieProvider: CookieProvider,
     private val deleteCookies: DeleteCookies,
     private val observeNetwork: ObserveNetwork,
+    private val getConfigDomains: GetConfigDomains,
+    private val deleteBestDomain: DeleteBestDomain,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -1017,31 +1021,42 @@ class MainScreenViewModel @Inject constructor(
 
             MainScreenEvent.InitializeApplication -> {
                 viewModelScope.launch {
-                    //Set first the initial base url
-                    setHostInterceptorUrl.invoke(url = FlavorConfig.DOMAINS_UAT[0])
+                    val domains = getConfigDomains.invoke(
+                        environment = BuildConfig.BuildEnv,
+                        uatDomains = FlavorConfig.DOMAINS_UAT,
+                        prodDomains = FlavorConfig.DOMAINS_PROD,
+                        preprodDomains = FlavorConfig.DOMAINS_PREPROD
+                    )
+
+                    val cachedVersion = getAppConfigModel.invoke().firstOrNull()?.version
+                    val latestVersion = BuildConfig.VERSION_NAME
+
+                    if (cachedVersion != null && cachedVersion != latestVersion) {
+                        Timber.d("Invalidating best domain")
+                        deleteBestDomain.invoke()
+                    }
+
                     //Fetch and cache base url
-                    val baseUrl = fetchAppBaseUrl.invoke()
-                    if (baseUrl != null) {
+                    Timber.d("Config domains .. $domains")
+                    val fetchedDomains = fetchAppBaseUrl.invoke(domains = domains)
+                    if (fetchedDomains != null) {
+                        val bestDomain = fetchedDomains.first
+                        val baseUrl = fetchedDomains.second
                         val domain = getDomainFromUrl.invoke(baseUrl)
+                        Timber.d("Fetched base url ..$baseUrl, best domain is: $bestDomain")
                         setHostInterceptorUrl.invoke(baseUrl)
                         cacheAppConfig.invoke(
                             AppConfigModel(
+                                version = BuildConfig.VERSION_NAME,
                                 baseUrl = baseUrl,
-                                domain = domain
+                                domain = domain,
+                                bestDomain = bestDomain
                             )
                         )
-                        _uiState.update {
-                            it.copy(
-                                isAppInitialized = true
-                            )
-                        }
+                        _uiState.update { it.copy(isAppInitialized = true) }
                     } else {
                         Timber.d("Fetching base url failed, display retry")
-                        _uiState.update {
-                            it.copy(
-                                isInitializeErrorDialogVisible = true
-                            )
-                        }
+                        _uiState.update { it.copy(isInitializeErrorDialogVisible = true) }
                     }
                 }
             }

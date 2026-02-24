@@ -9,9 +9,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AppConfigModel(
+    val version: String? = null,
     val locale: String? = null,
     val baseUrl: String? = null,
     val domain: String? = null,
+    val bestDomain: String? = null,
     val currency: String? = null,
     val sessionCookies: String? = null,
     val isTutorialDisplayed: Boolean? = null,

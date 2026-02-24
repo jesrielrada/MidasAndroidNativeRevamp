@@ -88,4 +88,14 @@ class DefaultAppConfigRepository @Inject constructor(
             }
         }
     }
+
+    override suspend fun deleteBestDomain() {
+        withContext(dispatcherProvider.io) {
+            runCatching {
+                localDataSource.deleteBestDomain()
+            }.onFailure { exception ->
+                Timber.e(exception, "Failed to delete best domain")
+            }
+        }
+    }
 }

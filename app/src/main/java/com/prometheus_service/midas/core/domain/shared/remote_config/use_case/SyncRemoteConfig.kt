@@ -4,7 +4,7 @@ import com.prometheus_service.midas.core.domain.shared.remote_config.RemoteConfi
 import com.prometheus_service.midas.core.domain.shared.remote_config.model.RemoteConfigModel
 import javax.inject.Inject
 
-class GetRemoteConfig @Inject constructor(
+class SyncRemoteConfig @Inject constructor(
     private val repository: RemoteConfigRepository
 ) {
     suspend operator fun invoke(

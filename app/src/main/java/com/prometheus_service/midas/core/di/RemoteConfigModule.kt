@@ -12,7 +12,7 @@ import com.prometheus_service.midas.core.data.shared.remote_config.remote.Defaul
 import com.prometheus_service.midas.core.data.shared.remote_config.util.serializer.RemoteConfigSerializer
 import com.prometheus_service.midas.core.domain.shared.remote_config.RemoteConfigRepository
 import com.prometheus_service.midas.core.domain.shared.remote_config.model.RemoteConfigModel
-import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.GetRemoteConfig
+import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.SyncRemoteConfig
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -41,8 +41,8 @@ object RemoteConfigModule {
     @Singleton
     fun provideGetRemoteConfig(
         repository: RemoteConfigRepository
-    ): GetRemoteConfig {
-        return GetRemoteConfig(repository)
+    ): SyncRemoteConfig {
+        return SyncRemoteConfig(repository)
     }
 }
 

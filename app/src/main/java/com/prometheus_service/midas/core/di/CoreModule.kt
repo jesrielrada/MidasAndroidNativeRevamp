@@ -4,7 +4,7 @@ import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvide
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.BiometricsManager
 import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.SyncMultiLanguageData
-import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.GetRemoteConfig
+import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.SyncRemoteConfig
 import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.SyncRemoteDomains
 import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.SyncSplashTutorialImages
 import com.prometheus_service.midas.core.domain.providers.CookieProvider
@@ -14,6 +14,7 @@ import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCur
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetConfigDomains
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNativeCookies
@@ -21,6 +22,7 @@ import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteD
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
+import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.GetRemoteDomains
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,6 +33,18 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object CoreModule {
+
+    @Provides
+    @Singleton
+    fun provideGetConfigDomains(
+        remoteDomains: GetRemoteDomains,
+        getAppConfigModel: GetAppConfigModel
+    ): GetConfigDomains {
+        return GetConfigDomains(
+            remoteDomains,
+            getAppConfigModel
+        )
+    }
 
     @Provides
     @Singleton
@@ -69,12 +83,14 @@ object CoreModule {
     @Singleton
     fun provideFetchBaseUrl(
         getAppConfig: GetAppConfigModel,
-        getRemoteConfig: GetRemoteConfig,
+        syncRemoteConfig: SyncRemoteConfig,
+        setHostInterceptorUrl: SetHostInterceptorUrl,
         dispatcherProvider: DefaultDispatcherProvider
     ): FetchAppBaseUrl {
         return FetchAppBaseUrl(
             getAppConfig = getAppConfig,
-            getRemoteConfig = getRemoteConfig,
+            syncRemoteConfig = syncRemoteConfig,
+            setHostInterceptorUrl = setHostInterceptorUrl,
             dispatcherProvider = dispatcherProvider
         )
     }

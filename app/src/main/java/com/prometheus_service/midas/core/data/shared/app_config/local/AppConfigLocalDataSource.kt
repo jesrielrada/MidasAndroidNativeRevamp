@@ -9,5 +9,6 @@ interface AppConfigLocalDataSource {
     suspend fun cacheAppConfigModel(data: AppConfigModel)
 
     suspend fun deleteSessionCookies()
+    suspend fun deleteBestDomain()
 
 }

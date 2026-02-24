@@ -29,16 +29,16 @@ class DefaultAppConfigLocalDataSource @Inject constructor(
     override suspend fun cacheAppConfigModel(data: AppConfigModel) {
         dataStore.updateData { currentData ->
             currentData.copy(
+                version = data.version ?: currentData.version,
+                bestDomain = data.bestDomain ?: currentData.bestDomain,
                 locale = data.locale ?: currentData.locale,
                 currency = data.currency ?: currentData.currency,
                 baseUrl = data.baseUrl ?: currentData.baseUrl,
-                isTutorialDisplayed = data.isTutorialDisplayed
-                    ?: currentData.isTutorialDisplayed,
+                isTutorialDisplayed = data.isTutorialDisplayed ?: currentData.isTutorialDisplayed,
                 isLanguageSelectionDisplayed = data.isLanguageSelectionDisplayed
                     ?: currentData.isLanguageSelectionDisplayed,
                 domain = data.domain ?: currentData.domain,
                 sessionCookies = data.sessionCookies ?: currentData.sessionCookies
-
             )
         }
     }
@@ -47,6 +47,14 @@ class DefaultAppConfigLocalDataSource @Inject constructor(
         dataStore.updateData {
             it.copy(
                 sessionCookies = null
+            )
+        }
+    }
+
+    override suspend fun deleteBestDomain() {
+        dataStore.updateData {
+            it.copy(
+                bestDomain = null
             )
         }
     }

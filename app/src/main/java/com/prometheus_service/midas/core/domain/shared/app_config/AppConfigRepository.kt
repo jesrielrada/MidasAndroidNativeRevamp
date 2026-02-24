@@ -11,4 +11,8 @@ interface AppConfigRepository {
     suspend fun cacheAppCurrency(data: String)
 
     suspend fun deleteCookies()
+
+    suspend fun deleteBestDomain()
 }
+
+
