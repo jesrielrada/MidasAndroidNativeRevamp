@@ -65,9 +65,11 @@ data class TutorialScreenTranslations(
 )
 
 data class MainScreenTranslations(
+    val networkErrorMessage: String = "",
     val homepageErrorMessage: String = "",
     val initializeErrorMessage: String = "",
-    val retryButtonLabel: String = ""
+    val retryButtonLabel: String = "",
+    val exitButtonLabel: String = ""
 )
 
 data class GameScreenTranslations(

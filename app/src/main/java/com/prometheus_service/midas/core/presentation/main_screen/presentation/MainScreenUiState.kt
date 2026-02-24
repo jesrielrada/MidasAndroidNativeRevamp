@@ -22,6 +22,7 @@ data class MainScreenUiState(
     val shouldDisplayGameView: Boolean = false,
     val shouldDisplaySecondStage: Boolean = false,
     val shouldDisplayHelperScreen: Boolean = false,
+    val shouldDisplayNetworkError: Boolean = false,
     val canDisplayTutorialScreen: Boolean = false,
     val isAppInitialized: Boolean = false,
     val isNetworkReady: Boolean = false,

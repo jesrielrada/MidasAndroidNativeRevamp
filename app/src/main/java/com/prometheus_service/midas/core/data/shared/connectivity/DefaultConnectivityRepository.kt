@@ -10,8 +10,7 @@ import com.prometheus_service.midas.core.domain.shared.connectivity.model.Networ
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.distinctUntilChanged
+import timber.log.Timber
 import javax.inject.Inject
 
 class DefaultConnectivityRepository @Inject constructor(
@@ -28,6 +27,7 @@ class DefaultConnectivityRepository @Inject constructor(
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onLost(network: Network) {
                 super.onLost(network)
+                Timber.d("Network lost, sending network status")
                 trySend(NetworkStatus())
             }
 
@@ -37,25 +37,27 @@ class DefaultConnectivityRepository @Inject constructor(
             ) {
                 super.onCapabilitiesChanged(network, networkCapabilities)
 
-                val hasInternet =
-                    networkCapabilities.hasCapability(
-                        NetworkCapabilities.NET_CAPABILITY_INTERNET
-                    ) && networkCapabilities.hasCapability(
-                        NetworkCapabilities.NET_CAPABILITY_VALIDATED
-                    )
+                val hasInternetCapability = networkCapabilities.hasCapability(
+                    NetworkCapabilities.NET_CAPABILITY_INTERNET
+                )
+                val isValidated = networkCapabilities.hasCapability(
+                    NetworkCapabilities.NET_CAPABILITY_VALIDATED
+                )
 
-                val isConnectedToMobile =
-                    networkCapabilities.hasTransport(
-                        NetworkCapabilities.TRANSPORT_CELLULAR
-                    )
+                val isActuallyConnected = hasInternetCapability && isValidated
 
-                val isConnectedToWifi =
-                    networkCapabilities.hasTransport(
-                        NetworkCapabilities.TRANSPORT_WIFI
-                    )
 
-                val isConnectedToVpn =
-                    networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+                val isConnectedToMobile = networkCapabilities.hasTransport(
+                    NetworkCapabilities.TRANSPORT_CELLULAR
+                )
+
+                val isConnectedToWifi = networkCapabilities.hasTransport(
+                    NetworkCapabilities.TRANSPORT_WIFI
+                )
+
+                val isConnectedToVpn = networkCapabilities.hasTransport(
+                    NetworkCapabilities.TRANSPORT_VPN
+                )
 
 
                 // Check if connected only to VPN without an underlying network
@@ -66,8 +68,8 @@ class DefaultConnectivityRepository @Inject constructor(
                     return
                 }
 
-                if (hasInternet) {
-                    val type = getNetworkType(isConnectedToMobile, isConnectedToWifi)
+                val type = getNetworkType(isConnectedToMobile, isConnectedToWifi)
+                if (isActuallyConnected || hasInternetCapability) {
                     trySend(
                         NetworkStatus(
                             isConnected = true,
@@ -118,7 +120,7 @@ class DefaultConnectivityRepository @Inject constructor(
     }
 
     override fun observeNetworkStatus(): Flow<NetworkStatus> {
-        return connectionFlow.distinctUntilChanged().conflate()
+        return connectionFlow
     }
 
 }

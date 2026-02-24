@@ -1,17 +1,14 @@
 package com.prometheus_service.midas.core.domain.shared.connectivity.use_case
 
 import com.prometheus_service.midas.core.domain.shared.connectivity.ConnectivityRepository
+import com.prometheus_service.midas.core.domain.shared.connectivity.model.NetworkStatus
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetNetworkType @Inject constructor(
+class ObserveNetwork @Inject constructor(
     private val repository: ConnectivityRepository
 ) {
-    operator fun invoke(): Flow<String> {
+    operator fun invoke(): Flow<NetworkStatus> {
         return repository.observeNetworkStatus()
-            .map { it.connectionType }
-            .distinctUntilChanged()
     }
 }

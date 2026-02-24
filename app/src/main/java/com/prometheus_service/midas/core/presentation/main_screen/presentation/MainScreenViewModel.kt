@@ -29,6 +29,7 @@ import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.Initi
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.PersistBiometricsUser
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.SetBiometricsEnabled
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
+import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.ObserveNetwork
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
@@ -109,6 +110,7 @@ class MainScreenViewModel @Inject constructor(
     private val getSecondStageConfig: GetSecondStageConfig,
     private val cookieProvider: CookieProvider,
     private val deleteCookies: DeleteCookies,
+    private val observeNetwork: ObserveNetwork,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -757,7 +759,17 @@ class MainScreenViewModel @Inject constructor(
 
             is MainScreenEvent.HandlePwaReady -> {
                 viewModelScope.launch {
+                    observeNetwork.invoke().collect { status ->
+                        Timber.d("Observing network ... ${status.isConnected}")
+                        _uiState.update {
+                            it.copy(
+                                shouldDisplayNetworkError = !status.isConnected
+                            )
+                        }
+                    }
+                }
 
+                viewModelScope.launch {
                     Timber.d("Handling pwa ready ...")
 
                     val isPinCodeEnabled = getSecondStageConfig.invoke().first().isUserEnabled
@@ -1073,13 +1085,11 @@ class MainScreenViewModel @Inject constructor(
                 networkJob = viewModelScope.launch {
                     getNetworkType.invoke().collect { networkType ->
                         Timber.d("Initializing network ... $networkType")
-                        if (networkType.isNotEmpty()) {
-                            _uiState.update {
-                                it.copy(
-                                    networkType = networkType,
-                                    isNetworkReady = true
-                                )
-                            }
+                        _uiState.update {
+                            it.copy(
+                                networkType = networkType,
+                                isNetworkReady = true
+                            )
                         }
                     }
                 }
@@ -1099,9 +1109,11 @@ class MainScreenViewModel @Inject constructor(
                                     dialogBtn = ""
                                 ),
                                 mainScreenTranslations = MainScreenTranslations(
+                                    networkErrorMessage = data.errorMessages.network,
                                     homepageErrorMessage = data.errorMessages.homepage,
                                     initializeErrorMessage = errorMessage,
-                                    retryButtonLabel = data.generalMessages.retry
+                                    retryButtonLabel = data.generalMessages.retry,
+                                    exitButtonLabel = data.generalMessages.exitApp
                                 ),
                                 tutorialScreenTranslations = TutorialScreenTranslations(
                                     buttonDefaultLabel = data.tutorialTranslations.tutorialNextButton,

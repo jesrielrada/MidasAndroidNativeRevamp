@@ -5,6 +5,7 @@ import com.prometheus_service.midas.core.data.shared.connectivity.DefaultConnect
 import com.prometheus_service.midas.core.domain.providers.DispatcherProvider
 import com.prometheus_service.midas.core.domain.shared.connectivity.ConnectivityRepository
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
+import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.ObserveNetwork
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +16,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ConnectivityModule {
+
+    @Provides
+    @Singleton
+    fun provideObserveNetwork(
+        repository: ConnectivityRepository
+    ): ObserveNetwork {
+        return ObserveNetwork(repository)
+    }
+
 
     @Provides
     @Singleton
