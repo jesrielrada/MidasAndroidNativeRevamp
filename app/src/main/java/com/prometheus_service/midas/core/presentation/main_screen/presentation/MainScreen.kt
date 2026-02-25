@@ -1,27 +1,13 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
 import android.content.pm.ActivityInfo
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,13 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.zIndex
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,10 +48,14 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.LoadCustomRoute
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.SetBiometricsDisabled
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.SetLocaleSelected
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.BiometricsEnableDialog
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.BiometricsErrorDialog
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.BiometricsLoadingDialog
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.DefaultErrorDialog
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.NetworkErrorDialog
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenEffectHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenLifecycleHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenOrientationHandler
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber
 
@@ -259,17 +244,13 @@ fun MainScreen(
 
         SnackbarHost(
             hostState = snackBarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
         )
     }
 
     if (uiState.isInitializeErrorDialogVisible) {
         AlertDialog(
-            onDismissRequest = {
-                //do nothing
-            },
+            onDismissRequest = {},
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.onEvent(DismissErrorDialog)
@@ -327,11 +308,7 @@ fun MainScreen(
     if (uiState.isDefaultErrorDialogVisible) {
         DefaultErrorDialog(
             onConfirm = {
-                viewModel.updateMainState {
-                    it.copy(
-                        isDefaultErrorDialogVisible = false
-                    )
-                }
+                viewModel.updateMainState { it.copy(isDefaultErrorDialogVisible = false) }
             },
             dialogMessage = uiState.viewTranslations.defaultErrorTranslations.dialogMessage,
             dialogBtn = uiState.viewTranslations.defaultErrorTranslations.dialogBtn
@@ -348,154 +325,4 @@ fun MainScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun NetworkErrorDialog(
-    uiState: MainScreenUiState,
-    onDismiss: () -> Unit
-) {
-    BasicAlertDialog(
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        ),
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shape = RoundedCornerShape(20.dp)
-            )
-            .padding(20.dp)
-            .zIndex(5f),
-        onDismissRequest = {},
-        content = {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        text = uiState.viewTranslations.mainScreenTranslations.networkErrorMessage
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clickable { onDismiss() },
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    text = uiState.viewTranslations.mainScreenTranslations.exitButtonLabel
-                )
-            }
-        }
-    )
-}
-
-@Composable
-fun BiometricsErrorDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-    translations: BiometricsTranslations
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(translations.currentDialogTitle) },
-        text = {
-            Text(
-                text = translations.currentDialogMessage,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = translations.currentDialogButtonLabel,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
-        }
-    )
-}
-
-@Composable
-fun DefaultErrorDialog(
-    onConfirm: () -> Unit,
-    dialogMessage: String,
-    dialogBtn: String
-) {
-    AlertDialog(
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        ),
-        onDismissRequest = {},
-        text = {
-            Text(
-                text = dialogMessage,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = dialogBtn,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
-        }
-    )
-}
-
-
-@Composable
-fun BiometricsEnableDialog(
-    onConfirm: () -> Unit,
-    onDontShowAgain: () -> Unit,
-    onDismiss: () -> Unit,
-    translations: BiometricsTranslations
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(translations.dialogEnableTitle) },
-        text = {
-            Text(
-                text = translations.dialogEnableMessage,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = translations.dialogPositiveBtnLabel,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDontShowAgain) {
-                Text(
-                    text = translations.dialogNeutralBtnLabel,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
-        }
-    )
-}
-
-@Composable
-fun BiometricsLoadingDialog(onDismissRequest: () -> Unit = {}) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.size(120.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
-    }
-}

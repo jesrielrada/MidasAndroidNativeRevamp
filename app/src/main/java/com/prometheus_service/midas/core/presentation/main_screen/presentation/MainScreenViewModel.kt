@@ -558,6 +558,8 @@ class MainScreenViewModel @Inject constructor(
                             password = currentAccount.password!!
                         )
 
+                        Timber.d("Handling biometric login ..., authenticating.. $script")
+
                         _uiState.update {
                             it.copy(
                                 isBiometricsLoadingDialogVisible = true,
@@ -764,7 +766,6 @@ class MainScreenViewModel @Inject constructor(
             is MainScreenEvent.HandlePwaReady -> {
                 viewModelScope.launch {
                     observeNetwork.invoke().collect { status ->
-                        Timber.d("Observing network ... ${status.isConnected}")
                         _uiState.update {
                             it.copy(
                                 shouldDisplayNetworkError = !status.isConnected
@@ -1082,10 +1083,9 @@ class MainScreenViewModel @Inject constructor(
 
             is MainScreenEvent.BuildUserAgent -> {
                 Timber.d("Building user agent ... ")
-                val customUserAgent =
-                    ("${uiState.value.webViewScreenUiState.webviewUserAgent} " +
-                            "${FlavorConfig.INITIAL_USER_AGENT} " +
-                            uiState.value.networkType).trimEnd()
+                val customUserAgent = ("${uiState.value.webViewScreenUiState.webviewUserAgent} " +
+                        "${FlavorConfig.INITIAL_USER_AGENT} " +
+                        uiState.value.networkType).trimEnd()
                 _uiState.update {
                     it.copy(
                         webViewScreenUiState = it.webViewScreenUiState.copy(
