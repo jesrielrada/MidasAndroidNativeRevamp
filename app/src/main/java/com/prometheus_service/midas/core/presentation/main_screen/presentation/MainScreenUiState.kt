@@ -26,6 +26,7 @@ data class MainScreenUiState(
     val canDisplayTutorialScreen: Boolean = false,
     val isAppInitialized: Boolean = false,
     val isNetworkReady: Boolean = false,
+    val launcherUrl: String? = null,
     val onDataSync: Boolean = false,
     val networkType: String = "",
     val currentLocale: String = "",

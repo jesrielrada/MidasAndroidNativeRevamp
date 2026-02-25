@@ -42,7 +42,7 @@ class MainActivity : FragmentActivity() {
         intent.dataString?.let { url ->
             // You can now call functions directly on the VM from the Activity
             Timber.d("onNewIntent called with intent: $url")
-            viewModel.onEvent(MainScreenEvent.LoadCustomRoute(url))
+            viewModel.onEvent(MainScreenEvent.HandlePushNotificationUrl(url))
         }
     }
 }

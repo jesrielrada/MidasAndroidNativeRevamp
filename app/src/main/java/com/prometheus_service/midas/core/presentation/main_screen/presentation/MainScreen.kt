@@ -317,9 +317,7 @@ fun MainScreen(
 
     if (uiState.shouldDisplayNetworkError && uiState.shouldDisplaySplash.not()) {
         NetworkErrorDialog(
-            onDismiss = {
-                activity.finishAffinity()
-            },
+            onDismiss = { activity.finishAffinity() },
             uiState = uiState
         )
     }

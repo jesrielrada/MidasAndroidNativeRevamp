@@ -29,8 +29,8 @@ fun isLanguageNotEmpty(deviceLang: String, countryLang: String): Boolean {
     return deviceLang.isNotEmpty() && countryLang.isNotEmpty()
 }
 
-fun convertUrlToRoute(url: String): String? {
-    val url = when {
+fun processNotificationUrl(url: String): String? {
+    return when {
         url.isEmpty() -> return null
         url.contains("funds") -> {
             val lastSegment = url.removeSuffix("/").substringAfterLast('/')
@@ -38,10 +38,11 @@ fun convertUrlToRoute(url: String): String? {
                 if (lastSegment.contains("deposit-withdrawal")) "history" else lastSegment
             "javascript: window.pwa.navigate({name:'$routeName-route'})"
         }
-        url.contains("/promotions/") -> {
+
+        url.contains("/promotions") -> {
             val lastSegment = url.removeSuffix("/").substringAfterLast('/')
             if (lastSegment.isEmpty() || lastSegment.contains("promotions")) {
-                "javascript: window.pwa.navigate({name:'$lastSegment-route'})"
+                "javascript: window.pwa.navigate({name:'promotion-route'})"
             }
             val hasLetters = lastSegment.contains(Regex("[A-Za-z]"))
             val hasDigits = lastSegment.contains(Regex("\\d"))
@@ -49,19 +50,28 @@ fun convertUrlToRoute(url: String): String? {
             if (hasLetters && hasDigits) {
                 val category = lastSegment.substringBefore('?')
                 val id = lastSegment.substringAfter('=')
-                "javascript: window.pwa.navigate({ name : 'promotions-route', params : { category : '$category', id : '$id'}})"
+                "javascript: window.pwa.navigate({ name : 'promotion-route', params : { category : '$category', id : '$id'}})"
             } else {
-                "javascript: window.pwa.navigate({ name : 'promotions-route', params : { category : '$lastSegment'}})"
+                "javascript: window.pwa.navigate({ name : 'promotion-route', params : { category : '$lastSegment'}})"
             }
         }
+
         url.contains("slots") -> {
             val vendor = url.substringAfterLast('/')
             "javascript: window.pwa.navigate({name: 'slot-vendor-route', 'params' : { 'vendor' : '$vendor'}})"
         }
+
+        url.contains("launcher") ||
+                url.contains("referralId") ||
+                url.contains("tracker") ||
+                url.contains("register.aspx") ||
+                url.contains("affiliateid") -> {
+            url
+        }
+
         else -> {
             val route = url.substringAfterLast('/')
             "javascript: window.pwa.navigate({ name: '$route-route'})"
         }
     }
-    return url
 }

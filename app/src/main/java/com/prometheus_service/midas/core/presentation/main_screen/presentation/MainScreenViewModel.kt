@@ -34,6 +34,7 @@ import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.Obs
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetConfigDomains
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
@@ -115,6 +116,7 @@ class MainScreenViewModel @Inject constructor(
     private val observeNetwork: ObserveNetwork,
     private val getConfigDomains: GetConfigDomains,
     private val deleteBestDomain: DeleteBestDomain,
+    private val getAccountLoggedInState: GetAccountLoggedInState,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -196,6 +198,111 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.MemberLoggedIn -> {
+                viewModelScope.launch {
+                    val config = getAppConfigModel.invoke().first()
+                    val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val version = BuildConfig.VERSION_NAME
+                    val domain = config.domain
+
+
+                    initializeNativeCookies.invoke(
+                        domain = domain!!,
+                        version = version,
+                        language = locale
+                    )
+
+                    uiState.value.webViewScreenUiState.webviewUrl
+                        ?.let {
+                            val cookies = cookieProvider.getCurrentCookies(it)
+                            Timber.d("Current cookies are: $cookies")
+                            cookies
+                        }
+                        ?.let { it ->
+                            Timber.d("Caching session cookies ... $it")
+                            cacheAppConfig(AppConfigModel(sessionCookies = it))
+                        }
+
+                    uiState.value.launcherUrl?.let {
+                        Timber.d("Handling launcher url after logged in ... $it")
+                        onEvent(MainScreenEvent.HandlePushNotificationUrl(it))
+                    }
+                }
+            }
+
+            is MainScreenEvent.HandlePushNotificationUrl -> {
+                viewModelScope.launch {
+                    val pushUrl = event.url
+                    val baseUrl = getAppConfigModel.invoke().first().baseUrl
+                    val isLoggedIn = getAccountLoggedInState.invoke()
+
+                    val convertedUrl = when {
+                        pushUrl.contains("tracker") -> {
+                            val id = pushUrl.substringAfterLast('/')
+                            "$baseUrl/tracker/$id"
+                        }
+
+                        pushUrl.contains("affiliateId") -> {
+                            val affiliateId = pushUrl
+                                .substringAfterLast('=')
+                                .substringAfterLast('/')
+                            "$baseUrl/?affiliateid=$affiliateId"
+                        }
+
+                        else -> pushUrl
+                    }
+
+                    Timber.d("Handling push notification url ... $convertedUrl")
+
+                    if (convertedUrl.contains("launcher")) {
+                        if (isLoggedIn) {
+                            Timber.d("Handling launcher url ... loggedIn $convertedUrl")
+                            _uiState.update {
+                                it.copy(
+                                    launcherUrl = "",
+                                    webViewScreenUiState = it.webViewScreenUiState.copy(
+                                        customUrl = convertedUrl
+                                    )
+                                )
+                            }
+                        } else {
+                            Timber.d("Handling launcher url ... loggedOut")
+                            _uiState.update {
+                                it.copy(
+                                    launcherUrl = convertedUrl,
+                                    webViewScreenUiState = it.webViewScreenUiState.copy(
+                                        customScript = LOGIN_ROUTE
+                                    )
+                                )
+                            }
+                        }
+                    } else if (convertedUrl.contains("referralId") ||
+                        convertedUrl.contains("register.aspx")
+                    ) {
+                        Timber.d("Handling referral id ...")
+                        onEvent(MainScreenEvent.HandleOpenInBrowser(convertedUrl))
+                    } else if (convertedUrl.contains("affiliateid")) {
+                        Timber.d("Handling affiliate id ...")
+                        _uiState.update {
+                            it.copy(
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customUrl = convertedUrl
+                                )
+                            )
+                        }
+                    } else {
+                        Timber.d("Handling push notification url else condition...")
+                        _uiState.update {
+                            it.copy(
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customScript = convertedUrl
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
             MainScreenEvent.CacheSessionCookies -> {
                 viewModelScope.launch {
                     uiState.value.webViewScreenUiState.webviewUrl
@@ -756,6 +863,7 @@ class MainScreenViewModel @Inject constructor(
             }
 
             is MainScreenEvent.UpdateCurrentRoute -> {
+                Timber.d("Updating current route ... ${event.route}")
                 _uiState.update {
                     it.copy(
                         currentRoute = event.route

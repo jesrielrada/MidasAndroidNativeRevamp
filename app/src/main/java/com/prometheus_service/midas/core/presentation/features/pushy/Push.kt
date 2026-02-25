@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.prometheus_service.midas.core.presentation.activity.MainActivity
-import com.prometheus_service.midas.core.presentation.features.pushy.utils.convertUrlToRoute
+import com.prometheus_service.midas.core.presentation.features.pushy.utils.processNotificationUrl
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -28,8 +28,8 @@ class Push : AppCompatActivity() {
 
         url?.let {
             Timber.d("Starting activity to redirect .. $it")
-            val route = convertUrlToRoute(it)
-            startActivityToRedirectUrl(route)
+            val pushUrl = processNotificationUrl(it)
+            startActivityToRedirectUrl(pushUrl)
         }
 
     }

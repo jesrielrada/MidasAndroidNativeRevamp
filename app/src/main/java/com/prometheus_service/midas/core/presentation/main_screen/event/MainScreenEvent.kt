@@ -57,18 +57,18 @@ sealed class MainScreenEvent {
 
     data class HandlePinCodeToggled(val enabled: Boolean) : MainScreenEvent()
     object HandlePinCodeToggleOff : MainScreenEvent()
-
     object HandleOnResume : MainScreenEvent()
-
     data class HandleCustomScriptCallback(val data: String) : MainScreenEvent()
     object HandleMemberLoggedOut : MainScreenEvent()
-    object HandleSecondStageMaxAttempt: MainScreenEvent()
+    object HandleSecondStageMaxAttempt : MainScreenEvent()
     data class HandleSwitchLanguage(val language: String) : MainScreenEvent()
     data class HandleOpenInBrowser(val url: String) : MainScreenEvent()
     data class HandleLaunchNewWindow(val url: String) : MainScreenEvent()
     object HandleMaintenanceMode : MainScreenEvent()
     object HandleGeoBlockMode : MainScreenEvent()
-    object CacheSessionCookies: MainScreenEvent()
+    object CacheSessionCookies : MainScreenEvent()
+    data class HandlePushNotificationUrl(val url: String) : MainScreenEvent()
+    object MemberLoggedIn: MainScreenEvent()
 
 }
 
