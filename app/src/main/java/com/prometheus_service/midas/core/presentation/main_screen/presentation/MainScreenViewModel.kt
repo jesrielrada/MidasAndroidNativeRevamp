@@ -1,5 +1,6 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.BuildConfig
@@ -13,10 +14,9 @@ import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteBestDomain
-import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteCookies
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountSelectedResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountDisplayResult
+import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountSelectedResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.EnrollmentResult
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBiometricCurrentAccount
 import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
@@ -32,6 +32,7 @@ import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.SetBi
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.ObserveNetwork
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
+import com.prometheus_service.midas.core.domain.shared.core.use_case.CanDisplayMinimumOsDialog
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
@@ -51,6 +52,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.m
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DownloadTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MinimumOSTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SplashScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.TutorialScreenTranslations
@@ -112,11 +114,11 @@ class MainScreenViewModel @Inject constructor(
     private val canDisplayPinlock: CanDisplayPinlock,
     private val getSecondStageConfig: GetSecondStageConfig,
     private val cookieProvider: CookieProvider,
-    private val deleteCookies: DeleteCookies,
     private val observeNetwork: ObserveNetwork,
     private val getConfigDomains: GetConfigDomains,
     private val deleteBestDomain: DeleteBestDomain,
     private val getAccountLoggedInState: GetAccountLoggedInState,
+    private val canDisplayMinimumOsDialog: CanDisplayMinimumOsDialog,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -198,6 +200,20 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            MainScreenEvent.HandleMinimumOsDialogDismiss -> {
+                viewModelScope.launch {
+                    cacheAppConfig.invoke(
+                        AppConfigModel(
+                            isMinimumOsDialogHideToggled = true
+                        )
+                    )
+                    _uiState.update {
+                        it.copy(
+                            canDisplayMinimumOsDialog = false
+                        )
+                    }
+                }
+            }
             is MainScreenEvent.MemberLoggedIn -> {
                 Timber.d("Member logged in ... ${event.data}")
                 viewModelScope.launch {
@@ -887,6 +903,23 @@ class MainScreenViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     Timber.d("Handling pwa ready ...")
+                    val locale =
+                        getAppConfigModel.invoke().first().locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val currentVersion = Build.VERSION.RELEASE
+
+
+                    if (canDisplayMinimumOsDialog.invoke(
+                            locale = locale,
+                            currentVersion = currentVersion
+                        )
+                    ) {
+                        _uiState.update {
+                            it.copy(
+                                canDisplayMinimumOsDialog = true
+                            )
+                        }
+                    }
+
 
                     val isPinCodeEnabled = getSecondStageConfig.invoke().first().isUserEnabled
                     if (isPinCodeEnabled != null && !isPinCodeEnabled) {
@@ -1280,6 +1313,13 @@ class MainScreenViewModel @Inject constructor(
                                 ),
                                 downloadTranslations = DownloadTranslations(
                                     displayMessage = data.generalMessages.download,
+                                ),
+                                minimumOSTranslations = MinimumOSTranslations(
+                                    dialogTitle = "${data.osVersionSettings.minOsVersionTitle} " +
+                                            "Android ${data.featureSettings.minOsVersionAndroid}",
+                                    dialogMessage = data.osVersionSettings.minOsVersionMessage,
+                                    confirmBtn = data.generalMessages.ok,
+                                    dismissBtn = data.osVersionSettings.minOsVersionInstruction
                                 )
                             )
                         )

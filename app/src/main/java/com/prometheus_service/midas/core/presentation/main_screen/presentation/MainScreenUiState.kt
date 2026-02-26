@@ -8,6 +8,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.m
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.DownloadTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.GameScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MainScreenTranslations
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MinimumOSTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SecondStageTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.SplashScreenTranslations
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.TutorialScreenTranslations
@@ -24,6 +25,7 @@ data class MainScreenUiState(
     val shouldDisplayHelperScreen: Boolean = false,
     val shouldDisplayNetworkError: Boolean = false,
     val canDisplayTutorialScreen: Boolean = false,
+    val canDisplayMinimumOsDialog: Boolean = false,
     val isAppInitialized: Boolean = false,
     val isNetworkReady: Boolean = false,
     val launcherUrl: String? = null,
@@ -49,7 +51,8 @@ data class MainScreenUiState(
         biometricsTranslations = BiometricsTranslations(),
         secondStageTranslations = SecondStageTranslations(),
         defaultErrorTranslations = DefaultErrorTranslations(),
-        downloadTranslations = DownloadTranslations()
+        downloadTranslations = DownloadTranslations(),
+        minimumOSTranslations = MinimumOSTranslations()
     )
 )
 

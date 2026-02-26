@@ -9,7 +9,15 @@ data class ViewTranslations(
     val biometricsTranslations: BiometricsTranslations,
     val secondStageTranslations: SecondStageTranslations,
     val defaultErrorTranslations: DefaultErrorTranslations,
-    val downloadTranslations: DownloadTranslations
+    val downloadTranslations: DownloadTranslations,
+    val minimumOSTranslations: MinimumOSTranslations
+)
+
+data class MinimumOSTranslations(
+    val dialogTitle: String = "",
+    val dialogMessage: String = "",
+    val confirmBtn: String = "",
+    val dismissBtn: String = ""
 )
 
 data class DownloadTranslations(

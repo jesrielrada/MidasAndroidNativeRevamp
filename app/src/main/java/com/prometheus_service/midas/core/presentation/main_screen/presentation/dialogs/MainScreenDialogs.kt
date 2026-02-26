@@ -19,11 +19,61 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenUiState
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.MinimumOSTranslations
 
+
+@Composable
+fun MinimumOsVersionDialog(
+    onConfirm: () -> Unit = {},
+    onDismiss: () -> Unit,
+    translations: MinimumOSTranslations
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = {
+            Text(
+                fontSize = 20.sp,
+                text = translations.dialogTitle,
+                color = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+        },
+        text = {
+            Text(
+                text = translations.dialogMessage,
+                color = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    fontSize = 12.sp,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    text = translations.confirmBtn,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    fontSize = 12.sp,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    text = translations.dismissBtn,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+
+        }
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

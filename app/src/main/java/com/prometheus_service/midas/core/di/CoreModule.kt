@@ -11,6 +11,7 @@ import com.prometheus_service.midas.core.domain.providers.CookieProvider
 import com.prometheus_service.midas.core.domain.shared.app_config.AppConfigRepository
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
+import com.prometheus_service.midas.core.domain.shared.core.use_case.CanDisplayMinimumOsDialog
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
@@ -21,6 +22,7 @@ import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNati
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.interceptors.HostInterceptor
+import com.prometheus_service.midas.core.domain.shared.multi_language.MultiLanguageRepository
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.domain.shared.remote_domains.use_case.GetRemoteDomains
 import dagger.Module
@@ -33,6 +35,19 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object CoreModule {
+
+    @Provides
+    @Singleton
+    fun provideCanDisplayMinimumOsDialog(
+        appConfigRepository: AppConfigRepository,
+        multiLanguageRepository: MultiLanguageRepository
+    ): CanDisplayMinimumOsDialog {
+        return CanDisplayMinimumOsDialog(
+            appConfigRepository,
+            multiLanguageRepository
+        )
+    }
+
 
     @Provides
     @Singleton

@@ -17,5 +17,6 @@ data class AppConfigModel(
     val currency: String? = null,
     val sessionCookies: String? = null,
     val isTutorialDisplayed: Boolean? = null,
-    val isLanguageSelectionDisplayed: Boolean? = null
+    val isLanguageSelectionDisplayed: Boolean? = null,
+    val isMinimumOsDialogHideToggled: Boolean? = null
 )

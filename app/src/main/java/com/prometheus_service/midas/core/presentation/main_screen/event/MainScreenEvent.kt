@@ -69,6 +69,7 @@ sealed class MainScreenEvent {
     object CacheSessionCookies : MainScreenEvent()
     data class HandlePushNotificationUrl(val url: String) : MainScreenEvent()
     data class  MemberLoggedIn(val data: String): MainScreenEvent()
+    object HandleMinimumOsDialogDismiss: MainScreenEvent()
 
 }
 

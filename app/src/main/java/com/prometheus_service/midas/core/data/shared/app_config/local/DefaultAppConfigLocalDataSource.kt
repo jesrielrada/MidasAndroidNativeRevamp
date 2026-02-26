@@ -38,7 +38,9 @@ class DefaultAppConfigLocalDataSource @Inject constructor(
                 isLanguageSelectionDisplayed = data.isLanguageSelectionDisplayed
                     ?: currentData.isLanguageSelectionDisplayed,
                 domain = data.domain ?: currentData.domain,
-                sessionCookies = data.sessionCookies ?: currentData.sessionCookies
+                sessionCookies = data.sessionCookies ?: currentData.sessionCookies,
+                isMinimumOsDialogHideToggled = data.isMinimumOsDialogHideToggled
+                    ?: currentData.isMinimumOsDialogHideToggled
             )
         }
     }

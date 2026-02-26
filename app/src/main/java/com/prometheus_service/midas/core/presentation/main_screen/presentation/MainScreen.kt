@@ -32,6 +32,7 @@ import com.prometheus_service.midas.core.presentation.features.second_stage.pres
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
+import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.DismissErrorDialog
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.DisplayTutorialScreen
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandlePinCodeToggleOff
@@ -53,6 +54,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.d
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.BiometricsErrorDialog
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.BiometricsLoadingDialog
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.DefaultErrorDialog
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.MinimumOsVersionDialog
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.dialogs.NetworkErrorDialog
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenEffectHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenLifecycleHandler
@@ -256,7 +258,9 @@ fun MainScreen(
 
         SnackbarHost(
             hostState = snackBarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
         )
     }
 
@@ -333,6 +337,25 @@ fun MainScreen(
             uiState = uiState
         )
     }
+
+    if (uiState.canDisplayMinimumOsDialog) {
+        MinimumOsVersionDialog(
+            onConfirm = {
+                viewModel.updateMainState {
+                    it.copy(
+                        canDisplayMinimumOsDialog = false
+                    )
+                }
+            },
+            onDismiss = {
+                viewModel.onEvent(
+                    MainScreenEvent.HandleMinimumOsDialogDismiss
+                )
+            },
+            translations = uiState.viewTranslations.minimumOSTranslations
+        )
+    }
+
 }
 
 
