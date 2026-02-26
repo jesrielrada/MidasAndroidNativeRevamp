@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,6 +58,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.h
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenLifecycleHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenOrientationHandler
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -77,6 +79,17 @@ fun MainScreen(
 
     val shouldRestartSplash by remember { derivedStateOf { uiState.isInitializeErrorDialogVisible } }
     val snackBarHostState = remember { SnackbarHostState() }
+
+    // Define the desired orientation based on current state
+    val targetOrientation = remember(uiState.currentRoute) {
+        when {
+            // Specific route allows landscape/sensor rotation
+            uiState.currentRoute == "game-launcher-route" -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            // Default app state
+            else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+    }
+
 
     LaunchedEffect(uiState.onDataSync) {
         if (uiState.onDataSync) {
@@ -110,7 +123,7 @@ fun MainScreen(
 
     MainScreenLifecycleHandler(viewModel = viewModel)
 
-    MainScreenOrientationHandler(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, context)
+    MainScreenOrientationHandler(targetOrientation, context)
 
     Box(modifier = Modifier.fillMaxSize()) {
         WebviewScreen(
@@ -120,7 +133,6 @@ fun MainScreen(
         )
 
         if (shouldDisplayGameView) {
-            MainScreenOrientationHandler(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, context)
             GameScreen(
                 gameUrl = uiState.gameUrl,
                 gameScreenTranslations = uiState.viewTranslations.gameScreenTranslations,
