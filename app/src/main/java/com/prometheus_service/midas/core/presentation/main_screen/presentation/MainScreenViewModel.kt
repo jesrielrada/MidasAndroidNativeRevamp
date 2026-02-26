@@ -198,13 +198,16 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
-            MainScreenEvent.MemberLoggedIn -> {
+            is MainScreenEvent.MemberLoggedIn -> {
+                Timber.d("Member logged in ... ${event.data}")
                 viewModelScope.launch {
                     val config = getAppConfigModel.invoke().first()
                     val locale = config.locale ?: FlavorConfig.DEFAULT_LOCALE
                     val version = BuildConfig.VERSION_NAME
                     val domain = config.domain
-
+                    val remoteData = event.data
+                    val key = FlavorConfig.OPERATOR_ID
+                    val currentRoute = uiState.value.currentRoute
 
                     initializeNativeCookies.invoke(
                         domain = domain!!,
@@ -226,6 +229,37 @@ class MainScreenViewModel @Inject constructor(
                     uiState.value.launcherUrl?.let {
                         Timber.d("Handling launcher url after logged in ... $it")
                         onEvent(MainScreenEvent.HandlePushNotificationUrl(it))
+                    }
+
+
+                    handleBiometricsEnrollment.invoke(
+                        data = remoteData,
+                        key = key,
+                        currentRoute = currentRoute
+                    ).onSuccess { result ->
+                        when (result) {
+                            EnrollmentResult.NonEnrolled -> {
+                                _uiState.update {
+                                    it.copy(
+                                        isBiometricsEnableDialogVisible = true
+                                    )
+                                }
+                            }
+
+                            is EnrollmentResult.UpdateEnrollment -> {
+                                _sideEffect.emit(
+                                    MainScreenSideEffect.DisplayBiometricPrompt(
+                                        result.cipher
+                                    )
+                                )
+                            }
+
+                            is EnrollmentResult.FailedUpdateEnrollment -> {
+                                displayBiometricFailedDialog()
+                            }
+                        }
+                    }.onFailure { e ->
+                        Timber.e("Failure handling store credentials, ${e.localizedMessage}")
                     }
                 }
             }
@@ -307,8 +341,11 @@ class MainScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     uiState.value.webViewScreenUiState.webviewUrl
                         ?.let {
+                            cookieProvider.persistCookies()
+                            delay(500)
+
                             val cookies = cookieProvider.getCurrentCookies(it)
-                            Timber.d("Current cookies are: $cookies")
+                            Timber.d("Current cookies are: $cookies, next caching cookies")
                             cookies
                         }
                         ?.let { it ->
@@ -446,7 +483,7 @@ class MainScreenViewModel @Inject constructor(
             MainScreenEvent.HandleMemberLoggedOut -> {
                 Timber.d("Handling member logged out... ")
                 viewModelScope.launch {
-                    deleteCookies.invoke()
+                    onEvent(MainScreenEvent.CacheSessionCookies)
 
                     val script = togglePinCodeStorageScript(false)
                     _uiState.update {
@@ -662,7 +699,7 @@ class MainScreenViewModel @Inject constructor(
                     if (currentAccount != null) {
                         val script = Constants.authenticateScript(
                             memberCode = currentAccount.memberCode!!,
-                            password = currentAccount.password!!
+                            password = currentAccount.bio!!
                         )
 
                         Timber.d("Handling biometric login ..., authenticating.. $script")
@@ -776,8 +813,8 @@ class MainScreenViewModel @Inject constructor(
                         .onSuccess {
                             Timber.d("Success persisting biometrics user")
                             _sideEffect.emit(MainScreenSideEffect.DisplayBiometricSuccessEnrollment)
-                        }.onFailure {
-                            Timber.d("Failed persisting biometrics user")
+                        }.onFailure { e ->
+                            Timber.e(e, "Failed persisting biometrics user")
                         }
                 }
             }
@@ -824,40 +861,6 @@ class MainScreenViewModel @Inject constructor(
                         it.copy(
                             onDataSync = true
                         )
-                    }
-
-                    val remoteData = event.data
-                    val key = FlavorConfig.OPERATOR_ID
-                    val currentRoute = uiState.value.currentRoute
-
-                    handleBiometricsEnrollment.invoke(
-                        data = remoteData,
-                        key = key,
-                        currentRoute = currentRoute
-                    ).onSuccess { result ->
-                        when (result) {
-                            EnrollmentResult.NonEnrolled -> {
-                                _uiState.update {
-                                    it.copy(
-                                        isBiometricsEnableDialogVisible = true
-                                    )
-                                }
-                            }
-
-                            is EnrollmentResult.UpdateEnrollment -> {
-                                _sideEffect.emit(
-                                    MainScreenSideEffect.DisplayBiometricPrompt(
-                                        result.cipher
-                                    )
-                                )
-                            }
-
-                            is EnrollmentResult.FailedUpdateEnrollment -> {
-                                displayBiometricFailedDialog()
-                            }
-                        }
-                    }.onFailure { e ->
-                        Timber.e("Failure handling store credentials, ${e.localizedMessage}")
                     }
                 }
             }

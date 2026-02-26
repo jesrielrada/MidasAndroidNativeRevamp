@@ -14,12 +14,12 @@ class PersistBiometricsUser @Inject constructor(
         val account = biometricsManager.currentAccount ?: return Result.failure(Exception("No current account found"))
         result.cryptoObject?.cipher ?: return Result.failure(Exception("No cipher found"))
 
+        Timber.d("Persist biometric user.., $account")
+
         return try {
-
-
             val username =
                 account.memberCode ?: return Result.failure(Exception("Username is null"))
-            val password = account.password ?: return Result.failure(Exception("Password is null"))
+            val password = account.bio ?: return Result.failure(Exception("Password is null"))
 
             val encryptedPassword = cipherManager.encryptData(password)
 

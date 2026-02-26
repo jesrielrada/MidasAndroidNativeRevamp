@@ -73,7 +73,7 @@ fun WebviewScreen(
     }, onCustomCallbackScriptLoaded = {
         viewModel.onEvent(HandleCustomScriptCallback(it))
     }, onMemberLoggedIn = {
-        viewModel.onEvent(MainScreenEvent.MemberLoggedIn)
+        viewModel.onEvent(MainScreenEvent.MemberLoggedIn(it))
     }, onMemberLoggedOut = {
         viewModel.onEvent(HandleMemberLoggedOut)
     }, onWebviewReloaded = {

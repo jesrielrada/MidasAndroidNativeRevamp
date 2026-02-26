@@ -18,12 +18,10 @@ class InitializeNativeCookies @Inject constructor(
     ) {
         try {
             val sessionCookies = getAppConfigModel.invoke().first().sessionCookies
-            val hasRemovedCookies = cookieProvider.removeAllCookies()
-
-            Timber.d("Cookies removed successfully: $hasRemovedCookies")
-
-            if (hasRemovedCookies) {
-                Timber.d("Initializing session cookies")
+            if (sessionCookies != null) {
+                //Temporarily remove delete cookie since its causing client error
+                //cookieProvider.removeAllCookies()
+                Timber.d("Deleting old cookies, initializing session cookies")
                 cookieProvider.persistCookies()
                 cookieProvider.initializeSessionCookies(
                     domain = domain,

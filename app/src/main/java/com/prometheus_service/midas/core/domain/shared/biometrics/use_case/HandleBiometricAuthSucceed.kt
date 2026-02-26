@@ -18,7 +18,7 @@ class HandleAccountSelectedAuthSucceed @Inject constructor(
 
             if (cipher != null && cipherTextWrapper != null) {
                 val decryptedPassword = cipherManager.decryptData(cipherTextWrapper.ciphertext)
-                biometricsManager.setCurrentAccount(CurrentAccount(password = decryptedPassword))
+                biometricsManager.setCurrentAccount(CurrentAccount(bio = decryptedPassword))
                 return Result.success(Unit)
             } else {
                 return Result.failure(Exception("Cipher or cipher text wrapper is null"))

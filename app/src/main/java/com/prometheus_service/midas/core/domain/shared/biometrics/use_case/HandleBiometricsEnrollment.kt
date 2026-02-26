@@ -28,8 +28,9 @@ class HandleBiometricsEnrollment @Inject constructor(
     ): Result<EnrollmentResult> {
         Timber.d("Handling biometrics enrollment")
         return try {
-            val remoteData =
-                data ?: return Result.failure(Exception("Remote data for biometrics is null"))
+            val remoteData = data.also {
+                Timber.d("Handling biometrics enrollment, remote data is $it")
+            } ?: return Result.failure(Exception("Remote data for biometrics is null"))
 
             biometricsManager.setCurrentAccount(remoteData).onFailure {
                 return Result.failure(Exception("Failed to set current account"))

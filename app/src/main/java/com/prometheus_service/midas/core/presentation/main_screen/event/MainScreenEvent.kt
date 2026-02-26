@@ -68,7 +68,7 @@ sealed class MainScreenEvent {
     object HandleGeoBlockMode : MainScreenEvent()
     object CacheSessionCookies : MainScreenEvent()
     data class HandlePushNotificationUrl(val url: String) : MainScreenEvent()
-    object MemberLoggedIn: MainScreenEvent()
+    data class  MemberLoggedIn(val data: String): MainScreenEvent()
 
 }
 

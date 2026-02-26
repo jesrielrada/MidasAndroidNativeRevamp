@@ -13,7 +13,7 @@ data class BiometricsModel(
 @Serializable
 data class CurrentAccount(
     val memberCode: String? = null,
-    val password: String? = null
+    val bio: String? = null
 )
 
 @Serializable

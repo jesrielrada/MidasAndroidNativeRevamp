@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -62,8 +60,11 @@ class DefaultBiometricManager @Inject constructor(
 
     override suspend fun setCurrentAccount(data: String): Result<Unit> {
         return runCatching {
-            _currentAccount = repository.parseRemoteData(data)
-            Timber.d("Setting current account: $currentAccount")
+            val account = requireNotNull(repository.parseRemoteData(data)) { "Account is null" }
+            require(!account.bio.isNullOrEmpty()) { "Bio/Password is null" }
+            require(!account.memberCode.isNullOrEmpty()) { "Member code is null" }
+            Timber.d("Setting current account: $account")
+            _currentAccount = account
         }.onFailure {
             Timber.d("Setting current account failed: $it")
         }
@@ -77,7 +78,7 @@ class DefaultBiometricManager @Inject constructor(
             // If it exists, merge the values: use new value if not null, otherwise keep old
             _currentAccount?.copy(
                 memberCode = currentAccount.memberCode ?: _currentAccount?.memberCode,
-                password = currentAccount.password ?: _currentAccount?.password
+                bio = currentAccount.bio ?: _currentAccount?.bio
             )
         }
     }
