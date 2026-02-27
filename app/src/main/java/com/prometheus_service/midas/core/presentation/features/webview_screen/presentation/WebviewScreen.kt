@@ -97,6 +97,8 @@ fun WebviewScreen(
         viewModel.onEvent(MainScreenEvent.HandleGeoBlockMode)
     }, onRefreshCookie = {
         viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
+    }, onResetCredentials = {
+
     })
 }
 
@@ -128,7 +130,8 @@ fun WebviewScreenContent(
     onLaunchNewWindow: (String) -> Unit,
     onMaintenanceMode: (String?) -> Unit,
     onGeoBlockMode: (String?) -> Unit,
-    onRefreshCookie: (String) -> Unit
+    onRefreshCookie: (String) -> Unit,
+    onResetCredentials: (String) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -172,7 +175,8 @@ fun WebviewScreenContent(
                 onLaunchNewWindow = onLaunchNewWindow,
                 onMaintenanceMode = onMaintenanceMode,
                 onGeoBlockMode = onGeoBlockMode,
-                onRefreshCookie = onRefreshCookie
+                onRefreshCookie = onRefreshCookie,
+                onResetCredentials = onResetCredentials
             )
 
 

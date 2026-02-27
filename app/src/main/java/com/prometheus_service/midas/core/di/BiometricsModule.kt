@@ -14,16 +14,17 @@ import com.prometheus_service.midas.core.domain.features.biometrics.manager.Biom
 import com.prometheus_service.midas.core.domain.features.biometrics.manager.CipherManager
 import com.prometheus_service.midas.core.domain.features.biometrics.model.BiometricsModel
 import com.prometheus_service.midas.core.domain.features.biometrics.repository.BiometricsRepository
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBiometricCurrentAccount
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountSelected
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthCancelled
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthError
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.PersistBiometricsUser
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.SetBiometricsEnabled
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.GetBiometricCurrentAccount
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleAccountDeletion
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleAccountSelectedAuthSucceed
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAccountDisplay
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAccountSelected
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAuthCancelled
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAuthError
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricsEnrollment
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.InitializeBiometricsPrompt
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.PersistBiometricsUser
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.SetBiometricsEnabled
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import dagger.Binds
 import dagger.Module
@@ -36,6 +37,16 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object BiometricsModule {
+
+    @Provides
+    @Singleton
+    fun provideHandleAccountDeletion(
+        manager: BiometricsManager
+    ): HandleAccountDeletion {
+        return HandleAccountDeletion(
+            biometricsManager = manager
+        )
+    }
 
     @Provides
     @Singleton

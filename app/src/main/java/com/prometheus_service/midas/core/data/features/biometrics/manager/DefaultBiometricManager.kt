@@ -124,8 +124,17 @@ class DefaultBiometricManager @Inject constructor(
         }
     }
 
-    override suspend fun deleteAccount(username: String) {
-        repository.deleteAccount(username)
+    override suspend fun deleteAccount(data: String) {
+        try {
+            val memberCode = repository.parseRemoteData(data)?.memberCode
+            if (memberCode != null) {
+                repository.deleteAccount(memberCode)
+            } else {
+                throw Exception("Member code is null")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to delete account biometrics account")
+        }
     }
 
     override suspend fun deleteAllAccounts() {

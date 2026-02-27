@@ -15,20 +15,21 @@ import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfi
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteBestDomain
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountDisplayResult
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.AccountSelectedResult
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.EnrollmentResult
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.GetBiometricCurrentAccount
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleAccountSelectedAuthSucceed
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountDisplay
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAccountSelected
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthCancelled
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricAuthError
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricButtonDisplay
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.HandleBiometricsEnrollment
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.InitializeBiometricsPrompt
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.PersistBiometricsUser
-import com.prometheus_service.midas.core.domain.shared.biometrics.use_case.SetBiometricsEnabled
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.AccountDisplayResult
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.AccountSelectedResult
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.EnrollmentResult
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.GetBiometricCurrentAccount
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleAccountDeletion
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleAccountSelectedAuthSucceed
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAccountDisplay
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAccountSelected
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAuthCancelled
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricAuthError
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricButtonDisplay
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.HandleBiometricsEnrollment
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.InitializeBiometricsPrompt
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.PersistBiometricsUser
+import com.prometheus_service.midas.core.domain.features.biometrics.use_case.SetBiometricsEnabled
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.ObserveNetwork
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
@@ -119,6 +120,7 @@ class MainScreenViewModel @Inject constructor(
     private val deleteBestDomain: DeleteBestDomain,
     private val getAccountLoggedInState: GetAccountLoggedInState,
     private val canDisplayMinimumOsDialog: CanDisplayMinimumOsDialog,
+    private val handleAccountDeletion: HandleAccountDeletion,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -200,6 +202,12 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleResetCredentials -> {
+                viewModelScope.launch {
+                    handleAccountDeletion.invoke(event.data)
+                }
+            }
+
             MainScreenEvent.HandleMinimumOsDialogDismiss -> {
                 viewModelScope.launch {
                     cacheAppConfig.invoke(
@@ -924,7 +932,8 @@ class MainScreenViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     Timber.d("Handling pwa ready ...")
-                    val locale = getAppConfigModel.invoke().first().locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val locale =
+                        getAppConfigModel.invoke().first().locale ?: FlavorConfig.DEFAULT_LOCALE
                     val currentVersion = Build.VERSION.RELEASE
 
 

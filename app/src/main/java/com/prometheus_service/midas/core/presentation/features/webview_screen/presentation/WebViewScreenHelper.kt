@@ -58,7 +58,8 @@ fun webviewJavascriptSetup(
     onLaunchNewWindow: (url: String) -> Unit,
     onMaintenanceMode: (data: String?) -> Unit,
     onGeoBlockMode: (data: String?) -> Unit,
-    onRefreshCookie: (data: String) -> Unit
+    onRefreshCookie: (data: String) -> Unit,
+    onResetCredentials: (data: String) -> Unit
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -88,7 +89,7 @@ fun webviewJavascriptSetup(
                 }
 
                 override fun onResetCredentials(data: String?) {
-                    //
+                    onResetCredentials(data)
                 }
 
                 override fun onShouldDisplayBiometricsLogin(enabled: Boolean) {

@@ -70,6 +70,7 @@ sealed class MainScreenEvent {
     data class HandlePushNotificationUrl(val url: String) : MainScreenEvent()
     data class  MemberLoggedIn(val data: String): MainScreenEvent()
     object HandleMinimumOsDialogDismiss: MainScreenEvent()
+    data class HandleResetCredentials(val data: String): MainScreenEvent()
 
 }
 

@@ -1,4 +1,4 @@
-package com.prometheus_service.midas.core.domain.shared.biometrics.use_case
+package com.prometheus_service.midas.core.domain.features.biometrics.use_case
 
 import com.prometheus_service.midas.core.domain.features.biometrics.repository.BiometricsRepository
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
