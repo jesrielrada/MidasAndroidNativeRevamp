@@ -214,6 +214,7 @@ class MainScreenViewModel @Inject constructor(
                     }
                 }
             }
+
             is MainScreenEvent.MemberLoggedIn -> {
                 Timber.d("Member logged in ... ${event.data}")
                 viewModelScope.launch {
@@ -883,11 +884,33 @@ class MainScreenViewModel @Inject constructor(
 
             is MainScreenEvent.UpdateCurrentRoute -> {
                 Timber.d("Updating current route ... ${event.route}")
-                _uiState.update {
-                    it.copy(
-                        currentRoute = event.route
-                    )
+                viewModelScope.launch {
+                    _uiState.update {
+                        it.copy(
+                            currentRoute = event.route
+                        )
+                    }
+
+                    if (event.route == "login-route") {
+                        Timber.d("Handling biometric button display ...")
+                        handleBiometricButtonDisplay.invoke()
+                            .onSuccess {
+                                _uiState.update {
+                                    it.copy(
+                                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                                            customScript = DISPLAY_BIOMETRICS_SCRIPT
+                                        )
+                                    )
+                                }
+                            }.onFailure {
+                                Timber.e(
+                                    "Failure handling biometric " +
+                                            "button display, ${it.localizedMessage}"
+                                )
+                            }
+                    }
                 }
+
             }
 
             is MainScreenEvent.HandlePwaReady -> {
@@ -903,8 +926,8 @@ class MainScreenViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     Timber.d("Handling pwa ready ...")
-                    val locale =
-                        getAppConfigModel.invoke().first().locale ?: FlavorConfig.DEFAULT_LOCALE
+                    val locale = getAppConfigModel.invoke().first().locale
+                        ?: FlavorConfig.DEFAULT_LOCALE
                     val currentVersion = Build.VERSION.RELEASE
 
 
@@ -913,11 +936,7 @@ class MainScreenViewModel @Inject constructor(
                             currentVersion = currentVersion
                         )
                     ) {
-                        _uiState.update {
-                            it.copy(
-                                canDisplayMinimumOsDialog = true
-                            )
-                        }
+                        _uiState.update { it.copy(canDisplayMinimumOsDialog = true) }
                     }
 
 
@@ -941,22 +960,6 @@ class MainScreenViewModel @Inject constructor(
                             )
                         )
                     }
-
-                    handleBiometricButtonDisplay.invoke()
-                        .onSuccess {
-                            _uiState.update {
-                                it.copy(
-                                    webViewScreenUiState = it.webViewScreenUiState.copy(
-                                        customScript = DISPLAY_BIOMETRICS_SCRIPT
-                                    )
-                                )
-                            }
-                        }.onFailure {
-                            Timber.e(
-                                "Failure handling biometric " +
-                                        "button display, ${it.localizedMessage}"
-                            )
-                        }
 
                     _uiState.update {
                         it.copy(
