@@ -177,6 +177,7 @@ dependencies {
     implementation(libs.github.glide.compiler)
 
     implementation(project(":CMSPushyLib"))
+    implementation(project(":CMSPWAUpdaterLib"))
 
     //firebase
     implementation(platform(libs.firebase.bom))

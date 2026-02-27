@@ -44,6 +44,13 @@ firebase_crashlytics = "3.0.4"
 firebase_perf = "1.4.2"
 
 sentryAndroid = "8.25.0"
+constraintLayout = "2.1.4"
+
+google_gson = "2.13.2"
+google_material = "1.13.0"
+
+square_picasso = "2.71828"
+material_dialogs = "3.3.0"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -72,6 +79,7 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore_preferences" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore_preferences" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version.ref = "biometric_ktx" }
+androidx-constraintLayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintLayout" }
 
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltCompiler" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltCompiler" }
@@ -99,9 +107,17 @@ firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 github-glide = { module = "com.github.bumptech.glide:glide", version.ref = "github_glide" }
 github-glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "github_glide" }
+github-prdownloader = { module = 'com.github.amitshekhariitbhu:PRDownloader', version = "1.0.2" }
 
 sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentryAndroid" }
 
+google-gson = { module = "com.google.code.gson:gson", version.ref = "google_gson" }
+google-material = { module = "com.google.android.material:material", version.ref = "google_material" }
+
+squareup-picasso = { module = "com.squareup.picasso:picasso", version.ref = "square_picasso" }
+afollestad-material-dialogs = { module = "com.afollestad.material-dialogs:core", version.ref = "material_dialogs" }
+
+junit-junit = { module = "junit:junit", version.ref = "junit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

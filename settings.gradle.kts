@@ -20,6 +20,8 @@ dependencyResolutionManagement {
     }
 }
 include(":CMSPushyLib")
+include(":CMSPWAUpdaterLib")
+
 rootProject.name = "MidasAndroidNativeRevamp"
 include(":app")
  

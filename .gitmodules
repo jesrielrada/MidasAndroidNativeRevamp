@@ -1,3 +1,7 @@
 [submodule "CMSPushyLib"]
 	path = CMSPushyLib
 	url = git@github.com:jesrielrada/CMSPushyLib.git
+
+[submodule "CMSPWAUpdaterLib"]
+	path = CMSPWAUpdaterLib
+	url = git@github.com:jesrielrada/CMSPWAUpdaterLib.git
