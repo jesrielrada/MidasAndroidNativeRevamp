@@ -118,12 +118,12 @@ class DefaultBiometricsRepository @Inject constructor(
         }
     }
 
-    override suspend fun setBiometricsEnabled(enabled: Boolean, cmsboEnabled: Boolean) {
+    override suspend fun setBiometricsEnabled(userEnabled: Boolean, cmsboEnabled: Boolean) {
         withContext(dispatcherProvider.io) {
             val currentModel = localDataSource.biometricsModel.first()
             localDataSource.cacheBiometricsModel(
                 currentModel.copy(
-                    isUserEnabled = enabled,
+                    isUserEnabled = userEnabled,
                     isCmsboEnabled = cmsboEnabled
                 )
             )

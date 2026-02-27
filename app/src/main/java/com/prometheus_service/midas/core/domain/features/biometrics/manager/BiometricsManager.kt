@@ -15,7 +15,6 @@ interface BiometricsManager {
     suspend fun getEncryptedPassword(username: String): CipherTextWrapper?
     suspend fun getUsernames(): List<String>?
     suspend fun isBiometricsEnabled(): Boolean
-    suspend fun setBiometricsEnabled(cmsboEnabled: Boolean)
     suspend fun setBiometricsCmsboEnabled(cmsboEnabled: Boolean)
     suspend fun setCurrentAccount(data: String): Result<Unit>
     suspend fun setCurrentAccount(currentAccount: CurrentAccount)

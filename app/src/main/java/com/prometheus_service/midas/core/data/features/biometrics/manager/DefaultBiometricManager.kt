@@ -50,10 +50,6 @@ class DefaultBiometricManager @Inject constructor(
         return repository.isBiometricsEnabled().first()
     }
 
-    override suspend fun setBiometricsEnabled(cmsboEnabled: Boolean) {
-        return repository.setBiometricsEnabled(true, cmsboEnabled)
-    }
-
     override suspend fun setBiometricsCmsboEnabled(cmsboEnabled: Boolean) {
         repository.setBiometricsCmsboEnabled(cmsboEnabled)
     }
@@ -98,9 +94,9 @@ class DefaultBiometricManager @Inject constructor(
             canAuthenticateBiometrics(),
             repository.getUsernames()
         ) { canAuthenticate, usernames ->
-            val hasEnrolledBiometrics = checkHardwareCapability()
-            val hasSavedAccounts = usernames != null
-            canAuthenticate && hasEnrolledBiometrics && hasSavedAccounts
+            val isHardwareReady = checkHardwareCapability()
+            val hasSavedAccounts = !usernames.isNullOrEmpty()
+            canAuthenticate && isHardwareReady && hasSavedAccounts
         }.distinctUntilChanged()
     }
 

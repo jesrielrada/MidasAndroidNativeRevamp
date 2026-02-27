@@ -27,8 +27,7 @@ class DefaultBiometricsLocalDataSource @Inject constructor(
         try {
             dataStore.updateData { currentData ->
                 currentData.copy(
-                    isUserEnabled = model.isUserEnabled
-                        ?: currentData.isUserEnabled,
+                    isUserEnabled = model.isUserEnabled ?: currentData.isUserEnabled,
                     isCmsboEnabled = model.isCmsboEnabled ?: currentData.isCmsboEnabled,
                     usernames = model.usernames ?: currentData.usernames,
                     cipherList = model.cipherList ?: currentData.cipherList

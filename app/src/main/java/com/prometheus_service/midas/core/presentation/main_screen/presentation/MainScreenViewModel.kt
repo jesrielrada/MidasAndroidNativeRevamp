@@ -864,13 +864,6 @@ class MainScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     Timber.d("Handling store credentials ... ${event.data}")
 
-//                    _uiState.update {
-//                        it.copy(
-//                            webViewScreenUiState = it.webViewScreenUiState.copy(
-//                                customCallbackScript = PIN_CODE_STATE_SCRIPT
-//                            )
-//                        )
-//                    }
 
                     syncRemoteData.invoke(uiState.value.currentLocale)
 
@@ -903,10 +896,15 @@ class MainScreenViewModel @Inject constructor(
                                     )
                                 }
                             }.onFailure {
-                                Timber.e(
-                                    "Failure handling biometric " +
-                                            "button display, ${it.localizedMessage}"
-                                )
+                                _uiState.update {
+                                    it.copy(
+                                        webViewScreenUiState = it.webViewScreenUiState.copy(
+                                            customScript = HIDE_BIOMETRICS_SCRIPT
+                                        )
+                                    )
+                                }
+
+                                Timber.e(it, "Hiding biometric button display")
                             }
                     }
                 }
@@ -926,8 +924,7 @@ class MainScreenViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     Timber.d("Handling pwa ready ...")
-                    val locale = getAppConfigModel.invoke().first().locale
-                        ?: FlavorConfig.DEFAULT_LOCALE
+                    val locale = getAppConfigModel.invoke().first().locale ?: FlavorConfig.DEFAULT_LOCALE
                     val currentVersion = Build.VERSION.RELEASE
 
 
