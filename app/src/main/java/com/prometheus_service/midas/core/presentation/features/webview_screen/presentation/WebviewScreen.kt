@@ -98,7 +98,7 @@ fun WebviewScreen(
     }, onRefreshCookie = {
         viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
     }, onResetCredentials = {
-
+        viewModel.onEvent(MainScreenEvent.HandleResetCredentials(it))
     })
 }
 
