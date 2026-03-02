@@ -26,7 +26,6 @@ sealed class MainScreenEvent {
     object ResetCustomRoute : MainScreenEvent()
     object SetWebviewUrlLoaded : MainScreenEvent()
     data class HandlePwaReady(val data: String) : MainScreenEvent()
-    data class HandleStoreCredentials(val data: String?) : MainScreenEvent()
     data class ProcessGoogleLogin(
         val clientId: String,
         val url: String,
@@ -68,10 +67,10 @@ sealed class MainScreenEvent {
     object HandleGeoBlockMode : MainScreenEvent()
     object CacheSessionCookies : MainScreenEvent()
     data class HandlePushNotificationUrl(val url: String) : MainScreenEvent()
-    data class  MemberLoggedIn(val data: String): MainScreenEvent()
-    object HandleMinimumOsDialogDismiss: MainScreenEvent()
-    data class HandleResetCredentials(val data: String): MainScreenEvent()
-
+    data class MemberLoggedIn(val data: String) : MainScreenEvent()
+    object HandleMinimumOsDialogDismiss : MainScreenEvent()
+    data class HandleResetCredentials(val data: String) : MainScreenEvent()
+    data class HandleShouldDisplaySecondStage(val enabled: Boolean) : MainScreenEvent()
 }
 
 

@@ -49,8 +49,6 @@ fun WebviewScreen(
         it?.let {
             viewModel.onEvent(UpdateCurrentRoute(it))
         }
-    }, onStoreCredentials = {
-        viewModel.emitSideEffect(MainScreenSideEffect.OnStoreCredentials(it))
     }, onNewGameLauncher = {
         viewModel.onEvent(MainScreenEvent.LaunchGamePage(gamePath = it))
     }, onRouteLoaded = {
@@ -99,6 +97,8 @@ fun WebviewScreen(
         viewModel.onEvent(MainScreenEvent.CacheSessionCookies)
     }, onResetCredentials = {
         viewModel.onEvent(MainScreenEvent.HandleResetCredentials(it))
+    }, onShouldDisplaySecondStage = {
+        viewModel.onEvent(MainScreenEvent.HandleShouldDisplaySecondStage(it))
     })
 }
 
@@ -114,7 +114,6 @@ fun WebviewScreenContent(
     onCustomUrlLoaded: () -> Unit,
     onPwaReady: (String) -> Unit,
     onPwaNavigate: (String?) -> Unit,
-    onStoreCredentials: (String?) -> Unit,
     onNewGameLauncher: (String) -> Unit,
     onNativeAuthenticateGoogle: (String) -> Unit,
     onNativeLaunchGoogle: (String) -> Unit,
@@ -131,7 +130,8 @@ fun WebviewScreenContent(
     onMaintenanceMode: (String?) -> Unit,
     onGeoBlockMode: (String?) -> Unit,
     onRefreshCookie: (String) -> Unit,
-    onResetCredentials: (String) -> Unit
+    onResetCredentials: (String) -> Unit,
+    onShouldDisplaySecondStage: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -163,7 +163,6 @@ fun WebviewScreenContent(
                 onNewGameLauncher = onNewGameLauncher,
                 onNativeAuthenticateGoogle = onNativeAuthenticateGoogle,
                 onNativeLaunchGoogle = onNativeLaunchGoogle,
-                onStoreCredentials = onStoreCredentials,
                 onPwaNavigate = onPwaNavigate,
                 onShouldDisplayBiometricsLogin = onShouldDisplayBiometricsLogin,
                 onLoginLauncher = onLoginLauncher,
@@ -176,7 +175,8 @@ fun WebviewScreenContent(
                 onMaintenanceMode = onMaintenanceMode,
                 onGeoBlockMode = onGeoBlockMode,
                 onRefreshCookie = onRefreshCookie,
-                onResetCredentials = onResetCredentials
+                onResetCredentials = onResetCredentials,
+                onShouldDisplaySecondStage = onShouldDisplaySecondStage
             )
 
 

@@ -6,8 +6,7 @@ interface JavascriptListener {
     fun onPwaNavigate(route: String?)
     fun onNativeAuthenticateGoogle(data: String)
     fun onNativeLaunchGoogle(url: String)
-    fun onStoreCredentials(data: String?)
-    fun onResetCredentials(data: String?)
+    fun onResetCredentials(data: String)
     fun onShouldDisplayBiometricsLogin(enabled: Boolean)
     fun onLoginLauncher(data: String?)
     fun onPinCodeToggle(isEnabled: Boolean)
@@ -19,6 +18,6 @@ interface JavascriptListener {
     fun onMaintenanceMode(data: String?)
     fun onGeoBlockMode(data: String?)
     fun onRefreshCookie(data: String)
-
+    fun onShouldDisplaySecondStage(isEnabled: Boolean)
 }
 

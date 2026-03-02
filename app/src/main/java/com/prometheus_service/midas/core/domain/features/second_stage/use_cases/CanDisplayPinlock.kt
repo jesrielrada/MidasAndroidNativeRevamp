@@ -9,7 +9,6 @@ class CanDisplayPinlock @Inject constructor(
     private val secondStageRepository: SecondStageRepository,
     private val cookieProvider: CookieProvider
 ) {
-
     suspend operator fun invoke(
         baseUrl: String?,
         pwaReady: Boolean,
@@ -19,6 +18,7 @@ class CanDisplayPinlock @Inject constructor(
         val isUserEnabled = model.isUserEnabled != null && model.isUserEnabled
         val isCmsboEnabled = model.isCmsboEnabled != null && model.isCmsboEnabled
         val isLoggedIn = baseUrl != null && cookieProvider.isLoggedIn(baseUrl)
+
         return hasCachedPin && isUserEnabled && isCmsboEnabled && isLoggedIn && pwaReady
     }
 }

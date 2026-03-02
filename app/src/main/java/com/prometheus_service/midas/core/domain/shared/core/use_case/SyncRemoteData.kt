@@ -61,15 +61,7 @@ class SyncRemoteData @Inject constructor(
             )
 
             val featureSettings = getMultiLanguageData.invoke(locale).first().featureSettings
-            val secondStageCmsboEnabled = featureSettings.pinlockEnabled
             val biometricsEnabled = featureSettings.biometricsEnabled
-
-
-            cacheSecondStageConfig.invoke(
-                SecondStageModel(
-                    isCmsboEnabled = secondStageCmsboEnabled
-                )
-            )
 
             biometricsManager.setBiometricsCmsboEnabled(biometricsEnabled)
 

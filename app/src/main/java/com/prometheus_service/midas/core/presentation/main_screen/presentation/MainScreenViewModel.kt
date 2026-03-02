@@ -63,7 +63,6 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.u
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.HIDE_BIOMETRICS_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_LAUNCHER_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_ROUTE
-import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.PIN_CODE_STATE_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.togglePinCodeStorageScript
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -202,6 +201,16 @@ class MainScreenViewModel @Inject constructor(
 
     fun onEvent(event: MainScreenEvent) {
         when (event) {
+            is MainScreenEvent.HandleShouldDisplaySecondStage -> {
+                viewModelScope.launch {
+                    cacheSecondStageConfig.invoke(
+                        SecondStageModel(
+                            isCmsboEnabled = event.enabled
+                        )
+                    )
+                }
+            }
+
             is MainScreenEvent.HandleResetCredentials -> {
                 viewModelScope.launch {
                     handleAccountDeletion.invoke(event.data)
@@ -286,6 +295,43 @@ class MainScreenViewModel @Inject constructor(
                     }.onFailure { e ->
                         Timber.e("Failure handling store credentials, ${e.localizedMessage}")
                     }
+
+                    val cachedCredentials = getSecondStageConfig.invoke().firstOrNull()?.credentials
+                    val isCredentialsUpdated =
+                        cachedCredentials.isNullOrEmpty().not() && cachedCredentials != event.data
+
+                    if (isCredentialsUpdated) {
+                        val script = togglePinCodeStorageScript(false)
+                        Timber.d("Pincode disabled, setting to false ... $script")
+                        _uiState.update {
+                            it.copy(
+                                webViewScreenUiState = it.webViewScreenUiState.copy(
+                                    customScript = script,
+                                    customCallbackScript = null
+                                )
+                            )
+                        }
+                        cacheSecondStageConfig.invoke(
+                            SecondStageModel(
+                                isUserEnabled = false,
+                                pin = ""
+                            )
+                        )
+                    }
+
+                    cacheSecondStageConfig.invoke(SecondStageModel(credentials = event.data))
+
+                    val canDisplayPinlock = canDisplayPinlock.invoke(
+                        baseUrl = uiState.value.webViewScreenUiState.webviewUrl,
+                        pwaReady = uiState.value.webViewScreenUiState.isPwaReady
+                    )
+
+                    if (canDisplayPinlock) {
+                        _uiState.update { it.copy(shouldDisplaySecondStage = true) }
+                    }
+
+                    syncRemoteData.invoke(uiState.value.currentLocale)
+                    _uiState.update { it.copy(onDataSync = true) }
                 }
             }
 
@@ -539,59 +585,6 @@ class MainScreenViewModel @Inject constructor(
                                 customCallbackScript = null
                             )
                         )
-                    }
-                    // Assume this is for pin code only, on future, will be adding when statement
-                    val isPincodeEnabled = event.data.removeSurrounding("\"").toBoolean()
-                    cacheSecondStageConfig.invoke(
-                        SecondStageModel(
-                            isCmsboEnabled = isPincodeEnabled
-                        )
-                    )
-
-                    val cachedCredentials =
-                        getSecondStageConfig.invoke().firstOrNull()?.credentials
-                    val isCredentialsUpdated =
-                        cachedCredentials.isNullOrEmpty()
-                            .not() && cachedCredentials != event.data
-
-                    Timber.d("CustomCallback Scrip, pincode enabled? $isPincodeEnabled")
-
-                    if (!isPincodeEnabled || isCredentialsUpdated) {
-                        val script = togglePinCodeStorageScript(false)
-                        Timber.d("Pincode disabled, setting to false ... $script")
-                        _uiState.update {
-                            it.copy(
-                                webViewScreenUiState = it.webViewScreenUiState.copy(
-                                    customScript = script,
-                                    customCallbackScript = null
-                                )
-                            )
-                        }
-                        cacheSecondStageConfig.invoke(
-                            SecondStageModel(
-                                isUserEnabled = false,
-                                pin = ""
-                            )
-                        )
-                    }
-
-                    cacheSecondStageConfig.invoke(
-                        SecondStageModel(
-                            credentials = event.data
-                        )
-                    )
-
-                    val canDisplayPinlock = canDisplayPinlock.invoke(
-                        baseUrl = uiState.value.webViewScreenUiState.webviewUrl,
-                        pwaReady = uiState.value.webViewScreenUiState.isPwaReady
-                    )
-
-                    if (canDisplayPinlock) {
-                        _uiState.update {
-                            it.copy(
-                                shouldDisplaySecondStage = true
-                            )
-                        }
                     }
                 }
             }
@@ -867,22 +860,6 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
-
-            is MainScreenEvent.HandleStoreCredentials -> {
-                viewModelScope.launch {
-                    Timber.d("Handling store credentials ... ${event.data}")
-
-
-                    syncRemoteData.invoke(uiState.value.currentLocale)
-
-                    _uiState.update {
-                        it.copy(
-                            onDataSync = true
-                        )
-                    }
-                }
-            }
-
             is MainScreenEvent.UpdateCurrentRoute -> {
                 Timber.d("Updating current route ... ${event.route}")
                 viewModelScope.launch {
@@ -959,6 +936,7 @@ class MainScreenViewModel @Inject constructor(
                         }
                     }
 
+
                     _uiState.update {
                         it.copy(
                             webViewScreenUiState = it.webViewScreenUiState.copy(
@@ -967,13 +945,19 @@ class MainScreenViewModel @Inject constructor(
                         )
                     }
 
-                    _uiState.update {
-                        it.copy(
-                            webViewScreenUiState = it.webViewScreenUiState.copy(
-                                customCallbackScript = PIN_CODE_STATE_SCRIPT
+                    val canDisplayPinlock = canDisplayPinlock.invoke(
+                        baseUrl = uiState.value.webViewScreenUiState.webviewUrl,
+                        pwaReady = uiState.value.webViewScreenUiState.isPwaReady
+                    )
+
+                    if (canDisplayPinlock) {
+                        _uiState.update {
+                            it.copy(
+                                shouldDisplaySecondStage = true
                             )
-                        )
+                        }
                     }
+
 
                     persistNativeCookies.invoke()
                     cacheAppCurrency.invoke(event.data)

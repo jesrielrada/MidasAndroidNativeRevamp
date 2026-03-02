@@ -46,7 +46,6 @@ fun webviewJavascriptSetup(
     onNewGameLauncher: (url: String) -> Unit,
     onNativeAuthenticateGoogle: (data: String) -> Unit,
     onNativeLaunchGoogle: (url: String) -> Unit,
-    onStoreCredentials: (data: String?) -> Unit,
     onPwaNavigate: (route: String?) -> Unit,
     onShouldDisplayBiometricsLogin: () -> Unit,
     onLoginLauncher: (data: String?) -> Unit,
@@ -59,7 +58,8 @@ fun webviewJavascriptSetup(
     onMaintenanceMode: (data: String?) -> Unit,
     onGeoBlockMode: (data: String?) -> Unit,
     onRefreshCookie: (data: String) -> Unit,
-    onResetCredentials: (data: String) -> Unit
+    onResetCredentials: (data: String) -> Unit,
+    onShouldDisplaySecondStage: (isEnabled: Boolean) -> Unit
 ) {
     webView.addJavascriptInterface(
         DefaultJavascriptListener(
@@ -84,11 +84,7 @@ fun webviewJavascriptSetup(
                     onNativeLaunchGoogle(url)
                 }
 
-                override fun onStoreCredentials(data: String?) {
-                    onStoreCredentials(data)
-                }
-
-                override fun onResetCredentials(data: String?) {
+                override fun onResetCredentials(data: String) {
                     onResetCredentials(data)
                 }
 
@@ -134,6 +130,10 @@ fun webviewJavascriptSetup(
 
                 override fun onRefreshCookie(data: String) {
                     onRefreshCookie(data)
+                }
+
+                override fun onShouldDisplaySecondStage(isEnabled: Boolean) {
+                    onShouldDisplaySecondStage(isEnabled)
                 }
             }
         ),

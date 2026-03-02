@@ -28,12 +28,7 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
     }
 
     @JavascriptInterface
-    fun storeCredentials(data: String?) {
-        callback.onStoreCredentials(data)
-    }
-
-    @JavascriptInterface
-    fun resetCredentials(data: String?) {
+    fun resetCredentials(data: String) {
         callback.onResetCredentials(data)
     }
 
@@ -98,4 +93,9 @@ class DefaultJavascriptListener(val callback: JavascriptListener) {
         callback.onRefreshCookie(data)
     }
 
+    @JavascriptInterface
+    fun shouldDisplaySecondStage(isEnabled: Boolean) {
+        Timber.d("JavascriptListener: shouldDisplaySecondStage: $isEnabled")
+        callback.onShouldDisplaySecondStage(isEnabled)
+    }
 }
