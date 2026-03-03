@@ -23,7 +23,6 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleBiometricsAuthError
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleBiometricsAuthResult
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandlePwaReady
-import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleStoreCredentials
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.ProcessGoogleLogin
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
@@ -126,11 +125,6 @@ fun MainScreenEffectHandler(
                         }
                     )
 
-                }
-
-                is MainScreenSideEffect.OnStoreCredentials -> {
-                    Timber.d("Store credentials called on side effects, calling handle store credentials...")
-                    viewModel.onEvent(HandleStoreCredentials(effect.data))
                 }
 
                 is MainScreenSideEffect.OnPwaReady -> {
