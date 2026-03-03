@@ -5,7 +5,12 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.fragment.app.FragmentActivity
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.DarkExtendedColors
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.LightExtendedColors
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.LocalExtendedColors
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreen
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
@@ -22,12 +27,21 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MidasAndroidNativeRevampTheme {
-                MainScreen(
-                    viewModel = viewModel,
-                    activity = this
-                )
+            val isDarkTheme = isSystemInDarkTheme()
+            val extendedColors = if (isDarkTheme) DarkExtendedColors else LightExtendedColors
+
+            CompositionLocalProvider(
+                LocalExtendedColors provides extendedColors
+            ) {
+                MidasAndroidNativeRevampTheme {
+                    MainScreen(
+                        viewModel = viewModel,
+                        activity = this,
+                        extendedColors = extendedColors
+                    )
+                }
             }
+
         }
     }
 

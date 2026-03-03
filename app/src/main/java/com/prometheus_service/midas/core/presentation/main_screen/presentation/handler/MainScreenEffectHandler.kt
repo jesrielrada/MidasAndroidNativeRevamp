@@ -49,7 +49,6 @@ fun MainScreenEffectHandler(
                 }
 
                 is MainScreenSideEffect.DisplayBiometricAuthError -> {
-
                     val negative =
                         uiState.viewTranslations.biometricsTranslations.biometricErrorCancelled
                     val lockout =

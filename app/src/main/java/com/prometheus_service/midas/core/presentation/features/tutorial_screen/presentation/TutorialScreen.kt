@@ -3,6 +3,7 @@ package com.prometheus_service.midas.core.presentation.features.tutorial_screen.
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.HorizontalPager
@@ -24,16 +24,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,16 +41,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.event.TutorialScreenEvent
-import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorSelectedColor
-import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorUnSelectedColor
-import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonDefaultColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.ExtendedColors
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.LocalExtendedColors
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialContainerDarkColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialContainerLightColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorSelectedDarkColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialIndicatorUnSelectedDarkColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonDarkColor
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonFinishColor
-import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerDefaultColor
-import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerFinishColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerDarkColor
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.TutorialNextButtonOnContainerFinishLightColor
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.TutorialScreenTranslations
 import com.prometheus_service.midas.shared.theme.MidasAndroidNativeRevampTheme
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @Composable
 fun TutorialScreen(
@@ -86,12 +86,14 @@ fun TutorialScreenContent(
     val pagerState = rememberPagerState(pageCount = { uiState.images.size })
     val isLastPage by remember { derivedStateOf { pagerState.currentPage == pagerState.pageCount - 1 } }
 
-    Scaffold(modifier = modifier) { innerPadding ->
+    Scaffold(
+        modifier = modifier,
+        containerColor = LocalExtendedColors.current.tutorialContainer
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.tertiaryContainer),
+                .padding(innerPadding),
         ) {
 
             TutorialViewPager(
@@ -168,11 +170,11 @@ fun TutorialButton(
     modifier: Modifier = Modifier,
     onButtonClicked: () -> Unit
 ) {
-
-    val buttonBgColor =
-        if (isLastPage) TutorialNextButtonFinishColor else TutorialNextButtonDefaultColor
+    val buttonBgColor = if (isLastPage) LocalExtendedColors.current.tutorialFinishButton else
+        LocalExtendedColors.current.tutorialNextButton
     val buttonTextColor =
-        if (isLastPage) TutorialNextButtonOnContainerFinishColor else TutorialNextButtonOnContainerDefaultColor
+        if (isLastPage) LocalExtendedColors.current.tutorialOnButtonContainerFinish else
+            LocalExtendedColors.current.tutorialOnButtonContainer
     val buttonLabel = if (isLastPage) buttonEndLabel else buttonDefaultLabel
 
     val animatedButtonBgColor by animateColorAsState(
@@ -225,14 +227,14 @@ fun TutorialPageIndicator(
                     modifier = Modifier
                         .size(8.dp)
                         .clip(CircleShape)
-                        .background(TutorialIndicatorSelectedColor)
+                        .background(LocalExtendedColors.current.tutorialIndicatorSelected)
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .size(6.dp)
                         .clip(CircleShape)
-                        .background(TutorialIndicatorUnSelectedColor)
+                        .background(LocalExtendedColors.current.tutorialIndicatorUnSelected)
                 )
             }
 

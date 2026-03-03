@@ -15,7 +15,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,6 +30,7 @@ import com.prometheus_service.midas.core.presentation.features.language_selectio
 import com.prometheus_service.midas.core.presentation.features.second_stage.presentation.SecondStageScreen
 import com.prometheus_service.midas.core.presentation.features.splash_screen.presentation.SplashScreen
 import com.prometheus_service.midas.core.presentation.features.tutorial_screen.presentation.TutorialScreen
+import com.prometheus_service.midas.core.presentation.features.tutorial_screen.theme.ExtendedColors
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebviewScreen
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.DismissErrorDialog
@@ -60,14 +60,14 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.h
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenLifecycleHandler
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.handler.MainScreenOrientationHandler
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
 @Composable
 fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel(),
-    activity: FragmentActivity
+    activity: FragmentActivity,
+    extendedColors: ExtendedColors
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
