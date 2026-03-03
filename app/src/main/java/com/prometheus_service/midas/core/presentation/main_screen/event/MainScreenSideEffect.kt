@@ -1,5 +1,6 @@
 package com.prometheus_service.midas.core.presentation.main_screen.event
 
+import com.prometheus_service.midas.cmspwaupdater.VersionInfo
 import javax.crypto.Cipher
 
 sealed class MainScreenSideEffect {
@@ -14,6 +15,8 @@ sealed class MainScreenSideEffect {
     data class DisplayBiometricSelectionList(val usernames: List<String>?) : MainScreenSideEffect()
     data class DisplayBiometricAuthError(val code: Int, val message: CharSequence) : MainScreenSideEffect()
     data class StartActionView(val url: String) : MainScreenSideEffect()
+    data class LaunchUpdateActivity(val versionInfo: VersionInfo) : MainScreenSideEffect()
+    data class LaunchRequestPermission(val versionInfo: VersionInfo) : MainScreenSideEffect()
 }
 
 

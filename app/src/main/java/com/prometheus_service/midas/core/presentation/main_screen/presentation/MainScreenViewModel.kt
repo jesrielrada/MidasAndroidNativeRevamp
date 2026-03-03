@@ -5,16 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prometheus_service.midas.BuildConfig
 import com.prometheus_service.midas.FlavorConfig
-import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
-import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
-import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CanDisplayPinlock
-import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.GetSecondStageConfig
-import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
-import com.prometheus_service.midas.core.domain.providers.CookieProvider
-import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
-import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
-import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteBestDomain
-import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
+import com.prometheus_service.midas.R
 import com.prometheus_service.midas.core.domain.features.biometrics.use_case.AccountDisplayResult
 import com.prometheus_service.midas.core.domain.features.biometrics.use_case.AccountSelectedResult
 import com.prometheus_service.midas.core.domain.features.biometrics.use_case.EnrollmentResult
@@ -30,19 +21,32 @@ import com.prometheus_service.midas.core.domain.features.biometrics.use_case.Han
 import com.prometheus_service.midas.core.domain.features.biometrics.use_case.InitializeBiometricsPrompt
 import com.prometheus_service.midas.core.domain.features.biometrics.use_case.PersistBiometricsUser
 import com.prometheus_service.midas.core.domain.features.biometrics.use_case.SetBiometricsEnabled
+import com.prometheus_service.midas.core.domain.features.second_stage.model.SecondStageModel
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CacheSecondStageConfig
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.CanDisplayPinlock
+import com.prometheus_service.midas.core.domain.features.second_stage.use_cases.GetSecondStageConfig
+import com.prometheus_service.midas.core.domain.features.splash_tutorial.use_case.CanDisplayTutorial
+import com.prometheus_service.midas.core.domain.manager.PermissionManager
+import com.prometheus_service.midas.core.domain.providers.CookieProvider
+import com.prometheus_service.midas.core.domain.shared.app_config.model.AppConfigModel
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.CacheAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.DeleteBestDomain
+import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.GetNetworkType
 import com.prometheus_service.midas.core.domain.shared.connectivity.use_case.ObserveNetwork
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CacheAppCurrency
 import com.prometheus_service.midas.core.domain.shared.core.use_case.CanDisplayMinimumOsDialog
-import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchAppBaseUrl
+import com.prometheus_service.midas.core.domain.shared.core.use_case.FetchRemoteConfig
 import com.prometheus_service.midas.core.domain.shared.core.use_case.FormatGameUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetAccountLoggedInState
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetConfigDomains
 import com.prometheus_service.midas.core.domain.shared.core.use_case.GetDomainFromUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeNativeCookies
+import com.prometheus_service.midas.core.domain.shared.core.use_case.InitializeUpdateVersionInfo
 import com.prometheus_service.midas.core.domain.shared.core.use_case.PersistNativeCookies
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SetHostInterceptorUrl
 import com.prometheus_service.midas.core.domain.shared.core.use_case.SyncRemoteData
+import com.prometheus_service.midas.core.domain.shared.core.use_case.UpdateModel
 import com.prometheus_service.midas.core.domain.shared.google_login.use_cases.GetGoogleAuthUrl
 import com.prometheus_service.midas.core.domain.shared.multi_language.use_case.GetMultiLanguageData
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent
@@ -64,6 +68,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.presentation.u
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_LAUNCHER_SCRIPT
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.LOGIN_ROUTE
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants.Companion.togglePinCodeStorageScript
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.isOlderThan
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -88,7 +93,7 @@ class MainScreenViewModel @Inject constructor(
     private val cacheAppConfig: CacheAppConfigModel,
     private val syncRemoteData: SyncRemoteData,
     private val setHostInterceptorUrl: SetHostInterceptorUrl,
-    private val fetchAppBaseUrl: FetchAppBaseUrl,
+    private val fetchRemoteConfig: FetchRemoteConfig,
     private val getMultiLanguageData: GetMultiLanguageData,
     private val getNetworkType: GetNetworkType,
     private val getAppConfigModel: GetAppConfigModel,
@@ -120,6 +125,8 @@ class MainScreenViewModel @Inject constructor(
     private val getAccountLoggedInState: GetAccountLoggedInState,
     private val canDisplayMinimumOsDialog: CanDisplayMinimumOsDialog,
     private val handleAccountDeletion: HandleAccountDeletion,
+    private val initializeUpdateVersionInfo: InitializeUpdateVersionInfo,
+    val permissionManager: PermissionManager,
     @param:Named("google_client_id") val googleClientId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
@@ -176,6 +183,16 @@ class MainScreenViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .collect { isAppInitialized ->
                     if (isAppInitialized) {
+                        onEvent(MainScreenEvent.HandleAppUpdate)
+                    }
+                }
+        }
+
+        viewModelScope.launch {
+            uiState.map { it.isAppLatest }
+                .distinctUntilChanged()
+                .collect { isAppLatest ->
+                    if (isAppLatest) {
                         val config = getAppConfigModel.invoke().firstOrNull()
                         val isLanguageSelectionDisplayed = config?.isLanguageSelectionDisplayed
 
@@ -189,6 +206,8 @@ class MainScreenViewModel @Inject constructor(
                     }
                 }
         }
+
+
     }
 
     fun emitSideEffect(effect: MainScreenSideEffect) = viewModelScope.launch {
@@ -1157,6 +1176,47 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
 
+            MainScreenEvent.HandleAppUpdate -> {
+                viewModelScope.launch {
+                    Timber.d("Handling app update ...")
+
+                    val latestRemoteVersion = uiState.value.remoteLatestVersion
+                    val currentVersion = BuildConfig.VERSION_NAME
+
+                    if (latestRemoteVersion != null &&
+                        currentVersion.isOlderThan(latestRemoteVersion)
+                    ) {
+                        Timber.d("Handling app update, displaying update activity")
+                        val versionInfo = initializeUpdateVersionInfo.invoke(
+                            path = FlavorConfig.DEFAULT_PATH,
+                            appIcon = R.mipmap.ic_launcher,
+                            filename = FlavorConfig.DEFAULT_FILENAME,
+                            model = UpdateModel(
+                                fileSize = uiState.value.remoteUpdateModel?.fileSize,
+                                header = uiState.value.remoteUpdateModel?.header,
+                                changes = uiState.value.remoteUpdateModel?.changes,
+                                banners = uiState.value.remoteUpdateModel?.banners,
+                                version = uiState.value.remoteUpdateModel?.version,
+                                versionCode = uiState.value.remoteUpdateModel?.versionCode,
+                                downloadUrl = uiState.value.remoteUpdateModel?.downloadUrl
+                            )
+                        )
+
+                        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R ||
+                            permissionManager.isStoragePermissionGranted()) {
+                            Timber.d("Displaying update ....")
+                            _sideEffect.emit(MainScreenSideEffect.LaunchUpdateActivity(versionInfo))
+                        } else {
+                            Timber.d("Request app permission ....")
+                            _sideEffect.emit(MainScreenSideEffect.LaunchRequestPermission(versionInfo))
+                        }
+                    } else {
+                        Timber.d("No update! Continue to load base url ")
+                        _uiState.update { it.copy(isAppLatest = true) }
+                    }
+                }
+            }
+
             MainScreenEvent.InitializeApplication -> {
                 viewModelScope.launch {
                     val domains = getConfigDomains.invoke(
@@ -1176,12 +1236,14 @@ class MainScreenViewModel @Inject constructor(
 
                     //Fetch and cache base url
                     Timber.d("Config domains .. $domains")
-                    val fetchedDomains = fetchAppBaseUrl.invoke(domains = domains)
-                    if (fetchedDomains != null) {
-                        val bestDomain = fetchedDomains.first
-                        val baseUrl = fetchedDomains.second
+
+                    val fetchedConfig = fetchRemoteConfig.invoke(domains = domains)
+                    val baseUrl = fetchedConfig?.second?.domainPwa?.get(0)
+
+                    if (fetchedConfig != null && baseUrl != null) {
+                        val config = fetchedConfig.second
+                        val bestDomain = fetchedConfig.first
                         val domain = getDomainFromUrl.invoke(baseUrl)
-                        Timber.d("Fetched base url ..$baseUrl, best domain is: $bestDomain")
                         setHostInterceptorUrl.invoke(baseUrl)
                         cacheAppConfig.invoke(
                             AppConfigModel(
@@ -1191,7 +1253,21 @@ class MainScreenViewModel @Inject constructor(
                                 bestDomain = bestDomain
                             )
                         )
-                        _uiState.update { it.copy(isAppInitialized = true) }
+                        _uiState.update {
+                            it.copy(
+                                isAppInitialized = true,
+                                remoteLatestVersion = config?.androidNativeVersion,
+                                remoteUpdateModel = UpdateModel(
+                                    fileSize = config?.androidNativeUpdateFileSize,
+                                    header = config?.androidNativeUpdateHeader,
+                                    changes = config?.androidNativeUpdateChanges,
+                                    banners = config?.androidNativeUpdateBanners,
+                                    version = config?.androidNativeVersion,
+                                    versionCode = config?.androidNativeVersionCode,
+                                    downloadUrl = config?.downloadDomains?.get(0)
+                                )
+                            )
+                        }
                     } else {
                         Timber.d("Fetching base url failed, display retry")
                         _uiState.update { it.copy(isInitializeErrorDialogVisible = true) }

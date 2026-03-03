@@ -71,6 +71,7 @@ sealed class MainScreenEvent {
     object HandleMinimumOsDialogDismiss : MainScreenEvent()
     data class HandleResetCredentials(val data: String) : MainScreenEvent()
     data class HandleShouldDisplaySecondStage(val enabled: Boolean) : MainScreenEvent()
+    object HandleAppUpdate : MainScreenEvent()
 }
 
 

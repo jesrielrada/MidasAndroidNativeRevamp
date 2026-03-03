@@ -1,8 +1,13 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation.handler
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.app.Activity.RESULT_CANCELED
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt.CryptoObject
 import androidx.biometric.BiometricPrompt.ERROR_CANCELED
 import androidx.biometric.BiometricPrompt.ERROR_LOCKOUT
@@ -13,9 +18,12 @@ import androidx.biometric.BiometricPrompt.PromptInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.prometheus_service.midas.cmspwaupdater.NewUpdateActivity
 import com.prometheus_service.midas.core.presentation.features.biometrics.BiometricAuthenticator
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleAccountSelected
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.HandleAccountSelectedAuthSucceed
@@ -26,6 +34,7 @@ import com.prometheus_service.midas.core.presentation.main_screen.event.MainScre
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenEvent.ProcessGoogleLogin
 import com.prometheus_service.midas.core.presentation.main_screen.event.MainScreenSideEffect
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.MainScreenViewModel
+import com.prometheus_service.midas.core.presentation.main_screen.presentation.util.Constants
 import com.prometheus_service.midas.core.presentation.util.GoogleAuthManager
 import timber.log.Timber
 
@@ -33,15 +42,52 @@ import timber.log.Timber
 fun MainScreenEffectHandler(
     viewModel: MainScreenViewModel,
     context: Context,
+    activity: FragmentActivity,
     authenticator: BiometricAuthenticator,
     googleAuthManager: GoogleAuthManager
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val appUpdateLauncher =
+        rememberLauncherForActivityResult(contract = StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_CANCELED) {
+                val data: Intent? = result.data
+                if (data != null && data.hasExtra("required")) {
+                    val required = data.getBooleanExtra("required", false)
+                    if (required) {
+                        (context as? android.app.Activity)?.finish()
+                    }
+                }
+            }
+        }
 
     LaunchedEffect(Unit) {
-
         viewModel.sideEffect.collect { effect ->
             when (effect) {
+                is MainScreenSideEffect.LaunchRequestPermission -> {
+                    if (!viewModel.permissionManager.isStoragePermissionRationale(activity)) {
+                        ActivityCompat.requestPermissions(
+                            activity,
+                            Array(1) { WRITE_EXTERNAL_STORAGE },
+                            Constants.STORAGE_PERMISSION
+                        )
+
+                        viewModel.updateMainState { it.copy(remoteVersionInfo = effect.versionInfo) }
+
+                    } else {
+                        viewModel.updateMainState {
+                            it.copy(
+                                isAppLatest = true
+                            )
+                        }
+                    }
+                }
+
+                is MainScreenSideEffect.LaunchUpdateActivity -> {
+                    val intent = Intent(context, NewUpdateActivity::class.java)
+                    intent.putExtra("version_info", effect.versionInfo)
+                    appUpdateLauncher.launch(intent)
+                }
+
                 is MainScreenSideEffect.StartActionView -> {
                     Timber.d("Starting action view ...")
                     val intent = Intent(Intent.ACTION_VIEW, effect.url.toUri())

@@ -4,13 +4,14 @@ import com.prometheus_service.midas.FlavorConfig
 import com.prometheus_service.midas.core.data.providers.DefaultDispatcherProvider
 import com.prometheus_service.midas.core.domain.shared.remote_config.use_case.SyncRemoteConfig
 import com.prometheus_service.midas.core.domain.shared.app_config.use_case.GetAppConfigModel
+import com.prometheus_service.midas.core.domain.shared.remote_config.model.RemoteConfigModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
-class FetchAppBaseUrl @Inject constructor(
+class FetchRemoteConfig @Inject constructor(
     private val getAppConfig: GetAppConfigModel,
     private val syncRemoteConfig: SyncRemoteConfig,
     private val setHostInterceptorUrl: SetHostInterceptorUrl,
@@ -21,7 +22,7 @@ class FetchAppBaseUrl @Inject constructor(
         userAgent: String = FlavorConfig.INITIAL_USER_AGENT,
         defaultLocale: String = FlavorConfig.DEFAULT_LOCALE,
         domains: List<String>
-    ): Pair<String, String>? {
+    ): Pair<String, RemoteConfigModel?>? {
         return withContext(dispatcherProvider.io) {
             domains.firstNotNullOfOrNull { domain ->
                 try {
@@ -30,13 +31,12 @@ class FetchAppBaseUrl @Inject constructor(
                     // 2. Inline variables that are only used once
                     val locale = getAppConfig().first().locale ?: defaultLocale
                     // 3. Chain the result cleanly. If this yields a String, the loop stops!
-                    val appDomain = syncRemoteConfig(
+                    val result = syncRemoteConfig(
                         operatorId = operatorId,
                         userAgent = userAgent,
                         acceptLanguage = locale
-                    ).getOrNull()?.domainPwa?.firstOrNull()
-
-                    appDomain?.let { domain to it }
+                    )
+                    domain to result
                 } catch (e: CancellationException) {
                     // 4. CRITICAL MODERN STANDARD: Always rethrow CancellationException
                     // so parent coroutines (like ViewModels) can cancel properly.

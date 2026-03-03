@@ -19,5 +19,8 @@ class Constants {
                     "});"
         }
 
+        const val STORAGE_PERMISSION = 0x1
     }
+
+
 }

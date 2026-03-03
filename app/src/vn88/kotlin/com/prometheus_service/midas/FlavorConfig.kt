@@ -17,4 +17,7 @@ object FlavorConfig {
         "https://m.88vnsicbo.vip",
         "https://m.88vnsicbo.cc"
     )
+
+    val DEFAULT_PATH = "/dl/alpha88/mobilenat/Android/"
+    val DEFAULT_FILENAME = "app-production_alpha88-release-"
 }

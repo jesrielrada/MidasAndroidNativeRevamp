@@ -11,11 +11,11 @@ class SyncRemoteConfig @Inject constructor(
         operatorId: String,
         userAgent: String,
         acceptLanguage: String,
-    ): Result<RemoteConfigModel> {
+    ): RemoteConfigModel? {
         return repository.syncRemoteConfigData(
             operatorId = operatorId,
             userAgent = userAgent,
             acceptLanguage = acceptLanguage,
-        )
+        ).getOrNull()
     }
 }

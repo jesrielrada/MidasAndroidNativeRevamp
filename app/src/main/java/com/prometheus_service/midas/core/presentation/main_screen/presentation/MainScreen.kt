@@ -66,8 +66,7 @@ import timber.log.Timber
 @Composable
 fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel(),
-    activity: FragmentActivity,
-    extendedColors: ExtendedColors
+    activity: FragmentActivity
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -119,6 +118,7 @@ fun MainScreen(
     MainScreenEffectHandler(
         viewModel = viewModel,
         context = context,
+        activity = activity,
         authenticator = authenticator,
         googleAuthManager = googleAuthManager
     )

@@ -59,6 +59,7 @@ android {
     buildTypes {
         create("production") {
             buildConfigField("String", "BuildEnv", "\"P\"")
+            buildConfigField("boolean", "EnableAutoUpdate", "true")
             isShrinkResources = true
             isMinifyEnabled = true
             isDebuggable = false
@@ -71,6 +72,7 @@ android {
         }
         create("preproduction") {
             buildConfigField("String", "BuildEnv", "\"PP\"")
+            buildConfigField("boolean", "EnableAutoUpdate", "true")
             isMinifyEnabled = false
             enableUnitTestCoverage = true
             extensions.extraProperties["enableCrashlytics"] = false
@@ -80,6 +82,7 @@ android {
         }
         create("uat") {
             buildConfigField("String", "BuildEnv", "\"U\"")
+            buildConfigField("boolean", "EnableAutoUpdate", "true")
             isMinifyEnabled = false
             enableUnitTestCoverage = true
             extensions.extraProperties["enableCrashlytics"] = false

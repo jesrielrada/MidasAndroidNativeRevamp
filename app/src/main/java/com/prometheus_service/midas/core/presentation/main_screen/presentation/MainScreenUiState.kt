@@ -1,6 +1,8 @@
 package com.prometheus_service.midas.core.presentation.main_screen.presentation
 
+import com.prometheus_service.midas.cmspwaupdater.VersionInfo
 import com.prometheus_service.midas.core.domain.features.biometrics.model.CurrentAccount
+import com.prometheus_service.midas.core.domain.shared.core.use_case.UpdateModel
 import com.prometheus_service.midas.core.presentation.features.helper_screen.presentation.HelperUiState
 import com.prometheus_service.midas.core.presentation.features.webview_screen.presentation.WebViewScreenUiState
 import com.prometheus_service.midas.core.presentation.main_screen.presentation.model.BiometricsTranslations
@@ -27,12 +29,16 @@ data class MainScreenUiState(
     val canDisplayTutorialScreen: Boolean = false,
     val canDisplayMinimumOsDialog: Boolean = false,
     val isAppInitialized: Boolean = false,
+    val isAppLatest: Boolean = false,
     val isNetworkReady: Boolean = false,
     val launcherUrl: String? = null,
     val onDataSync: Boolean = false,
     val networkType: String = "",
     val currentLocale: String = "",
     val currentRoute: String = "",
+    val remoteLatestVersion: String? = null,
+    val remoteUpdateModel: UpdateModel? = null,
+    val remoteVersionInfo: VersionInfo? = null,
     val gameUrl: String? = null,
     val snackBarMessage: String? = null,
     val biometricCurrentAccount: CurrentAccount? = null,
